@@ -32,61 +32,20 @@ z0=0
 z=100
 #Zr=pi*W0*W0/ wavelength 
 Zr=10 #Rayleigh range (approx. length of near-field region), im. part of q-param.
-# Hardcoded order.. e.g., TEM10 is n=1 and m=0.
-nMax=3
-mMax=3
 q0=(1j) * Zr
 
-# Enter modes as 2d grid (n,m) of coefficients
-cols=mMax+1
-rows=nMax+1
-modes = [[0 for m in range(cols)] for n in range(rows)]
+# Instantiate mode data
+modes = []
+rows = 1
+cols = 1
 
-# Enter mode coefficients
-modes[0][0]=0
-modes[1][0]=1
+x=[]
+y=[]
+f=[]
 
-
-
-def showGrid():  
-    colList=[]
-
-    for m in range(cols):
-         colList.append(m)
-    print("n\m " + str(colList))
-
-    for n in range(rows):
-        List=[]     
-        for m in range(cols):
-            List.append(modes[n][m])
-            if m==cols-1:
-                print(str(n) +"   " + str(List))
-            
-showGrid()
-
-### Get coefficients of each mode (e.g. c0*H0(x), c1*H1(y)...)
-#def getCoeff(mode, modestr):
-#    str_arr = input("Enter " + modestr +" coefficients(c0*H0 c1*H1 c2*H2..): ").strip().split(' ') 
-#    arr = [float(num) for num in str_arr]
-#    return arr
-
-##get mode (assuming a single mode each n and m)
-#def getModes(carr):
-#    count = 0
-#    for i in carr: 
-#        count+=1
-#        if i==1:
-#            return count-1
-#            return 0
-        
-#carrN = getCoeff(n,"n")
-#carrM = getCoeff(m,"m")
-
-#n=getModes(carrN)
-#m=getModes(carrM)
-#order=n+m
 #--------------------------------------------------------------------------------------------------------
-## CHARACTERISTIC VARIABLES:
+## FUNCTIONS OF CHARACTERISTIC VARIABLES:
+
 
 ## Desc change in the radius of curvature (Rc)
 def Rc(z) :
@@ -117,44 +76,124 @@ def q(z):
     return(q)
 
 #--------------------------------------------------------------------------------------------------------
-## INTENSITY CALCULATION:
-# Using Eq. (9.26), LR article
+##INITIAL INPUT:
 
-## Intensity
-#def Amplitude(x,y,z) :
 
-#    carrN=[0,1]
-       #     print(carrN)
-#    n=0
-#    m=0
-#    carrM=[0,1]
-       #     print(carrM)
+##Get user input modes, create 2-d modes array, show array
+def Modes(*argv):
+    
+    #just access global var.
+    global modes
+    
+    #get number of modes passed by user
+    NumberModes = (len(argv))
+    
+    #create lists for n,m,c of length equal to number of modes
+    listN = [None]*NumberModes
+    listM = [None]*NumberModes
+    listC = [None]*NumberModes
+    
+    #parse args into lists (n,m, & c) to set modes
+    for i in range(0,len(argv)):
+        listN[i],listM[i],listC[i] = argv[i]
+    
+    
+    #get a modes 2-d array created from lists of n,m,c of required size
+    modes = CreateModes(listN,listM,listC,NumberModes)
+    
 
-#    order=2
-
-#    Unm = (2 ** (order - 1) * factorial(n) * factorial(m) * pi) ** (-1 / 2) *\
-#    (1 / w(z)) * e ** ((1j) * (order + 1) * GouyPhase(z,order)) *\
-#    e ** (-(1j) * (k * (x ** 2 + y ** 2) / (2 * Rc(z))) - ((x ** 2 + y ** 2) / (w(z) ** 2))) *\
-#    HermPol(n, x, carrN) *\
-#    HermPol(m, y, carrM)
-
-          
-#    return(Unm)
-
-## Intensity
-def Amplitude(x,y,z) :
-
-    UnmSum=0
+##Create the modes 2-d array
+def CreateModes(listN,listM,listC,NumberModes):
    
+   #get max n and m to create modes grid with size based on user highest modes
+    MaxN = max(listN)
+    MaxM = max(listM)
+    
+   #get number of rows/cols for modes grid (plus 1 for 0 index..)
+    global rows,cols
+    rows=MaxN+1
+    cols=MaxM+1
+    
+   #initialize 2-d array
+    modes = [[0 for m in range(cols)] for n in range(rows)]
+   #iterate through lists to set modes in grid
+    for i in range (0,NumberModes):    
+        modes[listN[i]][listM[i]]=listC[i]
+   
+    return(modes)
+    
+##Print modes
+def ShowModes():  
+    
+    
+    if not modes:
+        print("No modes entered.")
+    
+    else:
+        
+        colList=[]
+
+        for m in range(cols):
+             colList.append(m)
+        print("n\m " + str(colList))
+
+        for n in range(rows):
+            List=[]     
+            for m in range(cols):
+                List.append(modes[n][m])
+                if m==cols-1:
+                    print(str(n) +"   " + str(List))
+            
+
+#--------------------------------------------------------------------------------------------------------
+##SET BASIS
+
+#Without q
+def Basis(wZero):
+    global w0
+    
+    w0 = wZero
+    print("w0 = ",w0)
+
+#Using q-parameter
+def qBasis(qZero):
+    global q0
+    
+    q0 = qZero
+    print("q0 = ",q0)
+
+    
+#--------------------------------------------------------------------------------------------------------
+##PLANAR CALCULATIONS OF AMPLITUDE AND PHASE
+
+# Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
+def Calculate(xmin,xmax,ymin,ymax,z):
+    
+    global x,y,f
+    plane=[xmin,xmax,ymin,ymax,z]
+    
+    x = np.arange(xmin, xmax, (xmax-xmin)/1000)
+    y = np.arange(ymin, ymax, (ymax-ymin)/1000)
+    f=Amplitude(x,y,z) 
+
+    
+#--------------------------------------------------------------------------------------------------------
+##AMPLITUDE CALCULATIONS:
+
+# Amplitutude calculation from w0,zR basis
+def Amplitude(x,y,z) :
+    
+    #Unm a sum over modes
+    UnmSum=0
+    
+    #Iterate through modes
     for n in range(rows):
         for m in range(cols):
             carrN=[0] * rows
             carrN[n]=modes[n][m]
-       #     print(carrN)
 
             carrM=[0] * cols
             carrM[m]=modes[n][m]
-       #     print(carrM)
 
             order=n+m
 
@@ -164,14 +203,16 @@ def Amplitude(x,y,z) :
             HermPol(n, x, carrN) *\
             HermPol(m, y, carrM)
 
+     #Add each to result
             UnmSum+=Unm
           
     return(UnmSum)
 
 
-### Intensity from q-parameter
+# Amplitude from q-parameter basis
 def Amplitude2(x,y,z) :
 
+    #Unm a sum over modes
     UnmSum=0
    
     for n in range(rows):
@@ -198,9 +239,7 @@ def Amplitude2(x,y,z) :
             cmath.exp( (-( (1j) * k * y**2 )/( 2 * q(z))) )
 
             UnmSum+=Unm
-        
-        
-    
+                    
     return((UnmSum))
 
 #Get herm polys from modes
@@ -210,7 +249,8 @@ def HermPol(mode, coord, carr):
     return herm
 
 #-------------------------------------------------------------------------------------------------------
-## PHASE: 
+## PHASE CALCULATIONS:
+
 def Phase(x,y,z):
     return degrees(cmath.phase(Amplitude(x,y,z)))
 
@@ -218,10 +258,38 @@ def Phase2(x,y,z):
     return degrees(cmath.phase(Amplitude2(x,y,z)))
 
 #--------------------------------------------------------------------------------------------------------
+## 2D INTENSITY PLOT:
+
+
+
+def IntensitySliceX():
+    print("Intensity")
+    fig=plt.figure()
+    y=0.0
+    plt.semilogy(x,f**2)
+    plt.xlabel('X')
+    plt.ylabel('Intensity')
+    plt.grid()
+    #plt.savefig('IntCheck.pdf')
+    
+
+def IntensitySliceY():
+    print("Intensity")
+    x = 0.0
+    fig=plt.figure()
+    plt.semilogy(y,f**2)
+    plt.xlabel('Y')
+    plt.ylabel('Intensity')
+    plt.grid()
+    #plt.savefig('IntCheck.pdf')
+    
+    
+#--------------------------------------------------------------------------------------------------------
 ## 3D PLOT:
 
 def IntensityPlot(z):
 # Get data
+
     x = np.arange(-.03, .03, 0.001)
     y = np.arange(-.03, .03, 0.001)
     x, y = np.meshgrid(x, y)
@@ -238,20 +306,11 @@ def IntensityPlot(z):
     ax.set_zlabel("Intensity")
    # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
     plt.show()
-    
-def IntensitySlice(z):
-    x = np.arange(-.003, .003, 0.00001)
-    y = 0.0
-    f=Amplitude(x,y,z)
-    fig=plt.figure()
-    plt.semilogy(x,f**2)
-    plt.xlabel('x')
-    plt.ylabel('Intensity')
-    plt.grid()
-    #plt.savefig('IntCheck.pdf')
+        
 
 def IntensityPlot2(z):
 # Get data
+
     x = np.arange(-.03, .03, 0.001)
     y = np.arange(-.03, .03, 0.001)
     x, y = np.meshgrid(x, y)
@@ -355,7 +414,4 @@ def PhaseMap2(z):
     plt.show()    
     
 #=========================================================================================================
-#def main():
-    
-#main()
-#=========================================================================================================
+
