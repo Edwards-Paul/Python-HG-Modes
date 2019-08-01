@@ -34,14 +34,6 @@ z=100
 Zr=10 #Rayleigh range (approx. length of near-field region), im. part of q-param.
 q0=(1j) * Zr
 
-# Instantiate mode data
-modes = []
-rows = 1
-cols = 1
-
-x=[]
-y=[]
-f=[]
 
 #--------------------------------------------------------------------------------------------------------
 ## FUNCTIONS OF CHARACTERISTIC VARIABLES:
@@ -82,9 +74,6 @@ def q(z):
 ##Get user input modes, create 2-d modes array, show array
 def Modes(*argv):
     
-    #just access global var.
-    global modes
-    
     #get number of modes passed by user
     NumberModes = (len(argv))
     
@@ -99,8 +88,7 @@ def Modes(*argv):
     
     
     #get a modes 2-d array created from lists of n,m,c of required size
-    modes = CreateModes(listN,listM,listC,NumberModes)
-    
+    return(CreateModes(listN,listM,listC,NumberModes))
 
 ##Create the modes 2-d array
 def CreateModes(listN,listM,listC,NumberModes):
@@ -110,7 +98,6 @@ def CreateModes(listN,listM,listC,NumberModes):
     MaxM = max(listM)
     
    #get number of rows/cols for modes grid (plus 1 for 0 index..)
-    global rows,cols
     rows=MaxN+1
     cols=MaxM+1
     
@@ -123,13 +110,15 @@ def CreateModes(listN,listM,listC,NumberModes):
     return(modes)
     
 ##Print modes
-def ShowModes():  
+def ShowModes(modes):  
     
     
     if not modes:
         print("No modes entered.")
     
     else:
+        rows = len(modes)   
+        cols = len(modes[0])
         
         colList=[]
 
@@ -167,24 +156,26 @@ def qBasis(qZero):
 ##PLANAR CALCULATIONS OF AMPLITUDE AND PHASE
 
 # Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
-def Calculate(xmin,xmax,ymin,ymax,z):
+def Calculate(xmin,xmax,ymin,ymax,z,modes):
     
-    global x,y,f
     plane=[xmin,xmax,ymin,ymax,z]
     
     x = np.arange(xmin, xmax, (xmax-xmin)/1000)
     y = np.arange(ymin, ymax, (ymax-ymin)/1000)
-    f=Amplitude(x,y,z) 
+    
+    return([x,y,Amplitude(x,y,z,modes)]) 
 
     
 #--------------------------------------------------------------------------------------------------------
 ##AMPLITUDE CALCULATIONS:
 
 # Amplitutude calculation from w0,zR basis
-def Amplitude(x,y,z) :
+def Amplitude(x,y,z,modes) :
     
     #Unm a sum over modes
     UnmSum=0
+    rows = len(modes)   
+    cols = len(modes[0])
     
     #Iterate through modes
     for n in range(rows):
@@ -262,22 +253,23 @@ def Phase2(x,y,z):
 
 
 
-def IntensitySliceX():
-    print("Intensity")
+def IntensitySliceX(f):
     fig=plt.figure()
+    x=f[0]
     y=0.0
-    plt.semilogy(x,f**2)
+    plt.semilogy(x,abs(f[2]**2))
     plt.xlabel('X')
     plt.ylabel('Intensity')
     plt.grid()
+    
     #plt.savefig('IntCheck.pdf')
     
 
-def IntensitySliceY():
-    print("Intensity")
+def IntensitySliceY(f):
     x = 0.0
+    y=f[1]
     fig=plt.figure()
-    plt.semilogy(y,f**2)
+    plt.semilogy(y,abs(f[2]**2))
     plt.xlabel('Y')
     plt.ylabel('Intensity')
     plt.grid()
