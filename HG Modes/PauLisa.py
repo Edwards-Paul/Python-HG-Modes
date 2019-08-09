@@ -33,7 +33,10 @@ z=100
 #Zr=pi*W0*W0/ wavelength 
 Zr=10 #Rayleigh range (approx. length of near-field region), im. part of q-param.
 q0=(1j) * Zr
-
+print("wavelength=",wavelength)
+print("waist size=",W0)
+print("z0=",z0)
+print("Rayleigh Range =",Zr)
 
 #--------------------------------------------------------------------------------------------------------
 ## FUNCTIONS OF CHARACTERISTIC VARIABLES:
@@ -163,9 +166,10 @@ def Calculate(xmin,xmax,ymin,ymax,z,modes):
     x = np.arange(xmin, xmax, (xmax-xmin)/1000)
     y = np.arange(ymin, ymax, (ymax-ymin)/1000)
     X, Y = np.meshgrid(x, y)
-    Z = Amplitude(X,Y,z,modes)
-    return([x,y,Z,modes]) 
-#return([x,y,Amplitude((X,Y),z,modes)])
+    amp = Amplitude(X,Y,z,modes)
+    #ph = Phase(X,Y,z,modes)
+    #return([x,y,z,amp,modes,ph]) 
+    return([x,y,z,amp,modes]) 
     
 #--------------------------------------------------------------------------------------------------------
 ##AMPLITUDE CALCULATIONS:
@@ -180,14 +184,16 @@ def Amplitude(x,y,z,modes) :
     #Iterate through modes
     for n in range(rows):
         for m in range(cols):           
+            #n array for hermpol
             carrN=[0] * rows
             carrN[n]=modes[n][m]
 
+            #m array for hermpol
             carrM=[0] * cols
             carrM[m]=modes[n][m]
 
             order=n+m
-
+            
             Unm = (2 ** (order - 1) * factorial(n) * factorial(m) * pi) ** (-1 / 2) *\
             (1 / w(z)) * e ** ((1j) * (order + 1) * GouyPhase(z,order)) *\
             e ** (-(1j) * (k * (x ** 2 + y ** 2) / (2 * Rc(z))) - ((x ** 2 + y ** 2) / (w(z) ** 2))) *\
@@ -196,16 +202,18 @@ def Amplitude(x,y,z,modes) :
 
      #Add each to result
             UnmSum+=Unm
-          
+    
     return(UnmSum)
 
 
 # Amplitude from q-parameter basis
-def Amplitude2(x,y,z) :
+def Amplitude2(x,y,z,modes) :
 
     #Unm a sum over modes
     UnmSum=0
-   
+    rows = len(modes)   
+    cols = len(modes[0])
+    
     for n in range(rows):
         for m in range(cols):
             carrN=[0] * rows
@@ -239,38 +247,15 @@ def HermPol(mode, coord, carr):
     herm = hermval(coord*sqrt(2)/w(z),carr)
     return herm
 
-#-------------------------------------------------------------------------------------------------------
-## PHASE CALCULATIONS:
-
-def Phase(x,y,z):
-    return degrees(cmath.phase(Amplitude(x,y,z)))
-
-def Phase2(x,y,z):
-    return degrees(cmath.phase(Amplitude2(x,y,z)))
 
 #--------------------------------------------------------------------------------------------------------
 ## 2D INTENSITY PLOT:
 
-def IntensitySlice(f):
+def IntensitySliceX(f,y):
     fig=plt.figure()
-    x=f[0]
-    #at y = 0
-    amp=f[2]
-    z=amp[len(amp/2)]
-    plt.semilogy(x,abs(z**2))
-    plt.xlabel('X')
-    plt.ylabel('Intensity')
-    plt.grid()
-    
-    #plt.savefig('IntCheck.pdf')
-
-def IntensitySliceX(f):
-    fig=plt.figure()
-    x=f[0]
-    #at y = 0
-    amp=f[2]
-    z=amp[len(amp[0])/2-1]
-    plt.semilogy(x,abs(z**2))
+    #calc at from z and modes in f
+    amp=Amplitude(f[0],y,f[2],f[4])
+    plt.semilogy(f[0],abs(amp**2))
     plt.xlabel('X')
     plt.ylabel('Intensity')
     plt.grid()
@@ -278,13 +263,11 @@ def IntensitySliceX(f):
     #plt.savefig('IntCheck.pdf')
     
 
-def IntensitySliceY(f):
+def IntensitySliceY(f,x):
     fig=plt.figure()
-    y=f[1]
-    #at y = 0
-    amp=f[2]
-    z=amp[len(amp)/2-1]
-    plt.semilogy(y,abs(z**2))
+    #calc at from z and modes in f
+    amp=Amplitude(x,f[1],f[2],f[4])
+    plt.semilogy(f[1],abs(amp**2))
     plt.xlabel('Y')
     plt.ylabel('Intensity')
     plt.grid()
@@ -292,23 +275,25 @@ def IntensitySliceY(f):
     #plt.savefig('IntCheck.pdf')
     
 def Contour(f):    
-    h = plt.contourf(f[0],f[1],abs(f[2]**2))    
+    fig, ax = plt.subplots()
+    cs = plt.contourf(f[0],f[1],abs(f[3]**2))
+    #cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
+    cbar = fig.colorbar(cs)
+    plt.title('Intensity')
+    
+
     
 #--------------------------------------------------------------------------------------------------------
 ## 3D PLOT:
 
-def IntensityPlot(z):
+def IntensityPlot(f):
 # Get data
 
-    x = np.arange(-.03, .03, 0.001)
-    y = np.arange(-.03, .03, 0.001)
-    x, y = np.meshgrid(x, y)
-    f = np.vectorize(Amplitude)
 ## Make the plot, amp. rather than int.
     fig = plt.figure()
     ax = Axes3D(fig)
 
-    ax.plot_surface(x, y, abs(f(0,y,z))**2, rstride=1, cstride=1,
+    ax.plot_surface(f[0], f[1], abs(f[3])**2, rstride=1, cstride=1,
                cmap='viridis', edgecolor='none');
 # Labels and render
     plt.xlabel("x")
@@ -380,21 +365,28 @@ def AmpPlot2(z):
     ax.set_zlabel("Amplitude")
    # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
     plt.show()
+
+#-------------------------------------------------------------------------------------------------------
+## PHASE CALCULATIONS:
+
+def Phase(x,y,z,modes):
+    return degrees(cmath.phase(Amplitude(x,y,z,modes))) 
+def Phase2(x,y,z,modes):
+    return degrees(cmath.phase(Amplitude2(x,y,z,modes)))    
     
 #--------------------------------------------------------------------------------------------------------
 ## Phase Map
-def PhaseMap(z):
-   
-# Get data
-    x = np.arange(-.003, .003, 0.00001)
-    y = np.arange(-.003, .003, 0.00001)
+def PhaseMap(f):
+    x = f[0]
+    y = f[1]
+    z = f[2]
+    modes = f[4]
     x, y = np.meshgrid(x, y)
-    f = np.vectorize(Phase)
-## Make the plot, amp. rather than int.
+    ph = np.vectorize(Phase)
+    
     fig = plt.figure()
     ax = Axes3D(fig)
-
-    ax.plot_surface(x, y, f(x,y,z), rstride=1, cstride=1,
+    ax.plot_surface(x, y, ph(x,y,z), rstride=1, cstride=1,
                cmap='viridis', edgecolor='none');
 # Labels and render
     plt.xlabel("x")
@@ -421,8 +413,31 @@ def PhaseMap2(z):
     plt.ylabel("y");
     ax.set_zlabel("deg.")
    # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
-    plt.show()    
+    plt.show() 
+    
+def PhaseContour(f):
+    fig, ax = plt.subplots()
+    cs = plt.contourf(f[0],f[1],f[5])
+    cbar = fig.colorbar(cs)
+    plt.title('Phase (deg.)')
+    
+def PhaseSliceX(f,y):
+    fig=plt.figure()
+    #calc at from z and modes in f
+    phase=Phase(f[0],y,f[2],f[4])
+    plt.y(f[0],phase)
+    plt.xlabel('X')
+    plt.ylabel('Intensity')
+    plt.grid()
+    
     
 #=========================================================================================================
 
-print("Usage:\nMODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2))\nPauLisa.ShowModes(MODESARRAY)\nAMPLITUDES=PauLisa.Calculate(xmin,xmax,-ymin,ymax,z,MODESARRAY)")
+print("\n\nUsage:\nMODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2)) \
+\nPauLisa.ShowModes(MODESARRAY) \
+\n\n\nPauLisa.Amplitude(x,y,z,MODES) \
+\nAMPLITUDES=PauLisa.Calculate(xmin,xmax,ymin,ymax,z,MODESARRAY) \
+\nPauLisa.Contour(AMPLITUDES) \
+\nPauLisa.IntensitySliceX(AMPLITUDES,y) \
+\nPauLisa.IntensitySliceY(AMPLITUDES,x) \
+\n\nPauLisa.Phase(x,y,z,MODES)")
