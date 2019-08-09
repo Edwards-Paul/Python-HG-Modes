@@ -8,8 +8,8 @@
 
 ## IMPORTS:
 
-# Math imports
-from math import pi, log, exp, sin, cos, atan, sqrt, e, inf, factorial, radians, degrees
+# Math importss
+from math import pi, log, exp, sin, cos, atan, sqrt, e, factorial, radians, degrees
 from scipy.special import jn
 from numpy.polynomial.hermite import hermval
 from scipy import integrate
@@ -44,7 +44,7 @@ def Rc(z) :
     #r=z-z0+(Zr**2/(z-z0))
     
     if z==0:
-        r=inf
+        r=float('inf')
     else :
         r=z*(1 + ( Zr / z )**2)
     return (r)
@@ -162,16 +162,16 @@ def Calculate(xmin,xmax,ymin,ymax,z,modes):
     
     x = np.arange(xmin, xmax, (xmax-xmin)/1000)
     y = np.arange(ymin, ymax, (ymax-ymin)/1000)
-    
-    return([x,y,Amplitude(x,y,z,modes)]) 
-
+    X, Y = np.meshgrid(x, y)
+    Z = Amplitude(X,Y,z,modes)
+    return([x,y,Z,modes]) 
+#return([x,y,Amplitude((X,Y),z,modes)])
     
 #--------------------------------------------------------------------------------------------------------
 ##AMPLITUDE CALCULATIONS:
 
 # Amplitutude calculation from w0,zR basis
 def Amplitude(x,y,z,modes) :
-    
     #Unm a sum over modes
     UnmSum=0
     rows = len(modes)   
@@ -179,7 +179,7 @@ def Amplitude(x,y,z,modes) :
     
     #Iterate through modes
     for n in range(rows):
-        for m in range(cols):
+        for m in range(cols):           
             carrN=[0] * rows
             carrN[n]=modes[n][m]
 
@@ -251,13 +251,26 @@ def Phase2(x,y,z):
 #--------------------------------------------------------------------------------------------------------
 ## 2D INTENSITY PLOT:
 
-
+def IntensitySlice(f):
+    fig=plt.figure()
+    x=f[0]
+    #at y = 0
+    amp=f[2]
+    z=amp[len(amp/2)]
+    plt.semilogy(x,abs(z**2))
+    plt.xlabel('X')
+    plt.ylabel('Intensity')
+    plt.grid()
+    
+    #plt.savefig('IntCheck.pdf')
 
 def IntensitySliceX(f):
     fig=plt.figure()
     x=f[0]
-    y=0.0
-    plt.semilogy(x,abs(f[2]**2))
+    #at y = 0
+    amp=f[2]
+    z=amp[len(amp[0])/2-1]
+    plt.semilogy(x,abs(z**2))
     plt.xlabel('X')
     plt.ylabel('Intensity')
     plt.grid()
@@ -266,15 +279,20 @@ def IntensitySliceX(f):
     
 
 def IntensitySliceY(f):
-    x = 0.0
-    y=f[1]
     fig=plt.figure()
-    plt.semilogy(y,abs(f[2]**2))
+    y=f[1]
+    #at y = 0
+    amp=f[2]
+    z=amp[len(amp)/2-1]
+    plt.semilogy(y,abs(z**2))
     plt.xlabel('Y')
     plt.ylabel('Intensity')
     plt.grid()
+    
     #plt.savefig('IntCheck.pdf')
     
+def Contour(f):    
+    h = plt.contourf(f[0],f[1],abs(f[2]**2))    
     
 #--------------------------------------------------------------------------------------------------------
 ## 3D PLOT:
@@ -407,3 +425,4 @@ def PhaseMap2(z):
     
 #=========================================================================================================
 
+print("Usage:\nMODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2))\nPauLisa.ShowModes(MODESARRAY)\nAMPLITUDES=PauLisa.Calculate(xmin,xmax,-ymin,ymax,z,MODESARRAY)")
