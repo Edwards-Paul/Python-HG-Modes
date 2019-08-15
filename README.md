@@ -6,11 +6,11 @@ PauLisa.py contains all code for HG mode calculation, which is imported to Jupyt
 ## Starting
 Import PauLisa.py to JN.
 
-User defines a Params object of optical parameters (e.g., beam waist, q-parameter, wavelength) or uses PauLisa.defaultParams.
+User defines a *Params* object of optical parameters (e.g., beam waist, q-parameter, wavelength) or uses PauLisa.defaultParams.
 
-User defines an XY plane object for calculations (i.e., x/y min/max, x/y step size) or uses PauLisa.defaultPlane.
+User defines an XY plane object, *Plane*, for calculations (i.e., x/y min/max values, x/y step size) or uses PauLisa.defaultPlane.
 
-User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c) which are passed to *Calculate* from PauLisa.py for in-plane phase and amplitude/intensity calculations. Alternatively, *Amplitude* and *Phase* compute respective values from x-y-z coordinates.
+User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c) which are passed to *Calculate* from PauLisa.py for in-plane phase and amplitude/intensity calculations. *Calculate* generates a calc object which holds all data necessary for plotting and analysis. Alternatively, *Amplitude* and *Phase* compute respective values from x-y-z coordinates.
 
 
 ## Function Usage:
