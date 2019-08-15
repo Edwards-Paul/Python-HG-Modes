@@ -37,6 +37,8 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
  PauLisa.Phase(PARAMS,x,y,z,MODES) 
 
 ## Ex. Run
+import PauLisa as pl
+
 params = pl.Params(1.064e-6,0.001,0)
 
 
