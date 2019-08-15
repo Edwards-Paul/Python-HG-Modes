@@ -45,7 +45,7 @@ params = pl.Params(1.064e-6,0.001,0)
 plane = pl.Plane(-0.06,0.06,0.0001,-0.03,0.03,0.0001)
 
 
-modes=pl.Modes((1,0,1))
+modes=pl.Modes((1,0,1), (0,1,1))
 
 pl.ShowModes(modes)
 
