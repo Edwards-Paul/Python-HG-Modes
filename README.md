@@ -17,10 +17,10 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
 ### OPTICAL PARAMETERS DEFINITION     
  PARAMETERS=PauLisa.Params(wavelength,w0,z0)
 
-### PLANE OF PROPAGATION DEFINITION     
+### XY PLANE OF CALCULATION DEFINITION     
  PLANE=PauLisa.Plane(xmin,xmax,xstep,ymin,ymax,ystep) 
 
-### MODES DEFNITION AND DISPLAY     
+### MODES DEFINITION AND DISPLAY     
  MODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2))     
  PauLisa.ShowModes(MODES) 
 
@@ -33,7 +33,7 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
  PauLisa.IntensitySliceX(AMPLITUDES,y)     
  PauLisa.IntensitySliceY(AMPLITUDES,x) 
 
-### PHASE CALCLATION     
+### PHASE CALCULATION     
  PauLisa.Phase(PARAMS,x,y,z,MODES) 
 
 ## Ex. Run
