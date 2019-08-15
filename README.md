@@ -10,7 +10,7 @@ User defines a Params object of optical parameters (e.g., beam waist, q-paramete
 
 User defines an XY plane object for calculations (i.e., x/y min/max, x/y step size) or uses PauLisa.defaultPlane.
 
-User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c) which are passed to Calculate(...) from PauLisa.py for in-plane phase and amplitude/intensity calculations. Alternatively, Amplitude(...) and Phase(...) compute respective values from x-y-z coordinates.
+User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c) which are passed to *Calculate* from PauLisa.py for in-plane phase and amplitude/intensity calculations. Alternatively, *Amplitude* and *Phase* compute respective values from x-y-z coordinates.
 
 
 ## Function Usage:
@@ -25,7 +25,8 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
  PauLisa.ShowModes(MODES) 
 
 ### AMPLITUDE CALCULATIONS     
- Calculate amplitude over plane: AMPLITUDES=PauLisa.Calculate(PARAMS,PLANE,MODES,z) 
+ Calculate amplitude over plane: AMPLITUDES=PauLisa.Calculate(PARAMS,PLANE,MODES,z)
+ 
  Simple calculation from coordinates: PauLisa.Amplitude(PARAMS,x,y,z,MODES) 
 
 ### INTENSITY PLOTTING     
