@@ -10,7 +10,11 @@ User defines a *Params* object of optical parameters (e.g., beam waist, q-parame
 
 User defines an XY plane object, *Plane*, for calculations (i.e., x/y min/max values, x/y step size) or uses PauLisa.defaultPlane.
 
-User defines HG modes using nonzero coefficients(c) and HG modes(n, m) as (n, m, c) which are passed to *Calculate* from PauLisa.py for in-plane phase and amplitude/intensity calculations. *Calculate* generates a calc object which holds all data necessary for plotting and analysis. Alternatively, *Amplitude* and *Phase* compute respective values from x-y-z coordinates.
+User defines HG modes using nonzero coefficients(c) and HG modes(n, m) as (n, m, c).
+
+The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for in-plane phase and amplitude/intensity calculations. 
+
+*Calculate* generates a *Result* object which holds all data necessary for plotting and analysis. Alternatively, *Amplitude* and *Phase* compute respective values from x-y-z coordinates.
 
 
 ## Function Usage:
@@ -21,18 +25,18 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n, m) as (n, m,
  PLANE=PauLisa.Plane(xmin, xmax, xstep, ymin, ymax, ystep) 
 
 ### MODES DEFINITION AND DISPLAY     
- MODESARRAY=PauLisa.Modes((n1, m1, c1),(n2, m2, c2))     
+ MODES=PauLisa.Modes((n1, m1, c1),(n2, m2, c2))     
  PauLisa.ShowModes(MODES) 
 
 ### AMPLITUDE CALCULATIONS     
- Calculate amplitude over plane: AMPLITUDES=PauLisa.Calculate(PARAMS, PLANE, MODES, z)
+ Calculate amplitude over plane: RESULT=PauLisa.Calculate(PARAMS, PLANE, MODES, z)
  
  Simple calculation from coordinates: PauLisa.Amplitude(PARAMS, x, y, z, MODES) 
 
 ### INTENSITY PLOTTING     
- PauLisa.Contour(AMPLITUDES)     
- PauLisa.IntensitySliceX(AMPLITUDES, y)     
- PauLisa.IntensitySliceY(AMPLITUDES, x) 
+ PauLisa.Contour(RESULT)     
+ PauLisa.IntensitySliceX(RESULT, y)     
+ PauLisa.IntensitySliceY(RESULT, x) 
 
 ### PHASE CALCULATION     
  PauLisa.Phase(PARAMS, x, y, z, MODES) 
