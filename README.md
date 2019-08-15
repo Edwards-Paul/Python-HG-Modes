@@ -38,13 +38,21 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
 
 ## Ex. Run
 params = pl.Params(1.064e-6,0.001,0)
+
+
 plane = pl.Plane(-0.06,0.06,0.0001,-0.03,0.03,0.0001)
 
+
 modes=pl.Modes((1,0,1))
+
 pl.ShowModes(modes)
+
 
 f = pl.Calculate(params,plane,modes,100)
 
+
 pl.IntensitySliceX(f,-0.01)
+
 pl.IntensitySliceY(f,0.01)
+
 pl.Contour(f)
