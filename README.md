@@ -14,26 +14,26 @@ User defines HG modes using nonzero coefficients(c) and HG modes(n,m) as (n,m,c)
 
 
 ## Function Usage:
-###OPTICAL PARAMETERS DEFINITION     
+### OPTICAL PARAMETERS DEFINITION     
  PARAMETERS=PauLisa.Params(wavelength,w0,z0)
 
-###PLANE OF PROPAGATION DEFINITION     
+### PLANE OF PROPAGATION DEFINITION     
  PLANE=PauLisa.Plane(xmin,xmax,xstep,ymin,ymax,ystep) 
 
-###MODES DEFNITION AND DISPLAY     
+### MODES DEFNITION AND DISPLAY     
  MODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2))     
  PauLisa.ShowModes(MODES) 
 
-###AMPLITUDE CALCULATIONS     
+### AMPLITUDE CALCULATIONS     
  Calculate amplitude over plane: AMPLITUDES=PauLisa.Calculate(PARAMS,PLANE,MODES,z) 
  Simple calculation from coordinates: PauLisa.Amplitude(PARAMS,x,y,z,MODES) 
 
-###INTENSITY PLOTTING     
+### INTENSITY PLOTTING     
  PauLisa.Contour(AMPLITUDES)     
  PauLisa.IntensitySliceX(AMPLITUDES,y)     
  PauLisa.IntensitySliceY(AMPLITUDES,x) 
 
-###PHASE CALCLATION     
+### PHASE CALCLATION     
  PauLisa.Phase(PARAMS,x,y,z,MODES) 
 
 ## Ex. Run
