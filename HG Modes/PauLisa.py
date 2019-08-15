@@ -1,8 +1,8 @@
-## Calculating and plotting intensity profile propagated large relative to (Zr=10, far-field 100m)
+## Calculating and plotting intensity and phase of propagating HG modes
 #--------------------------------------------------------------------------------------------------------
 #q param. goes from i(10) -> i(10+100) 
 #evaluate HG modes again at new q-param. and add together. 
-#basis described by waist size (w0) and waist location into q parameter (q(z)=i*Zr+z-z0=q0+z-z0, q0=i*Zr)
+#optical params described by waist size (w0) and waist location into q parameter (q(z)=i*Zr+z-z0=q0+z-z0, q0=i*Zr)
 #w(z) spot size - radius at which intensity is 1/e**2 max intensity I(0)
 #========================================================================================================
 
@@ -21,48 +21,67 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-#--------------------------------------------------------------------------------------------------------
-## CONSTANTS :
-
-
-wavelength = 1064e-9     #Wavelength = 1064 nm
-k = 2*pi /( wavelength ) #Wavenumber
-W0 = 0.001 #Beam waist size, Virgo uses w0=0.02m intensity patterns for reference
-z0=0
-z=100
-#Zr=pi*W0*W0/ wavelength 
-Zr=10 #Rayleigh range (approx. length of near-field region), im. part of q-param.
-q0=(1j) * Zr
-print("wavelength=",wavelength)
-print("waist size=",W0)
-print("z0=",z0)
-print("Rayleigh Range =",Zr)
 
 #--------------------------------------------------------------------------------------------------------
-## FUNCTIONS OF CHARACTERISTIC VARIABLES:
+#OPTICAL PARAMETERS PASSED TO CALCULATION
+class Params:
+    
+    def __init__(self,wavelength,w0,z0):
+        self.wavelength = wavelength
+        self.w0 = w0 #Beam waist size
+        self.z0 = z0
+        self.Zr=pi*w0**2/ wavelength #Rayleigh 
+        self.q0=(1j) * self.Zr
+        self.k = 2*pi /( wavelength ) #Wavenumber
+        
+    def getWavelength(self):
+        return self.wavelength
+    
+    def getK(self):
+        return self.k
+    
+    def getW0(self):
+        return self.w0
+    
+    def getZ0(self):
+        return self.z0
+    
+    def getZr(self):
+        return self.Zr
+
+    def getQ0(self):
+        return self.q0
+    
+#--------------------------------------------------------------------------------------------------------
+##DEFAULT CONSTANTS :
+
+defaultParams = Params(1064e-9,0.001,0)
+
+#--------------------------------------------------------------------------------------------------------
+## FUNCTIONS OF OPTICAL PARAMETERS:
 
 
 ## Desc change in the radius of curvature (Rc)
-def Rc(z) :
+def Rc(z,params) :
     #r=z-z0+(Zr**2/(z-z0))
     
     if z==0:
         r=float('inf')
     else :
-        r=z*(1 + ( Zr / z )**2)
+        r=z*(1 + ( params.getZr() / z )**2)
     return (r)
 
 
 
 ## Gouy phase
-def GouyPhase(z,order) :
-    PhaseLag=(order+1)*atan(z/Zr)
-    Gouy=atan((z-z0)/Zr)
+def GouyPhase(z,order,params) :
+    PhaseLag=(order+1)*atan(z/params.getZr() )
+    Gouy=atan((z - params.getZ0()) / params.getZr() )
     return(PhaseLag)
 
 ## Spot size
-def w(z):
-    w=W0*sqrt(1+(z/Zr)**2)
+def w(z,params):
+    w=params.getW0() * sqrt(1 + ( z / params.getZr() )**2)
     return(w)
 
 ## q-parameter
@@ -72,7 +91,7 @@ def q(z):
 
 #--------------------------------------------------------------------------------------------------------
 ##INITIAL INPUT:
-
+#--------------------------------------------------------------------------------------------------------
 
 ##Get user input modes, create 2-d modes array, show array
 def Modes(*argv):
@@ -136,46 +155,95 @@ def ShowModes(modes):
                 if m==cols-1:
                     print(str(n) +"   " + str(List))
             
-
 #--------------------------------------------------------------------------------------------------------
-##SET BASIS
-
-#Without q
-def Basis(wZero):
-    global w0
+##Get X,Y plane for calculation
+class Plane:
     
-    w0 = wZero
-    print("w0 = ",w0)
-
-#Using q-parameter
-def qBasis(qZero):
-    global q0
+    def __init__(self,xmin,xmax,xstep,ymin,ymax,ystep):
+        #minimum and maximum x values with step size
+        self.xmin = xmin
+        self.xmax = xmax 
+        self.xstep = xstep
+        #minimum and maximum y values with step size
+        self.ymin = ymin
+        self.ymax = ymax
+        self.ystep = ystep
+        
+    def getXmin(self):
+        return self.xmin
     
-    q0 = qZero
-    print("q0 = ",q0)
+    def getXmax(self):
+        return self.xmax
+    
+    def getXstep(self):
+        return self.xstep
+    
+    def getYmin(self):
+        return self.ymin
+    
+    def getYmax(self):
+        return self.ymax
+
+    def getYstep(self):
+        return self.ystep
+    
+    
+#--------------------------------------------------------------------------------------------------------
+#DEFAULT PLANE OF CALCULATION
+defaultPlane = Plane(-0.05,0.05,0.0001,-0.05,0.05,0.0001)
 
     
 #--------------------------------------------------------------------------------------------------------
 ##PLANAR CALCULATIONS OF AMPLITUDE AND PHASE
 
 # Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
-def Calculate(xmin,xmax,ymin,ymax,z,modes):
-    
-    plane=[xmin,xmax,ymin,ymax,z]
-    
-    x = np.arange(xmin, xmax, (xmax-xmin)/1000)
-    y = np.arange(ymin, ymax, (ymax-ymin)/1000)
+def Calculate(params,plane,modes,z):
+            
+    x = np.arange(plane.getXmin(), plane.getXmax(), plane.getXstep())
+    y = np.arange(plane.getYmin(), plane.getYmax(), plane.getYstep())
     X, Y = np.meshgrid(x, y)
-    amp = Amplitude(X,Y,z,modes)
+    amp = Amplitude(params,X,Y,z,modes)
     #ph = Phase(X,Y,z,modes)
-    #return([x,y,z,amp,modes,ph]) 
-    return([x,y,z,amp,modes]) 
+    #return([x,y,z,amp,modes,ph])
     
+    f = Calc(params,x,y,z,amp,modes)
+    
+    return f 
+    
+#--------------------------------------------------------------------------------------------------------
+class Calc(object):
+    
+    def __init__(self,params,x,y,z,amp,modes):
+        self.params = params
+        self.x = x
+        self.y = y
+        self.z = z
+        self.amp = amp
+        self.modes = modes
+    
+    def getParams(self):
+        return self.params
+    
+    def getX(self):
+        return self.x
+    
+    def getY(self):
+        return self.y
+    
+    def getZ(self):
+        return self.z
+    
+    def getAmp(self):
+        return self.amp
+    
+    def getModes(self):
+        return self.modes
+
 #--------------------------------------------------------------------------------------------------------
 ##AMPLITUDE CALCULATIONS:
 
 # Amplitutude calculation from w0,zR basis
-def Amplitude(x,y,z,modes) :
+def Amplitude(params,x,y,z,modes) :
     #Unm a sum over modes
     UnmSum=0
     rows = len(modes)   
@@ -195,10 +263,10 @@ def Amplitude(x,y,z,modes) :
             order=n+m
             
             Unm = (2 ** (order - 1) * factorial(n) * factorial(m) * pi) ** (-1 / 2) *\
-            (1 / w(z)) * e ** ((1j) * (order + 1) * GouyPhase(z,order)) *\
-            e ** (-(1j) * (k * (x ** 2 + y ** 2) / (2 * Rc(z))) - ((x ** 2 + y ** 2) / (w(z) ** 2))) *\
-            HermPol(n, x, carrN) *\
-            HermPol(m, y, carrM)
+            (1 / w(z,params)) * e ** ((1j) * (order + 1) * GouyPhase(z,order,params)) *\
+            e ** (-(1j) * (params.getK() * (x ** 2 + y ** 2) / (2 * Rc(z,params))) - ((x ** 2 + y ** 2) / (w(z,params) ** 2))) *\
+            HermPol(n, x, carrN, z, params) *\
+            HermPol(m, y, carrM, z, params)
 
      #Add each to result
             UnmSum+=Unm
@@ -207,7 +275,7 @@ def Amplitude(x,y,z,modes) :
 
 
 # Amplitude from q-parameter basis
-def Amplitude2(x,y,z,modes) :
+def Amplitude2(params,x,y,z,modes) :
 
     #Unm a sum over modes
     UnmSum=0
@@ -228,23 +296,26 @@ def Amplitude2(x,y,z,modes) :
             cmath.sqrt( 1 / (2**n * factorial(n) * W0) ) * \
             cmath.sqrt( q0 / q(z) ) * \
             ( ( q0 * np.conjugate(q(z)) ) / ( np.conjugate(q0) * q(z) ) )**n/2 * \
-            HermPol(n, x, carrN) * \
+            HermPol(n, x, carrN, z, params) * \
             cmath.exp( (-( (1j) * k * x**2 )/( 2 * q(z))) ) * \
             (2/pi)**1/4 * \
             cmath.sqrt( 1 / (2**m * factorial(m) * W0) ) * \
             cmath.sqrt(q0 / q(z) ) * \
             ( ( q0 * np.conjugate(q(z) ) )/ ( np.conjugate(q0) * q(z) ) )**m/2 * \
-            HermPol(m, y, carrM) * \
+            HermPol(m, y, carrM, z, params) * \
             cmath.exp( (-( (1j) * k * y**2 )/( 2 * q(z))) )
 
             UnmSum+=Unm
                     
     return((UnmSum))
 
-#Get herm polys from modes
-def HermPol(mode, coord, carr):
+##Get herm polys from modes
+#mode: working mode (as Calculate iterates through n,m grid
+#coord: x or y
+#carr: coefficient array
+def HermPol(mode, coord, carr, z,params):
    
-    herm = hermval(coord*sqrt(2)/w(z),carr)
+    herm = hermval(coord*sqrt(2) / w(z,params),carr)
     return herm
 
 
@@ -254,8 +325,8 @@ def HermPol(mode, coord, carr):
 def IntensitySliceX(f,y):
     fig=plt.figure()
     #calc at from z and modes in f
-    amp=Amplitude(f[0],y,f[2],f[4])
-    plt.semilogy(f[0],abs(amp**2))
+    amp=Amplitude(f.getParams(),f.getX(),y,f.getZ(),f.getModes())
+    plt.plot(f.getX(),abs(amp**2))
     plt.xlabel('X')
     plt.ylabel('Intensity')
     plt.grid()
@@ -266,8 +337,8 @@ def IntensitySliceX(f,y):
 def IntensitySliceY(f,x):
     fig=plt.figure()
     #calc at from z and modes in f
-    amp=Amplitude(x,f[1],f[2],f[4])
-    plt.semilogy(f[1],abs(amp**2))
+    amp=Amplitude(f.getParams(),x,f.getY(),f.getZ(),f.getModes())
+    plt.plot(f.getY(),abs(amp**2))
     plt.xlabel('Y')
     plt.ylabel('Intensity')
     plt.grid()
@@ -276,7 +347,7 @@ def IntensitySliceY(f,x):
     
 def Contour(f):    
     fig, ax = plt.subplots()
-    cs = plt.contourf(f[0],f[1],abs(f[3]**2))
+    cs = plt.contourf(f.getX(),f.getY(),abs(f.getAmp()**2))
     #cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
     cbar = fig.colorbar(cs)
     plt.title('Intensity')
@@ -293,7 +364,7 @@ def IntensityPlot(f):
     fig = plt.figure()
     ax = Axes3D(fig)
 
-    ax.plot_surface(f[0], f[1], abs(f[3])**2, rstride=1, cstride=1,
+    ax.plot_surface(f.getX(), f.getY(), abs(f.getAmp())**2, rstride=1, cstride=1,
                cmap='viridis', edgecolor='none');
 # Labels and render
     plt.xlabel("x")
@@ -377,10 +448,10 @@ def Phase2(x,y,z,modes):
 #--------------------------------------------------------------------------------------------------------
 ## Phase Map
 def PhaseMap(f):
-    x = f[0]
-    y = f[1]
-    z = f[2]
-    modes = f[4]
+    x = f.getX()
+    y = f.getY()
+    z = f.getZ()
+    modes = f.getModes()
     x, y = np.meshgrid(x, y)
     ph = np.vectorize(Phase)
     
@@ -417,27 +488,42 @@ def PhaseMap2(z):
     
 def PhaseContour(f):
     fig, ax = plt.subplots()
-    cs = plt.contourf(f[0],f[1],f[5])
+    cs = plt.contourf(f.getX(),f.getY(),f[5])
     cbar = fig.colorbar(cs)
     plt.title('Phase (deg.)')
     
 def PhaseSliceX(f,y):
     fig=plt.figure()
     #calc at from z and modes in f
-    phase=Phase(f[0],y,f[2],f[4])
-    plt.y(f[0],phase)
+    phase=Phase(f.getX(),y,f.getZ(),f[4])
+    plt.y(f.getX(),phase)
     plt.xlabel('X')
     plt.ylabel('Intensity')
     plt.grid()
     
     
 #=========================================================================================================
+##PRINTING DEFAULTS AND USAGE
 
-print("\n\nUsage:\nMODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2)) \
+print "DEFAULT PARAMS (PauLisa.default)\
+\n wavelength =", defaultParams.wavelength,"\
+m\n waist size(w0) =", defaultParams.w0,"\
+m\n z0 =", defaultParams.z0,"\
+m\n Rayleigh Range (Zr) =", defaultParams.Zr,"m"
+
+print "\n\nDEFAULT X,Y PLANE (PauLisa.defaultPlane)\
+\n x: ", defaultPlane.xmin,"m to ", defaultPlane.xmax,"m with ", defaultPlane.xstep,"m step.\
+\n y: ", defaultPlane.ymin,"m to ", defaultPlane.ymax,"m with ", defaultPlane.ystep,"m step."
+
+print("\n\n\n\nFunction Usage:\
+\nPARAMETERS=PauLisa.Params(wavelength,w0,z0)\
+\n\nPLANE=PauLisa.Plane(xmin,xmax,xstep,ymin,ymax,ystep) \
+\n\nMODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2)) \
 \nPauLisa.ShowModes(MODESARRAY) \
-\n\n\nPauLisa.Amplitude(x,y,z,MODES) \
-\nAMPLITUDES=PauLisa.Calculate(xmin,xmax,ymin,ymax,z,MODESARRAY) \
-\nPauLisa.Contour(AMPLITUDES) \
+\n\n\nAMPLITUDES=PauLisa.Calculate(PARAMS,PLANE,MODESARRAY,z) \
+\nPauLisa.Amplitude(x,y,z,MODES) \
+\n\nPauLisa.Contour(AMPLITUDES) \
 \nPauLisa.IntensitySliceX(AMPLITUDES,y) \
 \nPauLisa.IntensitySliceY(AMPLITUDES,x) \
 \n\nPauLisa.Phase(x,y,z,MODES)")
+
