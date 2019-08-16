@@ -41,6 +41,11 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
 ### PHASE CALCULATION     
  PauLisa.Phase(PARAMS, x, y, z, MODES) 
 
+### PHASE PLOTTING     
+ PauLisa.PhaseContour(RESULT)     
+ PauLisa.PhaseSliceX(RESULT, y)     
+ PauLisa.PhaseSliceY(RESULT, x) 
+ 
 ## Ex. Run
 import PauLisa as pl
 
