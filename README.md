@@ -47,6 +47,8 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
  PauLisa.PhaseSliceY(RESULT, x) 
  
 ## Ex. Run
+All-caps are example user-defined functions.
+
 import PauLisa as pl
 
 params = pl.Params(1.064e-6, 0.001, 0)
