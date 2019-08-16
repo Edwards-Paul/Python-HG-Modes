@@ -229,30 +229,32 @@ def Calculate(params, plane, modes, z):
     #y = np.arange(plane.getYmin(), plane.getYmax(), plane.getYstep())
     X, Y = np.meshgrid(plane.getX(), plane.getY())
     amp = Amplitude(params, X, Y, z, modes)
-    # ph = Phase(X,Y,z,modes)
+    phase = Phase(params, X, Y, z, modes)
     # return([x,y,z,amp,modes,ph])
 
-    f = Calc(params, plane, modes, z, amp)
+    f = Result(params, plane, modes, z, amp, phase)
 
     return f
 
 
 # --------------------------------------------------------------------------------------------------------
-class Calc:
+class Result:
 
-    def __init__(self, params, plane, modes, z, amp):
+    def __init__(self, params, plane, modes, z, amp, phase):
         self.params = params
         self.plane = plane
         self.z = z
         self.amp = amp
         self.modes = modes
+        self.phase = phase
 
     def __str__(self):
-        return '{}{}\n\n{}{}\n\n{}{}\n\n{}{}\n\n{}{}'.format('PARAMS: ',self.params,
+        return '{}{}\n\n{}{}\n\n{}{}\n\n{}{}\n\n{}{}\n\n{}{}'.format('PARAMS: ',self.params,
                                                              'PLANE: ',self.plane,
                                                              'MODES: ',self.modes,
                                                              'Z: ',self.z,
-                                                             'AMP: ', self.amp)
+                                                             'AMP: ', self.amp,
+                                                             'PHASE: ', self.phase)
 
     def getParams(self):
         return self.params
@@ -265,6 +267,9 @@ class Calc:
 
     def getAmp(self):
         return self.amp
+
+    def getPhase(self):
+        return self.phase
 
     def getModes(self):
         return self.modes
@@ -430,7 +435,7 @@ def Contour(f):
 ## PHASE CALCULATIONS:
 
 def Phase(params, x, y, z, modes):
-    return degrees(cmath.phase(Amplitude(params, x, y, z, modes)))
+    return (np.angle(Amplitude(params, x, y, z, modes),deg = True))
 
 
 # def Phase2(params, x, y, z, modes):
@@ -481,20 +486,30 @@ def Phase(params, x, y, z, modes):
 
 def PhaseContour(f):
     fig, ax = plt.subplots()
-    cs = plt.contourf(f.getX(), f.getY(), f[5])
+    cs = plt.contourf(f.plane.getX(), f.plane.getY(), f.getPhase())
+    # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
     cbar = fig.colorbar(cs)
-    plt.title('Phase (deg.)')
+    plt.title('Phase')
 
 
 def PhaseSliceX(f, y):
     fig = plt.figure()
     # calc at from z and modes in f
-    phase = Phase(f.getX(), y, f.getZ(), f[4])
-    plt.y(f.getX(), phase)
+    phase = Phase(f.getParams(), f.plane.getX(), y, f.getZ(), f.getModes())
+    plt.plot(f.plane.getX(), phase)
     plt.xlabel('X')
-    plt.ylabel('Intensity')
+    plt.ylabel('deg.')
     plt.grid()
 
+def PhaseSliceY(f, x):
+    fig = plt.figure()
+    # Calc amp from z and modes in f
+    amp = Phase(f.getParams(), f.plane.getX(), x, f.getZ(), f.getModes())
+    plt.plot(f.plane.getY(), f.getPhase())
+    plt.xlabel('Y')
+    plt.ylabel('deg..')
+    plt.grid()
+    # plt.savefig('IntCheck.pdf')
 
 # =========================================================================================================
 ## PRINTING DEFAULTS AND USAGE
@@ -518,13 +533,15 @@ print("\n\n\nFunction Usage:\
     \n MODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2)) \
     \n PauLisa.ShowModes(MODES) \
 \n\nAMPLITUDE CALCULATIONS \
-    \n Calculate amplitude over plane: AMPLITUDES=PauLisa.Calculate(PARAMS,PLANE,MODES,z) \
+    \n Calculate amplitude over plane: RESULT=PauLisa.Calculate(PARAMS,PLANE,MODES,z) \
 \n Simple calculation from coordinates: PauLisa.Amplitude(PARAMS,x,y,z,MODES) \
 \n\nINTENSITY PLOTTING \
-    \n PauLisa.Contour(AMPLITUDES) \
-    \n PauLisa.IntensitySliceX(AMPLITUDES,y) \
-    \n PauLisa.IntensitySliceY(AMPLITUDES,x) \
-\n\nPHASE CALCLATION \
+    \n PauLisa.Contour(RESULT) \
+    \n PauLisa.IntensitySliceX(RESULT,y) \
+    \n PauLisa.IntensitySliceY(RESULT,x) \
+\n\nPHASE CALCULATION \
     \n PauLisa.Phase(PARAMS,x,y,z,MODES) \
 \n\nPHASE PLOTTING \
-    \n")
+    \n PauLisa.PhaseContour(RESULT) \
+    \n PauLisa.PhaseSliceX(RESULT,y)\
+    \n PauLisa.PhaseSliceY(RESULT,x)")
