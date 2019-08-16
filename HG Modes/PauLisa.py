@@ -514,15 +514,15 @@ def PhaseSliceY(f, x):
 # =========================================================================================================
 ## PRINTING DEFAULTS AND USAGE
 
-print "DEFAULT PARAMS (PauLisa.defaultParams)\
+print("DEFAULT PARAMS (PauLisa.defaultParams)\
 \n wavelength =", defaultParams.wavelength, "\
 m\n waist size(w0) =", defaultParams.w0, "\
 m\n z0 =", defaultParams.z0, "\
-m\n Rayleigh Range (Zr) =", defaultParams.Zr, "m"
+m\n Rayleigh Range (Zr) =", defaultParams.Zr, "m")
 
-print "\n\nDEFAULT X,Y PLANE (PauLisa.defaultPlane)\
+print("\n\nDEFAULT X,Y PLANE (PauLisa.defaultPlane)\
 \n x: ", defaultPlane.xmin, "m to ", defaultPlane.xmax, "m with ", defaultPlane.xstep, "m step.\
-\n y: ", defaultPlane.ymin, "m to ", defaultPlane.ymax, "m with ", defaultPlane.ystep, "m step."
+\n y: ", defaultPlane.ymin, "m to ", defaultPlane.ymax, "m with ", defaultPlane.ystep, "m step.")
 
 print("\n\n\nFunction Usage:\
 \nOPTICAL PARAMETERS DEFINITION \
