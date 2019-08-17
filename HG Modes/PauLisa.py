@@ -12,8 +12,6 @@ from math import pi, log, exp, sin, cos, atan, sqrt, e, factorial, radians, degr
 from scipy.special import jn
 from numpy.polynomial.hermite import hermval
 from scipy import integrate
-from array import *
-import operator
 import cmath
 import numpy as np
 # Plot imports
@@ -358,36 +356,85 @@ def HermPol(mode, coord, carr, z, params):
 
 # These IntensitySlice's require recalculation at x and y plane.
 # Plotting calc at, e.g., halfway points in x-y grid for x=0 (center col.) or y=0 (center row) accomplishes the same.
-def IntensitySliceX(y, *argv):
+def IntensitySliceX(y, *argv, **kwargs):
+
     fig = plt.figure()
+    ax = fig.add_subplot(111)
+
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getX(), abs(amp ** 2), label = i+1)
+
+    # optionally set limits. default is last result's range
+    if ('lim' in kwargs):
+        plt.xlim(kwargs['lim'])
+
+    plt.title('Intensity along x')
     plt.xlabel('X (m)')
     plt.ylabel('Intensity')
     plt.legend(loc='upper right')
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
+# def x_fmt(xlim):
+#   # # Setting the x-axis notation as 10^-3
+    # for i in plt.xlim():
+    #     if  1e-6 < abs(i) < 1e-3:
+    #         ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.11f"))
+    #         ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3))
+    #     if abs(i) < 1e-6:
+    #         ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.11f"))
+    #         ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6))
 
-def IntensitySliceY(x, *argv):
+# class OOMFormatter(matplotlib.ticker.ScalarFormatter):
+#     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
+#         self.oom = order
+#         self.fformat = fformat
+#         matplotlib.ticker.ScalarFormatter.__init__(self,useOffset=offset,useMathText=mathText)
+#     def _set_orderOfMagnitude(self, nothing):
+#         self.orderOfMagnitude = self.oom
+#     def _set_format(self, vmin, vmax):
+#         self.format = self.fformat
+#         if self._useMathText:
+#             self.format = '$%s$' % matplotlib.ticker._mathdefault(self.format)
+
+def IntensitySliceY(x, *argv, **kwargs):
+
     fig = plt.figure()
+
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getY(), abs(amp ** 2), label= i+1)
+
+    # optionally set limits. default is last result's range
+    if ('lim' in kwargs):
+        plt.xlim(kwargs['lim'])
+
     plt.xlabel('Y (m)')
     plt.ylabel('Intensity')
     plt.legend(loc='upper right')
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
 
-def Contour(f):
+def Contour(f, **kwargs):
     fig, ax = plt.subplots()
     cs = plt.contourf(f.plane.getX(), f.plane.getY(), abs(f.getAmp() ** 2))
     # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
+    # optionally set limits. default is last result's range
+    if ('xlim' in kwargs):
+        plt.xlim(kwargs['xlim'])
+        # optionally set limits. default is last result's range
+    if ('ylim' in kwargs):
+        plt.ylim(kwargs['ylim'])
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
     cbar = fig.colorbar(cs)
     plt.title('Intensity')
 
@@ -486,27 +533,39 @@ def Phase(params, x, y, z, modes):
 #     plt.show()
 
 
-def PhaseContour(f):
+def PhaseContour(f,**kwargs):
     fig, ax = plt.subplots()
     cs = plt.contourf(f.plane.getX(), f.plane.getY(), f.getPhase())
     # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
+    if ('xlim' in kwargs):
+        plt.xlim(kwargs['xlim'])
+        # optionally set limits. default is last result's range
+    if ('ylim' in kwargs):
+        plt.ylim(kwargs['ylim'])
+    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.xlabel('x (m)')
+    plt.ylabel('y (m)')
     cbar = fig.colorbar(cs)
     plt.title('Phase')
 
 
-def PhaseSliceX(y, *argv):
+def PhaseSliceX(y, *argv, **kwargs):
     fig = plt.figure()
     # calc at from z and modes in f (*argv)
 
     for i in range(0, len(argv)):
         phase = Phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getX(), phase, i+1)
+    # optionally, set limits. default is last result
+    if ('lim' in kwargs):
+        plt.xlim(kwargs['lim'])
     plt.xlabel('X')
     plt.ylabel('deg.')
     plt.legend(loc='upper right')
     plt.grid()
 
-def PhaseSliceY(x, *argv):
+def PhaseSliceY(x, *argv, **kwargs):
     fig = plt.figure()
     # Calc amp from z and modes in f
     amp = Phase(f.getParams(), f.plane.getX(), x, f.getZ(), f.getModes())
@@ -514,6 +573,8 @@ def PhaseSliceY(x, *argv):
     for i in range(0, len(argv)):
         phase = Phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getY(), phase, i+1)
+    if ('lim' in kwargs):
+        plt.xlim(kwargs['lim'])
     plt.xlabel('Y')
     plt.ylabel('deg.')
     plt.legend(loc='upper right')
