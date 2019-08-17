@@ -34,19 +34,19 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
  Simple calculation from coordinates: PauLisa.Amplitude(PARAMS, x, y, z, MODES) 
 
 ### INTENSITY PLOTTING     
- PauLisa.Contour(RESULT)     
- PauLisa.IntensitySliceX(y, *RESULT)     
- PauLisa.IntensitySliceY(x, *RESULT) 
+ PauLisa.Contour(RESULT, \*\*xlim[min,max],*\*ylim[min,max])     
+ PauLisa.IntensitySliceX(y, *RESULT, *\*lim[min,max])     
+ PauLisa.IntensitySliceY(x, *RESULT, *\*lim[min,max]) 
 
 ### PHASE CALCULATION     
  PauLisa.Phase(PARAMS, x, y, z, MODES) 
 
 ### PHASE PLOTTING     
- PauLisa.PhaseContour(RESULT)     
- PauLisa.PhaseSliceX(y, *RESULT)     
- PauLisa.PhaseSliceY(x, *RESULT) 
+ PauLisa.PhaseContour(RESULT, \*\*xlim[min,max],*\*ylim[min,max])     
+ PauLisa.PhaseSliceX(y, *RESULT, *\*lim[min,max])     
+ PauLisa.PhaseSliceY(x, *RESULT, *\*lim[min,max]) 
  
- #### **VARNAME represents a variable number of args of that type.*
+ #### **VARNAME represents vargs of that type. **VARNAME optional kwarg.
  
 ## Ex. Run
 All-caps are example user-defined functions.
