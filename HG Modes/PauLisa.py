@@ -169,27 +169,26 @@ def ShowModes(modes):
 ##Get X,Y plane for calculation
 class Plane:
 
-    def __init__(self, xmin, xmax, xstep, ymin, ymax, ystep):
-        # minimum and maximum x values with step size
+    def __init__(self, xmin, xmax, xpoints, ymin, ymax, ypoints):
+        # minimum and maximum x values with # points
         self.xmin = xmin
         self.xmax = xmax
-        self.xstep = xstep
-        # minimum and maximum y values with step size
+        self.xpoints = xpoints
+        # minimum and maximum y values with # points
         self.ymin = ymin
         self.ymax = ymax
-        self.ystep = ystep
-        # get x,y arrays from values above to pass for calculation
-        self.x = np.arange(xmin, xmax, xstep)
-        self.y = np.arange(ymin, ymax, ystep)
-        #X, Y = np.meshgrid(x, y)
+        self.ypoints = ypoints
+
 
     def __str__(self):
-        return '\n{}{},{}{},{}{}\n{}{},{}{},{}{}'.format('xmin=',self.xmin,
+        return '\n{}{},{}{},{}{},{}{}\n{}{},{}{},{}{},{}{}'.format('xmin=',self.xmin,
                                                            'xmax=',self.xmax,
-                                                           'xstep=',self.xstep,
+                                                           'xpoints=',self.xpoints,
+                                                         'x step size = ', abs(self.xmax-self.xmin)/self.xpoints,
                                                            'ymin=',self.ymin,
                                                            'ymax=',self.ymax,
-                                                           'ystep=',self.ystep)
+                                                           'ypoints=',self.ypoints,
+                                                         'y step size = ', abs(self.ymax-self.ymin)/self.ypoints)
 
     def getXmin(self):
         return self.xmin
@@ -197,8 +196,8 @@ class Plane:
     def getXmax(self):
         return self.xmax
 
-    def getXstep(self):
-        return self.xstep
+    def getXpoints(self):
+        return self.xpoints
 
     def getYmin(self):
         return self.ymin
@@ -206,18 +205,19 @@ class Plane:
     def getYmax(self):
         return self.ymax
 
-    def getYstep(self):
-        return self.ystep
+    def getYpoints(self):
+        return self.ypoints
 
+#x,y vectors from limits and # points
     def getX(self):
-        return self.x
+        return np.arange(self.xmin, self.xmax, abs(self.xmax-self.xmin)/self.xpoints)
 
     def getY(self):
-        return self.y
+        return np.arange(self.ymin, self.ymax, abs(self.ymax-self.ymin)/self.ypoints)
 
 # --------------------------------------------------------------------------------------------------------
 # DEFAULT PLANE OF CALCULATION
-defaultPlane = Plane(-0.05, 0.05, 0.0001, -0.05, 0.05, 0.0001)
+defaultPlane = Plane(-0.05, 0.05, 1000, -0.05, 0.05, 1000)
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -225,16 +225,14 @@ defaultPlane = Plane(-0.05, 0.05, 0.0001, -0.05, 0.05, 0.0001)
 
 # Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
 def Calculate(params, plane, modes, z):
-    #x = np.arange(plane.getXmin(), plane.getXmax(), plane.getXstep())
-    #y = np.arange(plane.getYmin(), plane.getYmax(), plane.getYstep())
+
     X, Y = np.meshgrid(plane.getX(), plane.getY())
     amp = Amplitude(params, X, Y, z, modes)
     phase = Phase(params, X, Y, z, modes)
-    # return([x,y,z,amp,modes,ph])
 
     f = Result(params, plane, modes, z, amp, phase)
 
-    return f
+    return (f)
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -360,24 +358,28 @@ def HermPol(mode, coord, carr, z, params):
 
 # These IntensitySlice's require recalculation at x and y plane.
 # Plotting calc at, e.g., halfway points in x-y grid for x=0 (center col.) or y=0 (center row) accomplishes the same.
-def IntensitySliceX(f, y):
+def IntensitySliceX(y, *argv):
     fig = plt.figure()
     # Calc amp from z and modes in f
-    amp = Amplitude(f.getParams(), f.plane.getX(), y, f.getZ(), f.getModes())
-    plt.plot(f.plane.getX(), abs(amp ** 2))
-    plt.xlabel('X')
+    for i in range(0, len(argv)):
+        amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getX(), abs(amp ** 2), label = i+1)
+    plt.xlabel('X (m)')
     plt.ylabel('Intensity')
+    plt.legend(loc='upper right')
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
 
-def IntensitySliceY(f, x):
+def IntensitySliceY(x, *argv):
     fig = plt.figure()
     # Calc amp from z and modes in f
-    amp = Amplitude(f.getParams(), x, f.plane.getY(), f.getZ(), f.getModes())
-    plt.plot(f.plane.getY(), abs(amp ** 2))
-    plt.xlabel('Y')
+    for i in range(0, len(argv)):
+        amp = Amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getY(), abs(amp ** 2), label= i+1)
+    plt.xlabel('Y (m)')
     plt.ylabel('Intensity')
+    plt.legend(loc='upper right')
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
@@ -492,22 +494,29 @@ def PhaseContour(f):
     plt.title('Phase')
 
 
-def PhaseSliceX(f, y):
+def PhaseSliceX(y, *argv):
     fig = plt.figure()
-    # calc at from z and modes in f
-    phase = Phase(f.getParams(), f.plane.getX(), y, f.getZ(), f.getModes())
-    plt.plot(f.plane.getX(), phase)
+    # calc at from z and modes in f (*argv)
+
+    for i in range(0, len(argv)):
+        phase = Phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getX(), phase, i+1)
     plt.xlabel('X')
     plt.ylabel('deg.')
+    plt.legend(loc='upper right')
     plt.grid()
 
-def PhaseSliceY(f, x):
+def PhaseSliceY(x, *argv):
     fig = plt.figure()
     # Calc amp from z and modes in f
     amp = Phase(f.getParams(), f.plane.getX(), x, f.getZ(), f.getModes())
     plt.plot(f.plane.getY(), f.getPhase())
+    for i in range(0, len(argv)):
+        phase = Phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getY(), phase, i+1)
     plt.xlabel('Y')
-    plt.ylabel('deg..')
+    plt.ylabel('deg.')
+    plt.legend(loc='upper right')
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
@@ -515,20 +524,20 @@ def PhaseSliceY(f, x):
 ## PRINTING DEFAULTS AND USAGE
 
 print("DEFAULT PARAMS (PauLisa.defaultParams)\
-\n wavelength =", defaultParams.wavelength, "\
-m\n waist size(w0) =", defaultParams.w0, "\
-m\n z0 =", defaultParams.z0, "\
-m\n Rayleigh Range (Zr) =", defaultParams.Zr, "m")
+\n wavelength =" + str(defaultParams.wavelength) + "\
+m\n waist size(w0) =" + str(defaultParams.w0) + "\
+m\n z0 ="+ str(defaultParams.z0)+ "\
+m\n Rayleigh Range (Zr) ="+ str(defaultParams.Zr)+ "m")
 
 print("\n\nDEFAULT X,Y PLANE (PauLisa.defaultPlane)\
-\n x: ", defaultPlane.xmin, "m to ", defaultPlane.xmax, "m with ", defaultPlane.xstep, "m step.\
-\n y: ", defaultPlane.ymin, "m to ", defaultPlane.ymax, "m with ", defaultPlane.ystep, "m step.")
+\n x: "+ str(defaultPlane.xmin)+ "m to "+ str(defaultPlane.xmax)+ "m with "+ str(defaultPlane.xpoints)+ " points.\
+\n y: "+ str(defaultPlane.ymin)+ "m to "+ str(defaultPlane.ymax)+ "m with "+ str(defaultPlane.ypoints)+ " points.")
 
 print("\n\n\nFunction Usage:\
 \nOPTICAL PARAMETERS DEFINITION \
     \n PARAMETERS=PauLisa.Params(wavelength,w0,z0)\
 \n\nPLANE OF PROPAGATION DEFINITION \
-    \n PLANE=PauLisa.Plane(xmin,xmax,xstep,ymin,ymax,ystep) \
+    \n PLANE=PauLisa.Plane(xmin,xmax,xpoints,ymin,ymax,ypoints) \
 \n\nMODES DEFNITION AND DISPLAY \
     \n MODESARRAY=PauLisa.Modes((n1,m1,c1),(n2,m2,c2)) \
     \n PauLisa.ShowModes(MODES) \
@@ -537,11 +546,12 @@ print("\n\n\nFunction Usage:\
 \n Simple calculation from coordinates: PauLisa.Amplitude(PARAMS,x,y,z,MODES) \
 \n\nINTENSITY PLOTTING \
     \n PauLisa.Contour(RESULT) \
-    \n PauLisa.IntensitySliceX(RESULT,y) \
-    \n PauLisa.IntensitySliceY(RESULT,x) \
+    \n PauLisa.IntensitySliceX(y, *RESULT) \
+    \n PauLisa.IntensitySliceY(x, *RESULT) \
 \n\nPHASE CALCULATION \
     \n PauLisa.Phase(PARAMS,x,y,z,MODES) \
 \n\nPHASE PLOTTING \
     \n PauLisa.PhaseContour(RESULT) \
-    \n PauLisa.PhaseSliceX(RESULT,y)\
-    \n PauLisa.PhaseSliceY(RESULT,x)")
+    \n PauLisa.PhaseSliceX(y,*RESULT)\
+    \n PauLisa.PhaseSliceY(x,*RESULT)\
+\n\n *VARNAME represents variable number of args of specified type.")
