@@ -8,7 +8,7 @@ Import PauLisa.py to JN.
 
 User defines a *Params* object of optical parameters (e.g., beam waist, q-parameter, wavelength) or uses PauLisa.defaultParams.
 
-User defines an XY plane object, *Plane*, for calculations (i.e., x/y min/max values, x/y step size) or uses PauLisa.defaultPlane.
+User defines an XY plane object, *Plane*, for calculations (i.e., x/y min/max values, x/y # of points) or uses PauLisa.defaultPlane.
 
 User defines HG modes using nonzero coefficients(c) and HG modes(n, m) as (n, m, c).
 
@@ -22,7 +22,7 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
  PARAMETERS=PauLisa.Params(wavelength, w0, z0)
 
 ### XY PLANE OF CALCULATION DEFINITION     
- PLANE=PauLisa.Plane(xmin, xmax, xstep, ymin, ymax, ystep) 
+ PLANE=PauLisa.Plane(xmin, xmax, xpoints, ymin, ymax, ypoints) 
 
 ### MODES DEFINITION AND DISPLAY     
  MODES=PauLisa.Modes((n1, m1, c1),(n2, m2, c2))     
@@ -35,16 +35,18 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
 
 ### INTENSITY PLOTTING     
  PauLisa.Contour(RESULT)     
- PauLisa.IntensitySliceX(RESULT, y)     
- PauLisa.IntensitySliceY(RESULT, x) 
+ PauLisa.IntensitySliceX(y, *RESULT)     
+ PauLisa.IntensitySliceY(x, *RESULT) 
 
 ### PHASE CALCULATION     
  PauLisa.Phase(PARAMS, x, y, z, MODES) 
 
 ### PHASE PLOTTING     
  PauLisa.PhaseContour(RESULT)     
- PauLisa.PhaseSliceX(RESULT, y)     
- PauLisa.PhaseSliceY(RESULT, x) 
+ PauLisa.PhaseSliceX(y, *RESULT)     
+ PauLisa.PhaseSliceY(x, *RESULT) 
+ 
+ #### **VARNAME represents a variable number of args of that type.*
  
 ## Ex. Run
 All-caps are example user-defined functions.
