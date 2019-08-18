@@ -358,7 +358,7 @@ def HermPol(mode, coord, carr, z, params):
 # Plotting calc at, e.g., halfway points in x-y grid for x=0 (center col.) or y=0 (center row) accomplishes the same.
 def IntensitySliceX(y, *argv, **kwargs):
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6,6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
@@ -367,42 +367,33 @@ def IntensitySliceX(y, *argv, **kwargs):
         plt.plot(argv[i].plane.getX(), abs(amp ** 2), label = i+1)
 
     # optionally set limits. default is last result's range
-    if ('lim' in kwargs):
-        plt.xlim(kwargs['lim'])
+    if ('xlim' in kwargs):
+        plt.xlim(kwargs['xlim'])
 
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+    # format x axis to mm or microns depending on order of x limits
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
     plt.title('Intensity along x')
     plt.xlabel('X (m)')
     plt.ylabel('Intensity')
     plt.legend(loc='upper right')
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
+    # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
-# def x_fmt(xlim):
-#   # # Setting the x-axis notation as 10^-3
-    # for i in plt.xlim():
-    #     if  1e-6 < abs(i) < 1e-3:
-    #         ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.11f"))
-    #         ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3))
-    #     if abs(i) < 1e-6:
-    #         ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.11f"))
-    #         ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6))
-
-# class OOMFormatter(matplotlib.ticker.ScalarFormatter):
-#     def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
-#         self.oom = order
-#         self.fformat = fformat
-#         matplotlib.ticker.ScalarFormatter.__init__(self,useOffset=offset,useMathText=mathText)
-#     def _set_orderOfMagnitude(self, nothing):
-#         self.orderOfMagnitude = self.oom
-#     def _set_format(self, vmin, vmax):
-#         self.format = self.fformat
-#         if self._useMathText:
-#             self.format = '$%s$' % matplotlib.ticker._mathdefault(self.format)
 
 def IntensitySliceY(x, *argv, **kwargs):
 
-    fig = plt.figure()
+    fig = plt.figure(figsize=(6,6))
+    ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
@@ -410,19 +401,31 @@ def IntensitySliceY(x, *argv, **kwargs):
         plt.plot(argv[i].plane.getY(), abs(amp ** 2), label= i+1)
 
     # optionally set limits. default is last result's range
-    if ('lim' in kwargs):
-        plt.xlim(kwargs['lim'])
+    if ('xlim' in kwargs):
+        plt.xlim(kwargs['xlim'])
 
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
+    plt.title('Intensity along y')
     plt.xlabel('Y (m)')
     plt.ylabel('Intensity')
     plt.legend(loc='upper right')
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
 
 def Contour(f, **kwargs):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(7,6))
     cs = plt.contourf(f.plane.getX(), f.plane.getY(), abs(f.getAmp() ** 2))
     # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
     # optionally set limits. default is last result's range
@@ -431,14 +434,48 @@ def Contour(f, **kwargs):
         # optionally set limits. default is last result's range
     if ('ylim' in kwargs):
         plt.ylim(kwargs['ylim'])
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-    plt.xlabel('x (m)')
-    plt.ylabel('y (m)')
+
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+    ax.yaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0), mathText=True)
+
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
+    for i in plt.ylim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
+
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
     cbar = fig.colorbar(cs)
     plt.title('Intensity')
 
-
+# formatting axes
+class OOMFormatter(matplotlib.ticker.ScalarFormatter):
+    def __init__(self, order=0, fformat="%1.1f", offset=True, mathText=True):
+        self.oom = order
+        self.fformat = fformat
+        matplotlib.ticker.ScalarFormatter.__init__(self,useOffset=offset,useMathText=mathText)
+    def _set_orderOfMagnitude(self, nothing):
+        self.orderOfMagnitude = self.oom
+    def _set_format(self, vmin, vmax):
+        self.format = self.fformat
+        if self._useMathText:
+            self.format = '$%s$' % matplotlib.ticker._mathdefault(self.format)
 # --------------------------------------------------------------------------------------------------------
 ## 3D PLOT:
 #
@@ -542,8 +579,30 @@ def PhaseContour(f,**kwargs):
         # optionally set limits. default is last result's range
     if ('ylim' in kwargs):
         plt.ylim(kwargs['ylim'])
-    plt.ticklabel_format(style='sci', axis='x', scilimits=(0, 0))
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+    ax.yaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
+    ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0), mathText=True)
+    #scale x
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+    #scale y
+    for i in plt.ylim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
     plt.xlabel('x (m)')
     plt.ylabel('y (m)')
     cbar = fig.colorbar(cs)
@@ -552,32 +611,64 @@ def PhaseContour(f,**kwargs):
 
 def PhaseSliceX(y, *argv, **kwargs):
     fig = plt.figure()
+    ax = fig.add_subplot(111)
     # calc at from z and modes in f (*argv)
 
     for i in range(0, len(argv)):
         phase = Phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getX(), phase, i+1)
+        plt.plot(argv[i].plane.getX(), phase, label=i+1)
     # optionally, set limits. default is last result
-    if ('lim' in kwargs):
-        plt.xlim(kwargs['lim'])
+    if ('xlim' in kwargs):
+        plt.xlim(kwargs['xlim'])
+
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+    #scale x
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
+    plt.title('Phase along x')
     plt.xlabel('X')
     plt.ylabel('deg.')
     plt.legend(loc='upper right')
+
     plt.grid()
 
 def PhaseSliceY(x, *argv, **kwargs):
     fig = plt.figure()
-    # Calc amp from z and modes in f
-    amp = Phase(f.getParams(), f.plane.getX(), x, f.getZ(), f.getModes())
-    plt.plot(f.plane.getY(), f.getPhase())
+    ax = fig.add_subplot(111)
+    # Calc phase from z and modes in f
+
     for i in range(0, len(argv)):
         phase = Phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), phase, i+1)
+        plt.plot(argv[i].plane.getY(), phase, label=i+1)
+
     if ('lim' in kwargs):
         plt.xlim(kwargs['lim'])
-    plt.xlabel('Y')
+
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
+    #scale x
+    for i in plt.xlim():
+        if  1e-5 < abs(i) < 1e-2:
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), mathText=True)
+        if abs(i) <= 1e-5:
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
+            break
+
+    plt.title('Phase along y')
+    plt.xlabel('Y (m)')
     plt.ylabel('deg.')
     plt.legend(loc='upper right')
+    
     plt.grid()
     # plt.savefig('IntCheck.pdf')
 
@@ -606,13 +697,13 @@ print("\n\n\nFunction Usage:\
     \n Calculate amplitude over plane: RESULT=PauLisa.Calculate(PARAMS,PLANE,MODES,z) \
 \n Simple calculation from coordinates: PauLisa.Amplitude(PARAMS,x,y,z,MODES) \
 \n\nINTENSITY PLOTTING \
-    \n PauLisa.Contour(RESULT) \
-    \n PauLisa.IntensitySliceX(y, *RESULT) \
-    \n PauLisa.IntensitySliceY(x, *RESULT) \
+    \n PauLisa.Contour(RESULT, **xlim,**ylim) \
+    \n PauLisa.IntensitySliceX(y, *RESULT, **xlim) \
+    \n PauLisa.IntensitySliceY(x, *RESULT, **xlim) \
 \n\nPHASE CALCULATION \
     \n PauLisa.Phase(PARAMS,x,y,z,MODES) \
 \n\nPHASE PLOTTING \
-    \n PauLisa.PhaseContour(RESULT) \
-    \n PauLisa.PhaseSliceX(y,*RESULT)\
-    \n PauLisa.PhaseSliceY(x,*RESULT)\
+    \n PauLisa.PhaseContour(RESULT,**xlim,**ylim) \
+    \n PauLisa.PhaseSliceX(y,*RESULT,**xlim)\
+    \n PauLisa.PhaseSliceY(x,*RESULT,**xlim)\
 \n\n *VARNAME represents variable number of args of specified type.")
