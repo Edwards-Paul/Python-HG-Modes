@@ -35,16 +35,16 @@ The *Params*, *Plane*, and *Modes* are passed to *Calculate* from PauLisa.py for
 
 ### INTENSITY PLOTTING     
  PauLisa.Contour(RESULT, \*\*xlim[min,max],*\*ylim[min,max])     
- PauLisa.IntensitySliceX(y, *RESULT, *\*lim[min,max])     
- PauLisa.IntensitySliceY(x, *RESULT, *\*lim[min,max]) 
+ PauLisa.IntensitySliceX(y, *RESULT, *\*xlim[min,max])     
+ PauLisa.IntensitySliceY(x, *RESULT, *\*xlim[min,max]) 
 
 ### PHASE CALCULATION     
  PauLisa.Phase(PARAMS, x, y, z, MODES) 
 
 ### PHASE PLOTTING     
  PauLisa.PhaseContour(RESULT, \*\*xlim[min,max],*\*ylim[min,max])     
- PauLisa.PhaseSliceX(y, *RESULT, *\*lim[min,max])     
- PauLisa.PhaseSliceY(x, *RESULT, *\*lim[min,max]) 
+ PauLisa.PhaseSliceX(y, *RESULT, *\*xlim[min,max])     
+ PauLisa.PhaseSliceY(x, *RESULT, *\*xlim[min,max]) 
  
  #### **VARNAME represents vargs of that type. **VARNAME optional kwarg.
  
@@ -64,11 +64,11 @@ modes=pl.Modes((1,0,1), (0,1,1))
 pl.ShowModes(modes)
 
 
-f = pl.Calculate(params, plane, modes, 100)
+f1 = pl.Calculate(params, plane, modes, 100)
+f2= pl.Calculate(params, plane, modes, 50)
 
+pl.IntensitySliceX(-0.01,f1)
 
-pl.IntensitySliceX(f, -0.01)
+pl.IntensitySliceY(0.01,f1,f2,xlim=[0,0.02])
 
-pl.IntensitySliceY(f, 0.01)
-
-pl.Contour(f)
+pl.Contour(f1,xlim=[-0.01,0.01])
