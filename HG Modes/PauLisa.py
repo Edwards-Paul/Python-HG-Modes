@@ -27,8 +27,8 @@ class Params:
     def __init__(self, wavelength, w0, z0):
         self.wavelength = wavelength
         self.w0 = w0  # Beam waist size
-        self.z0 = z0
-        self.Zr = pi * w0 ** 2 / wavelength  # Rayleigh
+        self.z0 = z0 # waist location
+        self.Zr = pi * w0 ** 2 / wavelength  # Rayleigh Range, near field = 2 Zr = 6
         self.q0 = (1j) * self.Zr
         self.k = 2 * pi / (wavelength)  # Wavenumber
 
@@ -62,7 +62,7 @@ class Params:
 # --------------------------------------------------------------------------------------------------------
 ## DEFAULT CONSTANTS :
 
-defaultParams = Params(1064e-9, 0.001, 0)
+defaultParams = Params(1064e-9, 1e-3, 0)
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -221,9 +221,9 @@ class Plane:
 # --------------------------------------------------------------------------------------------------------
 # DEFAULT PLANE OF CALCULATION
 #defaultPlane = Plane(-0.05, 0.05, 1000, -0.05, 0.05, 1000)
-defaultPlane = Plane(-5e-6, 5e-6, 1000, -5e-6, 5e-6, 1000)
-
-
+defaultPlane = Plane(-2e-2, 2e-2, 1000, -2e-2, 2e-2, 1000)
+#defaultPlane = Plane(-5e-6,5e-6,1000,-5e-6,5e-6,1000)
+#defaultPlane = Plane(-.2, .2, 1000, -.2, .2, 1000)
 # --------------------------------------------------------------------------------------------------------
 ##PLANAR CALCULATIONS OF AMPLITUDE AND PHASE
 
@@ -338,13 +338,13 @@ def AmplitudeSliceX(y, *argv, **kwargs):
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getX(), amp, label = i+1)
+        plt.plot(argv[i].plane.getX(), np.real(amp), label = i+1)
 
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
     # format x axis to mm or microns depending on order of x limits
     for i in plt.xlim():
@@ -371,7 +371,7 @@ def AmplitudeSliceY(x, *argv, **kwargs):
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), amp, label= i+1)
+        plt.plot(argv[i].plane.getY(), np.real(amp), label= i+1)
 
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
@@ -822,7 +822,7 @@ def AmplitudeSliceX2(y, *argv, **kwargs):
             ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6),mathText=True)
             break
-    plt.title('Amp along x')
+    plt.title('Amp2 along x')
     plt.xlabel('X (m)')
     plt.ylabel('amp')
     plt.legend(loc='upper right')
