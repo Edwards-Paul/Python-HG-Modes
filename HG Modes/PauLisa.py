@@ -880,7 +880,7 @@ def IntensitySliceX2(y, *argv, **kwargs):
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
     # format x axis to mm or microns depending on order of x limits
     for i in plt.xlim():
@@ -914,7 +914,7 @@ def IntensitySliceY2(x, *argv, **kwargs):
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
 
     for i in plt.xlim():
