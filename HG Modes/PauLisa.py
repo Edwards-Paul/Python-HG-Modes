@@ -26,8 +26,8 @@ class Params:
 
     def __init__(self, wavelength, w0, z0):
         self.wavelength = wavelength
-        self.w0 = w0  # Beam waist size
-        self.z0 = z0 # waist location
+        self.w0 = w0  # Beam waist size, sqrt(zr*wavelength/pi)~1mm
+        self.z0 = z0 # waist location, I ~ 1/e**2 ! 0.13
         self.Zr = pi * w0 ** 2 / wavelength  # Rayleigh Range, near field = 2 Zr = 6
         self.q0 = (1j) * self.Zr
         self.k = 2 * pi / (wavelength)  # Wavenumber
@@ -63,6 +63,7 @@ class Params:
 ## DEFAULT CONSTANTS :
 
 defaultParams = Params(1064e-9, 1e-3, 0)
+#defaultParams = Params(1064e-9, 1e-2, 0)
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -238,6 +239,41 @@ def Calculate(params, plane, modes, z):
 
     return (f)
 
+# --------------------------------------------------------------------------------------------------------
+# Calculate peak and its location from result
+class peakInt:
+
+    def __init__(self,result):
+        intensity = abs(result.amp)**2
+
+        map(max, intensity)
+        list(map(max, intensity))
+
+        self.peak = max(map(max, intensity))
+        self.loc = np.where(intensity == self.peak)
+
+        self.x = self.loc[1] * abs((result.plane.xmax - result.plane.xmin) / result.plane.xpoints)+result.plane.xmin
+        self.y = self.loc[0] * abs((result.plane.ymax - result.plane.ymin) / result.plane.ypoints)+result.plane.ymin
+
+        #print ("x=" + str(self.x) + "y=" + str(self.y) + "peak="+str(self.peak))
+
+
+
+class peakAmp:
+
+    def __init__(self,result):
+        amplitude = (result.amp)
+
+        map(max, amplitude)
+        list(map(max, amplitude))
+
+        self.peak = max(map(max, amplitude))
+        self.loc = np.where(amplitude == self.peak)
+
+        self.x = self.loc[1] * abs((result.plane.xmax - result.plane.xmin) / result.plane.xpoints)+result.plane.xmin
+        self.y = self.loc[0] * abs((result.plane.ymax - result.plane.ymin) / result.plane.ypoints)+result.plane.ymin
+
+        print ("x=" + str(self.x) + "y=" + str(self.y) + "peak="+str(self.peak))
 
 # --------------------------------------------------------------------------------------------------------
 class Result:
@@ -303,7 +339,7 @@ def Amplitude(params, x, y, z, modes):
             order = n + m
 
             Unm = (2 ** (order - 1) * factorial(n) * factorial(m) * pi) ** (-1 / 2) * \
-                  (1 / w(z, params)) * e ** ((1j) * (order + 1) * GouyPhase(z, order, params)) * \
+                (1 / w(z, params)) * e ** ((1j) * (order + 1) * GouyPhase(z, order, params)) * \
                   e ** (-(1j) * ( (params.getK() * (x ** 2 + y ** 2)) / (2 * Rc(z, params))) - \
                   ((x ** 2 + y ** 2) / (w(z, params) ** 2))) * \
                   HermPol(n, x, carrN, z, params) * \
@@ -338,7 +374,7 @@ def AmplitudeSliceX(y, *argv, **kwargs):
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getX(), np.real(amp), label = i+1)
+        plt.plot(argv[i].plane.getX(), amp, label = i+1)
 
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
@@ -410,7 +446,7 @@ def IntensitySliceX(y, *argv, **kwargs):
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
     # format x axis to mm or microns depending on order of x limits
     for i in plt.xlim():
@@ -444,7 +480,7 @@ def IntensitySliceY(x, *argv, **kwargs):
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
+    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
 
     for i in plt.xlim():
@@ -526,7 +562,7 @@ def IntensityPlot(f):
     fig = plt.figure()
     ax = Axes3D(fig)
 
-    ax.plot_surface(f.getX(), f.getY(), abs(f.getAmp()) ** 2, rstride=1, cstride=1,
+    ax.plot_surface(f.plane.getX(), f.plane.getY(), abs(f.getAmp()) ** 2, rstride=1, cstride=1,
                     cmap='viridis', edgecolor='none')
     # Labels and render
     plt.xlabel("x")
