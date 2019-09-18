@@ -326,15 +326,21 @@ def Amplitude(params, x, y, z, modes):
     # Iterate through modes
     for n in range(rows):
         for m in range(cols):
+
+            coeff = 0
             # n array for hermpol
             carrN = [0] * rows
             carrN[n] = modes[n][m]
-            #print(carrN)
+
 
             # m array for hermpol
             carrM = [0] * cols
             carrM[m] = modes[n][m]
-            #print(carrM)
+
+            #Avoid double-counting coefficient
+            if (carrN[n] != 0):
+                carrN[n]=1
+
 
             order = n + m
 
@@ -345,9 +351,9 @@ def Amplitude(params, x, y, z, modes):
                   HermPol(n, x, carrN, z, params) * \
                   HermPol(m, y, carrM, z, params)
 
+
             # Add each to result
             UnmSum += Unm
-            #print(Unm,UnmSum)
 
     return (UnmSum)
 
@@ -445,6 +451,9 @@ def IntensitySliceX(y, *argv, **kwargs):
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
+
+    if ('ylim' in kwargs):
+        plt.ylim(kwargs['ylim'])
 
     ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
@@ -800,10 +809,12 @@ def Amplitude2(params, x, y, z, modes):
 
             carrM = [0] * cols
             carrM[m] = modes[n][m]
-            #print carrM
+
             order = n + m
 
-            #print n,m
+            #Avoid double-counting coefficient
+            if (carrN[n] != 0):
+                carrN[n]=1
 
             Unm = (2 / pi) ** 1 / 4 * \
                   np.sqrt(1 / (2 ** n * factorial(n) * params.getW0())) * \
@@ -874,11 +885,14 @@ def IntensitySliceX2(y, *argv, **kwargs):
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
         amp = Amplitude2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getX(), abs(amp ** 2), label = i+1)
+        plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label = i+1)
 
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
+
+    if ('ylim' in kwargs):
+        plt.ylim(kwargs['ylim'])
 
     ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), mathText=True)
