@@ -74,11 +74,12 @@ defaultParams = Params(1064e-9, 1e-3, 0)
 def Rc(z, params):
     # r=z-z0+(Zr**2/(z-z0))
 
-    if z == 0:
+    if z == params.getZ0():
         r = float('inf')
     else:
         r = z - params.getZ0() + ( params.getZr()**2)/(z-params.getZ0())
 # r = z * (1 + (params.getZr() / z) ** 2)
+
     return r
 
 
@@ -344,13 +345,12 @@ def Amplitude(params, x, y, z, modes):
 
             order = n + m
 
-            Unm = (2 ** (order - 1) * factorial(n) * factorial(m) * pi) ** (-1 / 2) * \
-                (1 / w(z, params)) * e ** ((1j) * (order + 1) * GouyPhase(z, order, params)) * \
-                  e ** (-(1j) * ( (params.getK() * (x ** 2 + y ** 2)) / (2 * Rc(z, params))) - \
-                  ((x ** 2 + y ** 2) / (w(z, params) ** 2))) * \
+            Unm = (1/sqrt(2**(order - 1) * factorial(n) * factorial(m) * pi)) * \
+                (1 / w(z, params)) * e**((1j) * (order + 1) * GouyPhase(z, order, params)) * \
+                  e**( (-1j) *( (params.getK() * (x**2 + y**2) / (2*Rc(z,params)))) -
+                  ((x**2 + y**2) / ((w(z, params))**2))) * \
                   HermPol(n, x, carrN, z, params) * \
                   HermPol(m, y, carrM, z, params)
-
 
             # Add each to result
             UnmSum += Unm
