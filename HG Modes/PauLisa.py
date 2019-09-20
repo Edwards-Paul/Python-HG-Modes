@@ -816,16 +816,16 @@ def Amplitude2(params, x, y, z, modes):
             if (carrN[n] != 0):
                 carrN[n]=1
 
-            Unm = (2 / pi) ** 1 / 4 * \
+            Unm = (2 / pi) ** (1.0 / 4.0) * \
                   np.sqrt(1 / (2 ** n * factorial(n) * params.getW0())) * \
                   np.sqrt(params.getQ0() / q(z,params)) * \
-                  ((params.getQ0() * np.conjugate(q(z,params))) / (np.conjugate(params.getQ0()) * q(z,params))) ** n / 2 * \
+                  ((params.getQ0() * np.conjugate(q(z,params))) / (np.conjugate(params.getQ0()) * q(z,params))) ** (n / 2.0) * \
                   HermPol(n, x, carrN, z, params) * \
                   np.exp((-((1j) * params.getK() * x ** 2) / (2 * q(z,params)))) * \
-                  (2 / pi) ** 1 / 4 * \
+                  (2 / pi) ** (1.0 / 4.0) * \
                   np.sqrt(1 / (2 ** m * factorial(m) * params.getW0())) * \
                   np.sqrt(params.getQ0() / q(z,params)) * \
-                  ((params.getQ0() * np.conjugate(q(z,params))) / (np.conjugate(params.getQ0()) * q(z,params))) ** m / 2 * \
+                  ((params.getQ0() * np.conjugate(q(z,params))) / (np.conjugate(params.getQ0()) * q(z,params))) ** (m / 2.0) * \
                   HermPol(m, y, carrM, z, params) * \
                   np.exp((-((1j) * params.getK() * y ** 2) / (2 * q(z,params))))
 
