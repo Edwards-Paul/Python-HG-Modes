@@ -72,7 +72,7 @@ defaultParams = Params(1064e-9, 1e-3, 0)
 
 
 ## Desc change in the radius of curvature (Rc)
-def Rc(z, params):
+def radius_curvature(z, params):
     # r=z-z0+(Zr**2/(z-z0))
 
     if z == params.getZ0():
@@ -85,15 +85,15 @@ def Rc(z, params):
 
 
 ## Gouy phase
-def GouyPhase(z, order, params):
+def gouy_phase(z, order, params):
     Gouy = atan((z - params.getZ0()) / params.getZr())
     return Gouy
 
 
 ## Phase lag
-def PhaseLag(z, order, params):
+def phase_lag(z, order, params):
     # phaselag = (order + 1) * atan(z / params.getZr())
-    phaselag = (order + 1) * GouyPhase(z, order, params)
+    phaselag = (order + 1) * gouy_phase(z, order, params)
     return phaselag
 
 
@@ -114,7 +114,7 @@ def q(z, params):
 # --------------------------------------------------------------------------------------------------------
 
 ##Get user input modes, create 2-d modes array, show array
-def Modes(*argv):
+def modes(*argv):
     # get number of modes passed by user
     NumberModes = (len(argv))
 
@@ -128,11 +128,11 @@ def Modes(*argv):
         listN[i], listM[i], listC[i] = argv[i]
 
     # get a modes 2-d array created from lists of n,m,c of required size
-    return (CreateModes(listN, listM, listC, NumberModes))
+    return (create_modes(listN, listM, listC, NumberModes))
 
 
 ##Create the modes 2-d array
-def CreateModes(listN, listM, listC, NumberModes):
+def create_modes(listN, listM, listC, NumberModes):
     # get max n and m to create modes grid with size based on user highest modes
     MaxN = max(listN)
     MaxM = max(listM)
@@ -151,7 +151,7 @@ def CreateModes(listN, listM, listC, NumberModes):
 
 
 ##Print modes
-def ShowModes(modes):
+def show_modes(modes):
     if not modes:
         print("No modes entered.")
 
@@ -237,9 +237,9 @@ defaultPlane = Plane(-2e-2, 2e-2, 1000, -2e-2, 2e-2, 1000)
 ##PLANAR CALCULATIONS OF AMPLITUDE AND PHASE
 
 # Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
-def Calculate(params, plane, modes, z):
+def calculate(params, plane, modes, z):
     X, Y = np.meshgrid(plane.getX(), plane.getY())
-    amp = Amplitude(params, X, Y, z, modes)
+    amp = amplitude(params, X, Y, z, modes)
 
     result_row = len(amp)
     result_col = len(amp[0])
@@ -256,7 +256,7 @@ def Calculate(params, plane, modes, z):
 
 # --------------------------------------------------------------------------------------------------------
 # Calculate peak and its location from result
-class peakInt:
+class PeakInt:
 
     def __init__(self, result):
         intensity = abs(result.amp) ** 2
@@ -272,7 +272,7 @@ class peakInt:
 
 
 
-class peakAmp:
+class PeakAmp:
 
     def __init__(self, result):
         amplitude = (result.amp)
@@ -330,7 +330,7 @@ class Result:
 ##AMPLITUDE CALCULATIONS:
 
 # Amplitutude calculation from w0,Zr. (LR eq. 9.26)
-def Amplitude(params, x, y, z, modes):
+def amplitude(params, x, y, z, modes):
     # Unm a sum over modes
     UnmSum = 0
     rows = len(modes)
@@ -356,11 +356,11 @@ def Amplitude(params, x, y, z, modes):
             order = n + m
 
             Unm = (1 / sqrt(2 ** (order - 1) * factorial(n) * factorial(m) * pi)) * \
-                  (1 / w(z, params)) * e ** ((1j) * (order + 1) * GouyPhase(z, order, params)) * \
-                  e ** ((-1j) * ((params.getK() * (x ** 2 + y ** 2) / (2.0 * Rc(z, params)))) -
+                  (1 / w(z, params)) * e ** ((1j) * (order + 1) * gouy_phase(z, order, params)) * \
+                  e ** ((-1j) * ((params.getK() * (x ** 2 + y ** 2) / (2.0 * radius_curvature(z, params)))) -
                         ((x ** 2 + y ** 2) / ((w(z, params)) ** 2))) * \
-                  HermPol(n, x, carrN, z, params) * \
-                  HermPol(m, y, carrM, z, params)
+                  herm_poly(n, x, carrN, z, params) * \
+                  herm_poly(m, y, carrM, z, params)
 
             # Add each to result
             UnmSum += Unm
@@ -372,7 +372,7 @@ def Amplitude(params, x, y, z, modes):
 # mode: working mode (as Calculate iterates through n,m grid
 # coord: x or y
 # carr: coefficient array
-def HermPol(mode, coord, carr, z, params):
+def herm_poly(mode, coord, carr, z, params):
     herm = hermval(coord * sqrt(2.0) / w(z, params), carr)
     return herm
 
@@ -382,18 +382,18 @@ def HermPol(mode, coord, carr, z, params):
 
 # These IntensitySlice's require recalculation at x and y plane.
 # Plotting calc at, e.g., halfway points in x-y grid for x=0 (center col.) or y=0 (center row) accomplishes the same.
-def AmplitudeSliceX(y, *argv, **kwargs):
+def ampslicex(y, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     if('labels' in kwargs):
         for i in range(0, len(argv)):
-            amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), amp, label=kwargs['labels'][i])
     else:
         for i in range(0, len(argv)):
-            amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), amp, label=i + 1)
 
     # optionally set limits. default is last result's range
@@ -420,13 +420,13 @@ def AmplitudeSliceX(y, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def AmplitudeSliceY(x, *argv, **kwargs):
+def ampslicey(x, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
-        amp = Amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        amp = amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getY(), np.real(amp), label=i + 1)
 
     # optionally set limits. default is last result's range
@@ -453,7 +453,7 @@ def AmplitudeSliceY(x, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def IntensitySliceX(y, *argv, **kwargs):
+def intslicex(y, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
@@ -461,11 +461,11 @@ def IntensitySliceX(y, *argv, **kwargs):
 
     if('labels' in kwargs):
         for i in range(0, len(argv)):
-            amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=kwargs['labels'][i])
     else:
         for i in range(0, len(argv)):
-            amp = Amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=i + 1)
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
@@ -494,13 +494,13 @@ def IntensitySliceX(y, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def IntensitySliceY(x, *argv, **kwargs):
+def intslicey(x, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
-        amp = Amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        amp = amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getY(), abs(amp ** 2), label=i + 1)
 
     # optionally set limits. default is last result's range
@@ -629,8 +629,8 @@ def IntensityPlot(f):
 # --------------------------------------------------------------------------------------------------------
 ## PHASE CALCULATIONS:
 
-def Phase(params, x, y, z, modes):
-    return (np.angle(Amplitude(params, x, y, z, modes)))
+def phase(params, x, y, z, modes):
+    return (np.angle(amplitude(params, x, y, z, modes)))
 
 
 # --------------------------------------------------------------------------------------------------------
@@ -714,18 +714,18 @@ def PhaseContour(f, **kwargs):
     plt.title('Phase')
 
 
-def PhaseSliceX(y, *argv, **kwargs):
+def phaseslicex(y, *argv, **kwargs):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # calc at from z and modes in f (*argv)
     if('labels' in kwargs):
         for i in range(0, len(argv)):
-            phase = Phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), phase, label=kwargs['labels'][i])
+            angle = phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            plt.plot(argv[i].plane.getX(), angle, label=kwargs['labels'][i])
     else:
         for i in range(0, len(argv)):
-            phase = Phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), phase, label=i + 1)
+            angle = phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            plt.plot(argv[i].plane.getX(), angle, label=i + 1)
 
     # optionally, set limits. default is last result
     if ('xlim' in kwargs):
@@ -751,14 +751,14 @@ def PhaseSliceX(y, *argv, **kwargs):
     plt.grid()
 
 
-def PhaseSliceY(x, *argv, **kwargs):
+def phaseslicey(x, *argv, **kwargs):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Calc phase from z and modes in f
 
     for i in range(0, len(argv)):
-        phase = Phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), phase, label=i + 1)
+        angle = phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getY(), angle, label=i + 1)
 
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
@@ -825,7 +825,7 @@ def defaults():
 ## from q param
 
 # Amplitude from q-parameter (L.R., Eq. 9.34)
-def Amplitude2(params, x, y, z, modes):
+def amplitude_q(params, x, y, z, modes):
     # Unm a sum over modes
     UnmSum = 0
     rows = len(modes)
@@ -852,14 +852,14 @@ def Amplitude2(params, x, y, z, modes):
                   np.sqrt(params.getQ0() / q(z, params)) * \
                   ((params.getQ0() * np.conjugate(q(z, params))) / (np.conjugate(params.getQ0()) * q(z, params))) ** (
                               n / 2.0) * \
-                  HermPol(n, x, carrN, z, params) * \
+                  herm_poly(n, x, carrN, z, params) * \
                   np.exp((-((1j) * params.getK() * x ** 2) / (2 * q(z, params)))) * \
                   (2 / pi) ** (0.25) * \
                   np.sqrt(1.0 / (2 ** m * factorial(m) * params.getW0())) * \
                   np.sqrt(params.getQ0() / q(z, params)) * \
                   ((params.getQ0() * np.conjugate(q(z, params))) / (np.conjugate(params.getQ0()) * q(z, params))) ** (
                               m / 2.0) * \
-                  HermPol(m, y, carrM, z, params) * \
+                  herm_poly(m, y, carrM, z, params) * \
                   np.exp((-((1j) * params.getK() * y ** 2) / (2 * q(z, params))))
 
             UnmSum += Unm
@@ -868,9 +868,9 @@ def Amplitude2(params, x, y, z, modes):
     return (UnmSum)
 
 
-def Calculate2(params, plane, modes, z):
+def calculate_q(params, plane, modes, z):
     X, Y = np.meshgrid(plane.getX(), plane.getY())
-    amp = Amplitude2(params, X, Y, z, modes)
+    amp = amplitude_q(params, X, Y, z, modes)
 
     result_row = len(amp)
     result_col = len(amp[0])
@@ -885,13 +885,13 @@ def Calculate2(params, plane, modes, z):
     return (f)
 
 
-def AmplitudeSliceX2(y, *argv, **kwargs):
+def ampslicex_q(y, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
-        amp = Amplitude2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+        amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getX(), amp, label=i + 1)
 
     # optionally set limits. default is last result's range
@@ -918,18 +918,18 @@ def AmplitudeSliceX2(y, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def IntensitySliceX2(y, *argv, **kwargs):
+def intslicex_q(y, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     if('labels' in kwargs):
         for i in range(0, len(argv)):
-            amp = Amplitude2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=kwargs['labels'][i])
     else:
         for i in range(0, len(argv)):
-            amp = Amplitude2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
             plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=i + 1)
     # optionally set limits. default is last result's range
     if ('xlim' in kwargs):
@@ -958,13 +958,13 @@ def IntensitySliceX2(y, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def IntensitySliceY2(x, *argv, **kwargs):
+def intslicey_q(x, *argv, **kwargs):
     fig = plt.figure(figsize=(6, 6))
     ax = fig.add_subplot(111)
 
     # Calc amp from z and modes in f
     for i in range(0, len(argv)):
-        amp = Amplitude2(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        amp = amplitude_q(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
         plt.plot(argv[i].plane.getY(), abs(amp ** 2), label=i + 1)
 
     # optionally set limits. default is last result's range
@@ -991,24 +991,24 @@ def IntensitySliceY2(x, *argv, **kwargs):
     # plt.savefig('IntCheck.pdf')
 
 
-def Phase2(params, x, y, z, modes):
-    return (np.angle(Amplitude2(params, x, y, z, modes)))
+def phase_q(params, x, y, z, modes):
+    return (np.angle(amplitude_q(params, x, y, z, modes)))
     # return degrees(cmath.phase(Amplitude2(params, x, y, z, modes)))
 
 
-def PhaseSliceX2(y, *argv, **kwargs):
+def phaseslicex_q(y, *argv, **kwargs):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # calc at from z and modes in f (*argv)
 
     if('labels' in kwargs):
         for i in range(0, len(argv)):
-            phase = Phase2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), phase, label=kwargs['labels'][i])
+            angle = phase_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            plt.plot(argv[i].plane.getX(), angle, label=kwargs['labels'][i])
     else:
         for i in range(0, len(argv)):
-            phase = Phase2(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), phase, label=i + 1)
+            angle = phase_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
+            plt.plot(argv[i].plane.getX(), angle, label=i + 1)
     # optionally, set limits. default is last result
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
@@ -1033,14 +1033,14 @@ def PhaseSliceX2(y, *argv, **kwargs):
     plt.grid()
 
 
-def PhaseSliceY2(x, *argv, **kwargs):
+def phaseslicey_q(x, *argv, **kwargs):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     # Calc phase from z and modes in f
 
     for i in range(0, len(argv)):
-        phase = Phase2(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), phase, label=i + 1)
+        angle = phase_q(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
+        plt.plot(argv[i].plane.getY(), angle, label=i + 1)
 
     if ('xlim' in kwargs):
         plt.xlim(kwargs['xlim'])
