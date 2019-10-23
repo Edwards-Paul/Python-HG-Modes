@@ -479,15 +479,15 @@ def intslicex(y, *argv, **kwargs):
     # format x axis to mm or microns depending on order of x limits
     for i in plt.xlim():
         if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
         if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
             break
-    plt.title('Intensity along x')
-    plt.xlabel('X (m)')
-    plt.ylabel('Intensity')
+    plt.title('Intensity along X ')
+    plt.xlabel('X [m]')
+    plt.ylabel('Intensity [a.u.]')
     plt.legend(loc='upper right')
     # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
     plt.grid()
@@ -545,24 +545,24 @@ def Contour(f, **kwargs):
 
     for i in plt.xlim():
         if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
         if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
             break
 
     for i in plt.ylim():
         if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
             ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), useMathText=True)
         if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
             ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6), useMathText=True)
             break
 
-    plt.xlabel('X (m)')
-    plt.ylabel('Y (m)')
+    plt.xlabel('X [m]')
+    plt.ylabel('Y [m]')
     cbar = fig.colorbar(cs)
     plt.title('Intensity')
 
