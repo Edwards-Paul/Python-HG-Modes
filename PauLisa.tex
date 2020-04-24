@@ -1,0 +1,5137 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Modeling LISA tilt-to-length(TTL) coupling with HG modes.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[aps,twoside,secnumarabic,balancelastpage,amsmath,amssymb,nofootinbib,hyperref=pdftex]{revtex4}
+\usepackage{refstyle}
+\usepackage[x11names]{xcolor}
+\usepackage{caption}
+\captionsetup{compatibility=false}
+\usepackage{amsmath}
+\usepackage{subcaption}
+\usepackage[labelformat=parens,labelsep=quad, skip=3pt]{caption}
+\usepackage{float}
+\usepackage{chapterbib} 
+\usepackage{graphics}     
+\usepackage[pdftex]{graphicx}     
+\usepackage{epsf}        
+\usepackage{bm}            %bold math
+\usepackage{commath}
+\usepackage{verbatim}		%comments
+\usepackage{fancyhdr}		%header
+\usepackage{titlesec}		%section format
+\usepackage[colorlinks=true]{hyperref}  %last
+
+%title page border
+\usepackage{fancybox}
+
+
+%
+\definecolor{gatorblue}{RGB}{0, 33, 165}
+\definecolor{gatororange}{RGB}{250,70,22}
+
+%hf page styles
+\pagestyle{fancy}
+\fancyhf{}
+
+
+%section format
+\titleformat{\section}
+{\color{gatororange}\normalfont\scshape\Large}
+{\color{gatororange}\thesection}{1em}{}[\vspace{-0.5ex}%
+\rule{\textwidth}{0.3pt}]
+
+
+
+%%Header
+\fancyhf{}
+\setlength\headheight{14pt}
+\lhead{
+\textcolor{gatorblue}{\rule[-2pt]{\textwidth}{16pt}}%
+\hspace{-\textwidth}%
+\textcolor{white}{\tab \textbf{PauLISA}}}
+\rhead{\textcolor{white}{SN \thesection}}
+%%
+
+%\fancyfoot[CE,CO]{\leftmark}
+\fancyfoot[RE,RO]{\thepage}
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\footrule}
+{\hbox to\headwidth{\color{gatorblue}\leaders\hrule height \footrulewidth\hfill}}
+
+
+%%Line
+\newlength{\seplinewidth}
+\newlength{\seplinesep}
+\setlength{\seplinewidth}{1pt}
+\setlength{\seplinesep}{2mm}
+\colorlet{sepline}{gatororange}
+\newcommand*{\sepline}{%
+  \par
+  \vspace{\dimexpr\seplinesep+.5\parskip}%
+  \cleaders\vbox{%
+    \begingroup %  color
+      \color{sepline}%
+      \hrule width\linewidth height\seplinewidth
+    \endgroup
+  }\vskip\seplinewidth
+  \vspace{\dimexpr\seplinesep-.5\parskip}%
+}
+%%
+
+%figs/caps
+\graphicspath{ {figures/} }
+\captionsetup{justification=raggedright,singlelinecheck=false}
+
+%tab
+\renewcommand{\arraystretch}{1}
+\newcommand\tab[1][3mm]{\hspace*{#1}}
+
+%% EQ'S REUSE
+\newcommand{\Hn}{H_{n}\Big(\frac{\sqrt{2}x}{w(z)}\Big)}
+\newcommand{\Hm}{H_{m}\Big(\frac{\sqrt{2}y}{w(z)}\Big)}
+\newcommand{\bigfrac}[2]{\Big( \frac{#1}{#2}\Big)}
+
+
+
+\newcommand{\sectionend}{\clearpage \newpage \vspace{.5in}\sepline}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+
+
+
+\raggedright
+
+\vspace{200pt}
+\sepline
+\title{\color{gatorblue}\Large \normalfont \scshape LISA: Tilt-to-Length Noise Coupling with Hermite-Gauss Modes}
+\author{Paul Edwards}
+
+\affiliation{University of Florida}
+\begin{abstract}
+\sepline\vspace{20pt}
+In LISA, a critical noise source is expected to arise from small misalignments between the test mass and spacecraft optical elements, which is then coupled into angular jitter of the spacecraft itself. This noise is termed tilt-to-length (TTL) coupling noise. We model TTL noise originating from these intrinsic misalignments via interference of tilted, laterally-shifted beams using the Hermite-Gauss model for approximately paraxial beams.
+\end{abstract}
+
+
+
+\maketitle
+
+\begin{figure}[hb]
+\centering
+\sepline
+\begin{subfigure}{.2\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{jupyter}
+\end{subfigure}%
+\begin{subfigure}{.2\textwidth}
+  \centering
+  \includegraphics[width=.4\linewidth]{python}
+\end{subfigure}
+\end{figure}
+
+
+
+\let\endtitlepage\relax
+
+
+
+
+\sectionend
+
+\tableofcontents
+
+\sectionend
+
+\section{LISA Overview}
+
+Large cosmic events, such as SMBH mergers, produce measurable gravitational waves which propagate at the speed of light as strain in spacetime curvature. Gravitational waves result from a changing quadrupole moment and can be detected as a periodic distance change between two points. However, strain amplitudes at Earth approach $10^{-21}$ in gravitational waves of frequency $10^{-16}$ to $10^{4}$ Hz. Generally, gravitational wave detection entails a laser interferometry scheme to measure the path length change of light between two test masses.
+
+\medskip
+
+The Laser Interferometer Space Antenna (LISA) is a space-based gravitational wave detector commissioned by ESA, in collaboration with NASA and an international consortium, as a successor to LPF. The project will consist of constellation of three satellites, forming an equilateral triangle, which will trail in Earth's orbit with an arm length of $\sim$2.5 million km. Each of the three satellites will house several interferometers, as well as two free-falling, gold-coated test masses. Telescopes will send and receive light between the satellites. Test mass interferometers will measure path length changes between the TM and OB. The long-arm interferometer will measure path length changes between S/C. Combined, these are used to detect gravitational waves in the $10^{-4}$ to 1 Hz range (LIGO ranges 10 Hz to 10 kHz).
+
+
+\sectionend
+
+\section{Tilt-to-Length Coupling}
+
+In LISA, it is expected that intrinsic misalignments between the optical bench (OB) and
+the attached bi-directional telescope are the main avenues for laser beam pointing noise, also known as tilt-to-length
+(TTL) coupling, into the gravitational wave signal.
+
+\medskip
+
+Section C of the LISA Payload Description Document (PDD) outlines expected TTL couplings and tolerances: 
+
+\begin{description}
+  \item[$\bullet$ S/C jitter] $ \sim  10\; \text{nrad}/\sqrt{\text{Hz}}$
+  \item[$\bullet$ OB Lateral alignment offset] $\sim 20\; \mu m$
+  \item[$\bullet$ Combined] $\sim 20\; \text{pm}/\sqrt{\text{Hz}}$
+\end{description}
+
+Selection of reference beam shape and photoreceiver dimensions
+can play a critical role in TTL subtraction. We model TTL coupling via interference of a tilted, misaligned beam
+with a local reference beam and present differential wavefront sensing (DWS) calculations for local and received beam
+shape combinations of tophat-Gaussian interference.
+
+\medskip
+
+LISA uses PD's to measure interference of a received beam with a reference beam, resulting in heterodyne beat notes which are used to determine phase difference ($\Delta \phi = \phi_{1}-\phi_{2}$) of the two beams. Fields of the reference and received beam defined with a basis $(w_{0},z_{0})$ are, respectively:
+
+\begin{equation} \label{eq:19}
+	E_{ref} = 
+		E_{0\; (ref)} e^{i(( \omega_{ref} t)+\phi_{1})}
+		u_{00}(w_{0\; ref},z_{0\; ref})	
+	\;.
+\end{equation}
+
+\begin{equation} \label{eq:18}
+	E_{rec} = 
+		E_{0\; (rec)} e^{i (( \omega_{rec}t)+\phi_{2})} 			
+		\sum_{n,m=0}u_{nm}(w_{0\; rec},z_{0\; rec}) 		
+	\;,
+\end{equation}
+	
+
+
+These fields produce a beat note signal at a single PD (assuming the PD area is large relative to the beam)
+
+\begin{equation}\label{eq:20}
+	\phi_{beat}= \arg \Big[
+	 \int_{- \infty}^{\infty}\int_{- \infty}^{\infty} E_{LO}^*E_{RX} \; dxdy
+	 \Big ]
+	 \; ,
+\end{equation}
+
+where the electric field is the sum of the received and reference fields. 
+
+On demodulating and neglecting $\Delta \phi$ at the phasemeter, the in-phase signal $I$ is
+
+\begin{equation}
+	I
+	=
+	E^{*}E \times \cos (\Delta \omega t) \; ,	
+\end{equation}
+
+and the quadrature phase signal $Q$ is
+
+\begin{equation}
+	Q
+	=
+	E^{*}E \times \sin (\Delta \omega t) \; .
+\end{equation}
+
+Therefore, after a low pass filter (as the heterodyne frequency is on the order of MHz), the phase is 
+
+\begin{equation}
+ 		\Phi 
+ 		=
+ 		 	\arctan	(\frac{Q}{I})	
+\end{equation}
+
+The DWS (Differential Wavefront Sensing) signal for a half-plane PD is calculated as:
+
+\begin{equation}
+ 		\Phi_{DWS} 
+ 		=
+ 		 	\frac{1}{2}[\phi_R - \phi_L]
+\end{equation}
+
+
+The DWS (Differential Wavefront Sensing) signal (for HPPD) is calculated as:
+
+\begin{equation}
+ 		\Phi_{LPS} 
+ 		=
+ 		 	\frac{1}{2}[\phi_R + \phi_L]
+\end{equation}
+
+The spatial component of the electric fields can be formulated using Hermite-Gauss modes.
+
+
+\sectionend
+
+\section{Hermite-Gauss Modes}
+
+\subsection{HG Modes Overview}
+Hermite-Gauss (HG) modes represent a set of exact solutions of the paraxial wave equation 
+
+\begin{equation}
+	\nabla_{t}^2u(x,y,z)-2ik\partial{z}u(x,y,z)=0 \; .
+\end{equation}
+
+The Living Reviews article \citep{Bond} gives the general expression for HG modes as
+	
+	\begin{equation} \label{eq:1}
+		u_{nm}(x,y,z)=(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\arctan(\Psi(z))	
+		\Big)\;,
+	\end{equation}
+	
+where $\Psi(z) = \arctan(\frac{z-z_0}{z_R})$ is the Gouy phase. In terms of the Gaussian beam parameter,
+	
+	\begin{equation} \label{eq:2}
+		q(z)=iz_{R}+z-z_{0}=q_{0}+z-z_{0}\;,
+	\end{equation}
+	
+	HG modes may be expressed as (where $w(z)=w_0 \sqrt{1+\bigfrac{z-z_0}{z_R}^2}$):
+	
+	\begin{align} \label{eq:3}
+		u_{nm}(x,y,z)=& u_{n}(x,z)u_{m}(y,z)
+		\nonumber\\=& 
+		\Big(\frac{2}{\pi}\Big)^{1/4}
+		\Big(\frac{1}{2^{n}n!w_{0}}\Big)^{1/2}
+		\Big(\frac{q_{0}}{q(z)}\Big)^{1/2}
+		\Big(\frac{q_{0}q*(z)}{q_{0}*q(z)}\Big)^{n/2}
+		\Hn
+		\exp\Big(\frac{-ik(x^{2})}{2q_{z}}\Big)
+		\times u_{m}(y,z)
+		\;,
+	\end{align}
+where the first four Hermite polynomials  are given by	
+
+\[
+  H_{n}(x)=\begin{cases}
+               1 \tab\tab\tab\tab\tab\;\;(n=0)\\
+               2x \tab\tab\tab\tab\;\;\;(n=1)\\
+               4x^{2}-2 \tab\tab\;\;(n=2)\\
+               8x^{3}-12x \tab\;\;(n=3)
+            \end{cases}
+\]
+
+The HG modes are orthonormal, such that
+
+\begin{equation}
+	\int \int dx dy \; u_{nm} u_{n'm'}^* = \delta_{nn'} \delta_{mm'}.
+\end{equation}
+
+The Hermite polynomials can be derived from recurrence relations:
+\begin{equation*}
+	H_n(x) =
+		n! \sum_{\nu=0}^{\lfloor{\frac{n}{2}}\rfloor}
+		\frac{(-1)^\nu}{\nu!(n-2\nu)!} 
+		\frac{x^{n-2\nu}}{2^\nu}
+\end{equation*}
+
+\sectionend
+
+\subsection{General Scattering into Higher Order HG Modes}
+
+In general, modes with a spatial component prefactor (e.g., $x$ and $x^2$) can be written as higher order modes. 
+
+For $x$:
+
+\begin{equation}
+x u_{n,m} = \frac{w_0}{2}
+\Big[
+	(1 - i \frac{z}{z_R})
+	\sqrt{n+1} u_{n+1,m}
+	+
+	\sqrt{n}
+	(1+i \frac{z}{z_R})
+	u_{n-1,m}
+\Big]
+\end{equation}
+
+For $x^2$:
+
+\begin{equation}
+x^2 u_{n,m} = \frac{w_0^2}{4}
+\Big[
+	(1 - i \frac{z}{z_R})^2
+	\sqrt{(n+1)(n+2)} u_{n+2,m}
+	+
+	(2n+1)
+	(1+ (\frac{z}{z_R})^2)
+	u_{n,m}
+	+
+	\sqrt{n(n-1)}
+	(1+i \frac{z}{z_R} )^2
+	u_{n-2,m}
+\Big]
+\end{equation}
+
+For approximations used in later sections, it is useful to express higher-order modes in terms of the fundamental mode. 
+
+At the waist(if $z=z_0=0$) with an $x$ factor, this is
+
+\begin{equation}
+x u_{n,m} = \frac{w_0}{2}
+\Big[
+	\sqrt{n+1} u_{n+1,m}
+	+
+	\sqrt{n}
+	u_{n-1,m}
+\Big]
+\end{equation}
+
+For $n=0,1,2$ and $m=0$ at the beam waist(letting $z_{0}=0$):
+
+\begin{equation}\label{eq:4}
+u_{00}(x,y,0)= \sqrt{\frac{2}{\pi}}
+\bigfrac{1}{w_{0}}
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right] \; ,
+\end{equation}
+
+\begin{equation}\label{eq:5}
+u_{10}(x,y,0)= \sqrt{\frac{2}{\pi}}
+\bigfrac{2x}{w_{0}^{2}}
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right] \; ,
+\end{equation}
+
+\begin{equation}\label{eq:6}
+u_{20}(x,y,0)= \sqrt{\frac{2}{\pi}}
+\left[ \bigfrac{2 \sqrt{2}x^{2}}{w_{0}^{3}}- \frac{\sqrt{2}}{2 w_0} \right]
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right] \; ,
+\end{equation}
+
+Expressing $u_{10}$ and $u_{20}$ in terms of $u_{00}$ at the beam waist (neglect $u_{n-1,m} or u_{n-2,m}$ terms in the general equations above),
+
+	\begin{equation}\label{eq:7}
+		u_{10}(x,y,0)= \frac{2x}{w_{0}} u_{00}(x,y,0)
+	\end{equation}	
+	
+	\begin{equation}\label{eq:8}
+		u_{20}(x,y,0)= \left[2 \sqrt{2} \bigfrac{x^{2}}{w_{0}^{2}}- \frac{\sqrt{2}}{2} \right] u_{00}(x,y,0)
+	\end{equation}	
+	
+	In PauLisa.py, Eq. \ref{eq:1} is represented by the \textit{calculate} function and Eq. \ref{eq:3} as \textit{calculate\_q}. The outputs of both functions agree exactly. In the appendix, intensity profiles produced by PauLisa.py for $u_{00}$ to $u_{33}$ are shown in Fig. \ref{fig:A1}.	
+	
+	
+\sectionend
+
+\section{Shifted Beam Approximation}
+For a small shift of the input axis, $a \textless\textless w_{0}$, in the -x-direction relative to the cavity axis, the shifted $u_{00}$ mode can be solved in terms of an added $u_{10}$ mode up to a constant factor.
+
+\subsection{Shifted Beam : $z = z_0$}
+
+At $z= z_0 = 0$, a shifted beam can be expresssed as
+
+	\begin{align}\label{eq:9}
+		u_{00}(x-a,y,0) 
+			=&\Big(\frac{2}{\pi}\Big)^{-1/2}
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{(x-a)^{2}+y^{2}}{w_{0}^{2}}\Big)
+		\nonumber\\	
+			= & \Big(\frac{2}{\pi}\Big)^{-1/2} 
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{y^{2}}{w_{0}^{2}}\Big)
+			\exp\Big(-\frac{(x-a)^{2}}{w_{0}^{2}}\Big)
+		\nonumber\\	
+			= & u_{00}(x,y,0) \times exp \Big( \frac{2ax - a^{2}}{w_{0}^2} 			\Big)
+		\nonumber\\
+			=	& u_{00}(x,y,0)
+			\left[ 1+ \frac{2ax}{w_{0}^{2}}+			\mathcal{O} \bigfrac{a}{w}^{2} \right]
+		\nonumber\\ 
+			\nonumber\approx	& u_{00} + \bigfrac{2ax}{w_{0}^{2}} u_{00}
+			\\
+	= &u_{00}(x,y,0)+\frac{a}{w_{0}}u_{10}(x,y,0) \;.
+	\end{align}
+	
+The phase is 0, as expected from the Gouy phase. The shift for mode coefficients $C_{nm}$ is then
+
+	\begin{equation}
+		a \approx \frac{\Re(C_{10})}{\Re(C_{00})}w_{0} \;.
+	\end{equation}		
+	
+	Results for HG(0,0) and HG(1,0) addition are shown in Fig. \ref{fig:1}.
+	
+	\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=.7]{beamshift}
+	\caption{Intensity at the beam waist and $y=0$ for HG(0,0) and HG(1,0) modes alongside combined modes. The variable A represents the scale of the HG(1,0) mode, where 1 is the HG(0,0) mode coefficient.}
+	\label{fig:1}
+	\end{figure}
+	
+	\begin{center}
+	\begin{table}[ht]\label{tab:1}
+	 \begin{tabular}{||c c c c||} 
+	 \hline
+	 (1,0) Scale & Pred. Shift$[\times 10^{-5} m]$ & Act. Shift$[\times 10^{-5} m]$ & \%Error \\ [0.5ex] 
+	 \hline\hline
+	 0.04 & 4.0 & 3.9849 & 0.37 \\ 
+	 \hline
+	 0.08 & 8.0 & 7.8998 & 1.25 \\
+	 \hline
+	 0.16 & 16.0 & 15.2546 & 4.65 \\ [1ex]
+	 \hline
+	\end{tabular}
+	\caption{Calculated and predicted shift in peaks for varying scales of $HG_{10}$ added in phase to $HG_{00}$.}
+	\end{table}
+	\end{center}
+\sectionend
+\subsection{Shifted Beam : $z = z_R$}
+At $z = z_R$, $U_{10}$ ITO $U_{00}$ is
+
+\begin{equation} \label{eq:23}
+U_{10}(x,y,z_R) = U_{00}(x,y,z_R) \left[ 1 + \frac{\sqrt{2}x}{w_0}\right]
+\end{equation}
+
+For a shifted beam with ($z=z_R$):
+	\begin{align}\label{eq:22}
+		u_{tilt (0,0)} (x,y,z=z_R)
+			= & u_{00} \exp \left[ ik \bigfrac{2 a x }{4 z_R} \right] \exp \left[ \frac{ax}{w_0^2}\right]
+		\nonumber\\ 
+			\approx & u_{00} \left[
+			1 + ik \bigfrac{a x}{2z_R} 
+			+ \frac{\sqrt{2}ax}{w_0^2}
+			\right]
+			\nonumber\\
+			= & u_{00}(x,y,0) +
+			 \left[
+			 i  \frac{1}{\sqrt{2}}+\frac{1}{\sqrt{2}}
+			\right]
+			\bigfrac{a}{w_0}
+			 u_{10}(x,y,0)\; .
+	\end{align}
+
+The phase is $\frac{\pi}{4}$, in agreement with the Guoy phase.
+
+\subsection{Shifted Beam : $z >> z_R$}
+At $z >> z_R$, $U_{10}$ ITO $U_{00}$ is
+
+\begin{equation} \label{eq:23}
+U_{10}(x,y,z>>z_R) =  \bigfrac{2xz_R}{zw_0}U_{00}(x,y,z>>z_R) 
+\end{equation}
+
+Then, for a tilted beam with ($z>>z_R$):
+	\begin{align}\label{eq:22}
+		u_{tilt (0,0)} (x,y,z>>z_R)
+			= & u_{00} \exp \left[ ik \bigfrac{a x }{ z} \right] \exp \left[ \frac{2ax}{w_0^2}\bigfrac{z_R}{z}^2\right]
+		\nonumber\\ 
+			\approx & u_{00} \left[
+			1 + ik \bigfrac{a x}{z} 
+			\right]
+			\left[
+			1
+			+
+			 \frac{2ax}{w_0^2}\bigfrac{z_R}{z}^2
+			\right]
+			\nonumber\\
+			= & u_{00}(x,y,z>>z_R) +
+			 \left[
+			 \frac{z_R}{z}+i
+			\right]
+			\bigfrac{a}{w_0}
+			 u_{10}(x,y,z>>z_R)\; .
+	\end{align}
+
+The phase is $\frac{\pi}{2}$, in agreement with the Guoy phase.
+
+\sectionend
+
+\section{Tilted Beam Approximation}
+The following subsections show that a tilted beam at varying propagation distances can also be approximated as a sum of $U_{00}$ and $U_{10}$ modes, with an imaginary component in the$U_{10}$ contribution.
+
+\subsection{Tilted Beam : $z=z_0$}	
+For a tilt with added phase in $x$:
+	
+	\begin{equation} \label{eq:11}
+		u_{tilt}(x,y,0)=u_{00}(x,y,0) \exp(i\phi)\;.
+	\end{equation}
+
+This phase is a result of transforming $x \rightarrow x \cos \alpha$ and $z \rightarrow z - x sin \alpha$.
+
+	Approximating this in terms of a quadrature phase addition of $u_{10}$, with $\alpha \textless\textless \frac{\lambda}{2\pi w_{0}}$:
+	
+	
+	\begin{align}\label{eq:12}
+		u_{tilt (0,0)} 
+			=& u_{00} \exp(i \phi)
+		\nonumber\\	
+			= & u_{00} \exp \left[ikx \sin(\alpha) \right] 
+		\nonumber\\	
+			\approx & u_{00} \exp \left[ ikx\alpha \right]
+		\nonumber\\
+			= & u_{00} \exp \left[ i \bigfrac{2 \pi x \alpha}{\lambda} \right]
+		\nonumber\\ 
+			\approx & u_{00} \left[
+			1 + i \bigfrac{2 \pi x \alpha}{\lambda} \right]
+			\nonumber\\
+			= & u_{00}(x,y,0) + i  \bigfrac{\pi w_{0} \alpha}{\lambda}u_{10} \; .
+	\end{align}
+	
+Therefore, the predicted angle scales proportionally with the coefficient of the $u_{10}$ mode, $C_{10}$,
+
+	\begin{equation}
+    	\alpha \approx \frac{|\Im(C_{10})|}{\Re(C_{00})}\frac{ \lambda}{\pi w_{0} } \approx \frac{|\Im(C_{10})|}{\Re(C_{00})}\Theta \; ,
+	\end{equation}
+	
+where $\Theta = \frac{\pi w_{0}}{\lambda}$ is the diffraction angle. Results for $HG_{10}$ quadrature-phase addition are shown in Table 2. Graphical results are shown in Fig. \ref{fig:2}.
+
+	\begin{center}
+	\begin{table}[ht]\label{tab:2}
+	 \begin{tabular}{||c c c c||} 
+	 \hline
+	 (1,0) Scale (Imag.) & Pred. Angle[$\times 10^{-5}$ rad.] & Act. Angle[$\times 10^{-5}$ rad.] & \%Error \\ [0.5ex] 
+	 \hline\hline
+	 0.04 & 1.3547 & 1.3518 & 0.00212 \\ 
+	 \hline
+	 0.08 & 2.7094 & 2.6866 & 0.00840 \\
+	 \hline
+	 0.16 & 5.4189  & 5.2445 & 0.03217 \\ [1ex]
+	 \hline
+	\end{tabular}
+	\caption{Calculated and expected wavefront angles for varying scales of $HG_{10}$ added in quadrature phase to $HG_{00}$.}
+	\end{table}
+	\end{center}
+
+	\begin{figure}
+	\centering
+		\includegraphics[scale=.7]{beamtiltint}
+		\caption{Intensity at the beam waist and $y=0$ for HG(0,0) and HG(1,0) addition in quadrature phase. The variable A represents the (imaginary) scale of the HG(1,0) mode, where 1 is the HG(0,0) mode coefficient.}
+		\label{fig:2}
+	\end{figure}
+	
+By Eq. \ref{eq:12}, phase should vary with $x$ as
+	
+	\begin{equation}\label{eq:21}
+		\frac{d\phi}{dx} \approx \frac{2 \pi \alpha}{\lambda} \; .
+	\end{equation}
+
+Figure \ref{fig:3} shows agreement with this approximation. 
+	
+	\begin{figure}
+	\centering
+		\includegraphics[scale=.7]{beamtiltphase}
+		\caption{Phase at the beam waist and $y=0$ for HG(0,0) and HG(1,0) modes alongside combined modes. The variable $A$ represents the (imaginary) scale of the HG(1,0) mode, where 1 is the HG(0,0) mode coefficient. Phase varies with $x$ as predicted by Eq. \ref{eq:21}}
+		\label{fig:3}
+	\end{figure}
+	
+\sectionend
+
+
+\section{Tilted Beam at Half-Plane}
+\subsection{Gapless Approximation}
+Initially, we describe a tilted beam, incoming from S/C 1, interfering with a Gaussian local beam at S/C 2. The incoming tilted beam ITO HG modes is
+
+	\begin{equation} \nonumber
+			U_{RX}(x,y,z) 
+			= U_{00}(x,y,z) + i  \bigfrac{\pi w_{0} \alpha}{\lambda}U_{10}(x,y,z) \; .
+	\end{equation}
+
+Using the planar HG representation:
+
+\begin{equation*}
+		u_{nm}(x,y,z)=(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} \Big)\;.
+\end{equation*}
+
+with Hermite polynomials
+\[
+  H_{n}(x)=\begin{cases}
+               1 \tab\tab\tab\tab\;\;(n=0)\\
+               2x \tab\tab\tab\;\;\;(n=1)\\
+            \end{cases}
+\]
+
+For the PD right side:
+
+\begin{align*}
+C_{nmn'm'}^{R} =& \int_{0}^{\infty} dx\int_{-\infty}^{\infty} dy \; U_{00(LO)}^*(x,y,z) U_{nm(RX)}(x,y,z)
+\\=&\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+ U_{00}^* \left[ U_{00} + i  \bigfrac{\pi w_{0} \alpha}{\lambda}U_{10} \right]
+\\=&\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+\left[
+\sqrt{\frac{2}{\pi}}
+		\frac{1}{w(z)}
+		\exp \Big(\frac{+ik\rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big) \right]
+\times
+\\&
+\left[
+\sqrt{\frac{2}{\pi}}
+		\frac{1}{w(z)}
+		\exp \Big(\frac{-ik \rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big) 
++
+i  \bigfrac{\pi w_{0} \alpha}{\lambda}
+\frac{1}{\sqrt{\pi}}
+		\frac{1}{w(z)} 
+		2 \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		1
+		\exp \Big(\frac{-ik \rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big)			
+\right]
+\\\\=&\int_{0}^{\infty}dx\int_{-\infty}^{\infty} dy \;
+\left[
+\sqrt{\frac{2}{\pi}}
+		\frac{1}{w(z)}
+		\exp \Big(\frac{+ik\rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big) \right]
+\times
+\\&
+\left[
+\sqrt{\frac{2}{\pi}}
+		\frac{1}{w(z)}
+		\exp \Big(\frac{-ik \rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big) 
++
+i  \bigfrac{\sqrt{\pi} w_{0} \alpha}{\lambda}
+		\Big( \frac{2 \sqrt{2}x}{w(z)^2} \Big)
+		\exp \Big(\frac{-ik \rho^2}{2R_{c}(z)}-
+		\frac{\rho^2}{w(z)^{2}} \Big)			
+\right]
+\\\\=&\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+\left[
+\frac{2}{\pi}
+		\frac{1}{w(z)^2}
+		\exp \bigfrac{-2\rho^2}{w(z)^{2}}
++
+i  \bigfrac{ w_{0} \alpha}{\lambda}
+		\Big( \frac{4 x}{w(z)^3} \Big)
+		\exp \bigfrac{-2 \rho^2}{w(z)^{2}}			
+\right] 
+\;.
+\end{align*}
+
+Finally,
+
+\begin{equation}
+C_{nmn'm'}^{R} = \int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+\lbrace
+	\bigfrac{2}{\pi w(z)^2}
+	\exp \bigfrac{-2 \rho^2}{w(z)^{2}}	
+	\left[
+		1 
+		+ 
+		i  \bigfrac{ 2 \pi w_{0} \alpha x}{\lambda w(z)}		
+	\right]
+\rbrace
+\;.
+\end{equation}	
+
+The real term ($a = \frac{2}{w(z)^2}$):
+
+\begin{align*}
+\bigfrac{2}{\pi w(z)^2}
+\left[
+\int_{0}^{\infty} \int_{-\infty}^{\infty}  \; e^{-a x^2} e^{-a y^2} dydx \right]
+=&
+ \bigfrac{2}{\pi w(z)^2}
+ \frac{1}{2} (\sqrt{\frac{\pi}{a} })^2
+ \\=& 
+ \bigfrac{2}{\pi w(z)^2}\frac{1}{2}{\frac{w(z)^2 \pi}{2} }
+ \\=&
+ \bigfrac{2}{\pi w(z)^2}\frac{w(z)^2 { \pi}}{4} 
+ \\=& \frac{1}{2}
+\;.
+\end{align*}
+
+The imaginary term is ($a = \frac{2}{w(z)^2}$):
+\begin{align*}
+i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+		\left[
+		\int_{0}^{\infty} \int_{-\infty}^{\infty}  \; e^{-a x^2}x e^{-a y^2} dydx \right]
+=&
+i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+\left[
+\sqrt{\frac{\pi}{a}}
+\int_{0}^{\infty} dx\; e^{-a x^2}x
+\right]
+\\=&
+i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+\left[
+	\sqrt{\frac{\pi}{a}}
+	\frac{1}{2a}
+\right]
+\\=&
+i  \bigfrac{ w_{0} \alpha}{\lambda w(z)}
+\left[
+	\sqrt{\frac{\pi w(z)^2}{2}}
+\right]
+\\=&
+i  \sqrt{\frac{\pi}{2}}
+\frac{ w_{0} \alpha}{\lambda}	
+\;.
+\end{align*}
+
+So the right side is
+
+\begin{equation}
+	C_{nmn'm'}^{R} =
+		\frac{1}{2}
+		+
+		i  \sqrt{\frac{\pi}{2}}
+		\frac{ w_{0} \alpha}{\lambda}
+\;,
+\end{equation}
+
+and the left side is (as $\int_{-\infty}^{0}dx \; xe^{-ax^2} = -\frac{1}{2a}$)
+
+\begin{equation}
+	C_{nmn'm'}^{L} =
+		\frac{1}{2}
+		-
+		i  \sqrt{\frac{\pi}{2}}
+		\frac{ w_{0} \alpha}{\lambda}
+\;.
+\end{equation}
+
+The phase of the right side:
+\begin{align*}
+\phi_R =& arg \left[ \sum_{n} \sum_{m} A_{nm} C_{nm00}^{R} \right]
+\\=&
+	arg
+	\left[
+		\frac{1}{2}
+		+
+		i  \sqrt{\frac{\pi}{2}}
+		\frac{ w_{0} \alpha}{\lambda}
+	\right]
+\\=&
+	\arctan
+		\bigfrac{
+		 \sqrt{2 \pi} w_{0} \alpha}{ 			\lambda}
+\;.
+\end{align*}
+	
+The phase of the left side:
+\begin{align*}
+\phi_L =& arg \left[ \sum_{n} \sum_{m} A_{nm} C_{nm00}^{L} \right]
+\\=&
+	arg
+	\left[
+		\frac{1}{2}
+		-
+		i  \sqrt{\frac{\pi}{2}}
+		\frac{ w_{0} \alpha}{\lambda}
+	\right]
+\\=&
+	\arctan
+		\bigfrac{-
+		 \sqrt{2 \pi} w_{0} \alpha}{ 			\lambda}
+\\=&
+-\phi_R
+\;.
+\end{align*}
+
+The offset:
+\begin{align*}
+\Delta \phi &= \frac{1}{2} \left[ \phi_R - \phi_L \right]
+\\&=
+\phi_R
+\;.
+\end{align*}
+
+Therefore, the solution is (plotted in Fig. \ref{fig:5} ):
+\begin{equation} \Delta \phi(\alpha) =  \arctan (\frac{\sqrt{2 \pi} w_{0} \alpha}{\lambda}).
+\end{equation}
+
+
+
+Taking the derivative WRT $\alpha$ (shown in Fig. \ref{fig:6}):
+\begin{align}
+\frac{d \Delta \phi}{d \alpha}  
+=&
+\frac{1}{1+(\frac{\sqrt{2 \pi} w_{0} \alpha}{\lambda})^2}\frac{\sqrt{2 \pi} w_{0}}{\lambda}
+\\=&
+\frac{\sqrt{2 \pi}w_0 \lambda}{\lambda^2+2 \pi w_0^2 \alpha^2}.
+\end{align}
+
+
+
+Alex's result (shown in Fig. \ref{fig:7}, with derivative in Fig. \ref{fig:8} ):
+
+\begin{equation}
+\Phi_{dif} = \arctan \left[ \text{erfi}(\frac{kw(z) \sin \alpha}{2 \sqrt{2}}) \right] 
+\end{equation}	
+
+\clearpage
+
+\begin{figure}
+	\centering
+		\includegraphics[scale=.65]{tilt-initial}
+		\caption{Initial result.}
+		\label{fig:5}
+\end{figure}
+
+
+\begin{figure}
+	\centering
+		\includegraphics[scale=.65]{tilt-initial-der}
+		\caption{Der. initial result tilted beam.}
+		\label{fig:6}
+\end{figure}
+
+\clearpage
+
+\begin{figure}
+	\centering
+		\includegraphics[scale=.65]{tilt-al}
+		\caption{Alex work.}
+		\label{fig:7}
+\end{figure}
+
+
+
+\begin{figure}
+	\centering
+		\includegraphics[scale=.65]{tilt-al-der}
+		\caption{Der. Alex work tilted beam.}
+		\label{fig:8}
+\end{figure}
+
+\clearpage
+
+\subsection{Length Calculation by Demodulation Formalism}
+
+As in Sn. 5, power at the right PD is
+
+\begin{equation*}
+P_{pd,R} = \int_{-\infty}^{\infty}\int_{0}^{\infty} E^* E dx dy,
+\end{equation*}
+
+and the left is
+
+ \begin{equation*}
+P_{pd,L} = \int_{-\infty}^{\infty}\int_{-\infty}^{0} E^* E dx dy,
+\end{equation*}
+
+The field is (suppressing amplitude $E_0$):
+
+\begin{equation}
+E = e^{i(w_{1}t + \phi_1)} u_{00} 
++ 
+e^{i(\omega_{2}t + \phi_2)}
+\left[
+ u_{00}
+ +
+ i\bigfrac{\pi w_0 \alpha}{\lambda} u_{10}
+ \right],
+\end{equation}
+
+simplifying then neglecting time-independent terms:
+
+\begin{align*}
+	E^{*}E = &
+    	u_{00}^*u_{00}
+		+\left[
+			u_{00}^* u_{00} + \bigfrac{\pi \omega_0 \alpha}{\lambda}^2 u_{10}^*u_{10}+ i \bigfrac{\pi \omega_0 \alpha}{\lambda} u_{00}^* u_{10} - i \bigfrac{\pi \omega_0 \alpha}{\lambda} u_{10}^* u_{00} 
+		\right]
+		\\&
+			+ 
+			u_{00}^*
+			\left[
+			u_{00}
+ 		+
+ 			i\bigfrac{\pi w_0 \alpha}{\lambda} u_{10}
+			\right]
+			e^{-i(\Delta \omega t + \Delta \phi)}
+		+
+			\left[
+			u_{00}^*
+ -
+ i\bigfrac{\pi w_0 \alpha}{\lambda} u_{10}^*
+			\right]
+			u_{00}
+			e^{i(\Delta \omega t + \Delta \phi)}
+	\\=&
+			\left[
+			\norm{u_{00}}^2
+ 		+
+ 			i\bigfrac{\pi w_0 \alpha}{\lambda} u_{00}^* u_{10}
+			\right]
+			e^{-i(\Delta \omega t + \Delta \phi)}
+		+
+			\left[
+			\norm{u_{00}}^2
+		 -
+ 			i\bigfrac{\pi w_0 \alpha}{\lambda} u_{00} u_{10}^*
+			\right]
+			e^{i(\Delta \omega t + \Delta \phi)}
+\end{align*}
+
+The power at PD is then (using previous results):
+
+\begin{align*}
+P_{pd} = & 
+	\left[
+	\int_{-\infty}^{\infty}\int_{-\infty}^{0} E^* E \;			dx dy
+	\right]
+	 + 
+	 \left[
+	 \int_{-\infty}^{\infty}\int_{0}^{\infty} E^* E \; 	dx dy
+	 \right]
+	\\=&
+	\left[
+	(
+		\frac{1}{2}-i\sqrt{\frac{\pi}{2}} \frac{w_0 \alpha}{\lambda} 
+		)
+		e^{-i(\Delta \omega t + \Delta \phi)}
+		+
+	(
+		\frac{1}{2}+i\sqrt{\frac{\pi}{2}} \frac{w_0 \alpha}{\lambda} 
+		)		
+		e^{i(\Delta \omega t + \Delta \phi)}			
+	\right]
+	\\&+
+		\left[
+	(
+		\frac{1}{2}+i\sqrt{\frac{\pi}{2}} \frac{w_0 \alpha}{\lambda} 
+		)
+		e^{-i(\Delta \omega t + \Delta \phi)}
+		+
+	(
+		\frac{1}{2}-i\sqrt{\frac{\pi}{2}} \frac{w_0 \alpha}{\lambda} 
+		)		
+		e^{i(\Delta \omega t + \Delta \phi)}			
+	\right]
+\\=&
+	e^{-i(\Delta \omega t + \Delta \phi)}	
+	+
+	e^{i(\Delta \omega t + \Delta \phi)}	
+\\=&
+2 \cos (\Delta \omega t + \Delta \phi)
+\end{align*}
+
+Obviously, no TTL, and on I/Q demod, the in-phase:
+
+\begin{align*}
+I =& 2 \cos^2 (\Delta \omega t)
+ \\=& 1 + \cos(2 \Delta \omega t)
+\end{align*}
+
+and quadrature:
+
+\begin{align*}
+Q =& 2 \cos(\Delta \omega t) \sin (\Delta \omega t)
+ \\=& \sin(2 \Delta \omega t)
+\end{align*}
+
+Thus, after a LPF, results agree with SN 8.1:
+
+\begin{equation}
+\Phi = \arctan \bigfrac{Q}{I} = 0
+\end{equation}
+
+\subsection{Gap Approximation}
+
+For a vertical(x-centered) gap of width $2b$ in the half-plane PD, the integrals in Sn. 7.1 become:
+
+\begin{equation}
+C_{nmn'm'}^{R} = \int_{b}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+\lbrace
+	\bigfrac{2}{\pi w(z)^2}
+	\exp \bigfrac{-2 \rho^2}{w(z)^{2}}	
+	\left[
+		1 
+		+ 
+		i  \bigfrac{ 2 \pi w_{0} \alpha x}{\lambda w(z)}		
+	\right]
+\rbrace
+\;,
+\end{equation}	
+
+and
+
+\begin{equation}
+C_{nmn'm'}^{L} = \int_{-\infty}^{-b} dx\int_{-\infty}^{\infty}  dy \;
+\lbrace
+	\bigfrac{2}{\pi w(z)^2}
+	\exp \bigfrac{-2 \rho^2}{w(z)^{2}}	
+	\left[
+		1 
+		+ 
+		i  \bigfrac{ 2 \pi w_{0} \alpha x}{\lambda w(z)}		
+	\right]
+\rbrace
+\;.
+\end{equation}	
+
+Integrating over the real term for the right side ($a = \frac{2}{w(z)^2}$):
+
+\begin{align*}
+\bigfrac{2}{\pi w(z)^2}
+\left[
+\int_{b}^{\infty} \int_{-\infty}^{\infty}  \; e^{-a x^2} e^{-a y^2} dydx \right]
+=&
+ \bigfrac{2}{\pi w(z)^2}
+ \left[ \frac{ \sqrt{\pi} \; \text{erfc}(\sqrt{a}b)}{2 \sqrt{a}} \right]
+ \left[ \sqrt{\frac{\pi}{a} } \right]
+ \\=& 
+ \frac{\text{erfc}(\sqrt{a} b)} {w(z)^2 a}
+ \\=&
+ \frac{1} {2} \text{erfc}(\frac{\sqrt{2} b}{w(z)})
+\;.
+\end{align*}
+
+The imaginary term is ($a = \frac{2}{w(z)^2}$):
+\begin{align*}
+i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+		\left[
+		\int_{b}^{\infty} \int_{-\infty}^{\infty}  \; e^{-a 		x^2}x e^{-a y^2} dydx \right]
+=&
+	i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+	\left[
+	\sqrt{\frac{\pi}{a}}
+\int_{b}^{\infty} dx\; e^{-a x^2}x
+\right]
+\\=&
+i  \bigfrac{ 4 w_{0} \alpha}{\lambda w(z)^3}
+\left[
+	\sqrt{\frac{\pi}{a}}
+	\frac{e^{-ab^2}}{2a}
+\right]
+\\=&
+	i \frac{\sqrt{\pi}w_0 \alpha }{\sqrt{2} \lambda} e^{-\frac{2 b^2}{w(z)^2}}
+\end{align*}
+
+So the right side is
+
+\begin{equation}
+	C_{nmn'm'}^{R} =
+		\frac{1} {2} \text{erfc}(\frac{\sqrt{2} b}{w(z)})
+		+
+		i \frac{\sqrt{\pi}w_0 \alpha }{\sqrt{2} \lambda} e^{-\frac{2 b^2}{w(z)^2}}
+\;,
+\end{equation}
+
+and the left is
+
+\begin{equation}
+	C_{nmn'm'}^{L} =
+		\frac{1} {2} \text{erfc}(\frac{\sqrt{2} b}{w(z)})
+		-
+		i \frac{\sqrt{\pi}w_0 \alpha }{\sqrt{2} \lambda} e^{-\frac{2 b^2}{w(z)^2}}
+\;.
+\end{equation}
+
+The phases are then (with plots in Fig. \ref{fig:9} and Fig. \ref{fig:10} )
+
+\begin{align*}
+\phi_R =& - \phi_L = \Delta \phi
+\\=&
+ \arctan ( \frac{\frac{\sqrt{\pi}w_0 \alpha }{\sqrt{2} \lambda} e^{-\frac{2 b^2}{w(z)^2}}}{\frac{1} {2} \text{erfc}(\frac{\sqrt{2} b}{w(z)})})
+ \\=&
+  \arctan \bigfrac{\sqrt{2\pi} w_0 \alpha \; e^{-\frac{2 b^2}{w(z)^2}}}{ \lambda \; \text{erfc}(\frac{\sqrt{2} b}{w(z)})}
+\end{align*}
+
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{tilt-initial-gap}}
+	\caption{Tilted beam at half-plane PD with centered, symmetric gap.}
+	\label{fig:9}
+	\end{figure}
+	
+		\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{tilt-initial-gap-der}}
+	\caption{Derivative for tilted beam at PD with centered, symmetric gap.}
+	\label{fig:10}
+	\end{figure}
+
+\clearpage
+
+On setting the gap width to zero, the result of SN 8.1 (tilted beam approximation without gap) is recovered.
+
+Alex also provided solutions (beyond immediate $e^{ikx\alpha} \approx 1 + ikx\alpha$ approximation).If the gap (of total width = $d$) is centered:
+
+\begin{equation}
+\Phi_{diff} =
+\arctan 
+\Big[
+    \frac
+    {
+        erf
+        (
+            \frac{d}{\sqrt{2} w(z)}
+            +
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+        -
+        erf
+        (
+            \frac{d}{\sqrt{2} w(z)}
+            -
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+    }
+    { 
+        i
+        \Big(
+            2 - erf
+                (
+                    \frac{d}{\sqrt{2} w(z)}
+                    +
+                    \frac{i kw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+             -
+             erf
+                 (
+                     \frac{d}{\sqrt{2} w(z)}
+                     -
+                     \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+        \Big)
+    } 
+\Big]
+\end{equation}
+
+Results for the symmetric gap are shown in Fig. \ref{fig:11} and Fig. \ref{fig:12}.
+
+If, however, the gap is asymmetric (where $s_l =$ distance at left and $s_r =$ distance at right):
+
+\begin{align*}
+\Phi_{diff} =&
+\frac{1}{2}
+\Big(
+\arctan 
+\Big[
+    \frac
+    {
+        erf
+        (
+            \frac{\sqrt{2} s_r}{w(z)}
+            +
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+        -
+        erf
+        (
+            \frac{\sqrt{2} s_r}{w(z)}
+            -
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+    }
+    { 
+        i
+        \Big(
+            2 - erf
+                (
+                    \frac{\sqrt{2} s_r}{w(z)}
+                    +
+                    \frac{i kw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+             -
+             erf
+                 (
+                     \frac{\sqrt{2} s_r}{w(z)}
+                     -
+                     \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+        \Big)
+    } 
+\Big]
+\\&+ 
+\arctan
+\Big[
+    \frac
+    {
+        erf
+        (
+            \frac{\sqrt{2} s_l}{w(z)}
+            +
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+        -
+        erf
+        (
+            \frac{\sqrt{2} s_l}{w(z)}
+            -
+            \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+        )
+    }
+    { 
+        i
+        \Big(
+            2 - erf
+                (
+                    \frac{\sqrt{2} s_l}{w(z)}
+                    +
+                    \frac{i kw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+             -
+             erf
+                 (
+                     \frac{\sqrt{2} s_l}{w(z)}
+                     -
+                     \frac{ikw(z) \sin \alpha}{2 \sqrt{2}}
+                 )
+        \Big)
+    } 
+\Big]
+\Big)
+\end{align*}
+
+Results for the asymmetric gap are shown in Fig. \ref{fig:13} and Fig. \ref{fig:14}.
+
+\clearpage
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{aw-tilt-initial-gap}}
+	\caption{AW result - Tilted beam at centered half-plane PD with gap.}
+	\label{fig:11}
+	\end{figure}
+	
+		\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{aw-tilt-gap-der}}
+	\caption{AW result - Derivative for tilted beam at centered half-plane PD with gap.}
+	\label{fig:12}
+	\end{figure}
+	
+\clearpage
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{aw-tilt-initial-gap-asym}}
+	\caption{AW result - Tilted beam at centered half-plane PD with asymmetric gap.}
+	\label{fig:13}
+	\end{figure}
+	
+		\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{aw-tilt-initial-gap-asym-der}}
+	\caption{AW result - Derivative for tilted beam at centered half-plane PD with asymmetric gap.}
+	\label{fig:14}
+	\end{figure}
+	
+\clearpage
+
+
+\subsection{Tilted Beam Basis Mismatch}
+
+
+
+\begin{align*}
+U_{nm} e^{ikx \alpha} = .
+\end{align*}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\sectionend
+
+\section{Tilting a Misaligned Gaussian Measurement Beam}
+
+Building on the two previous sections, a tilt to an already shifted beam is
+
+	\begin{equation}\label{eq:13}
+		\sum_{n,m} u_{nm}(x,y,0)= u_{00 (tilt)}(x,y,0)+ \bigfrac{a}{w_0}u_{10 (tilt)}(x,y,0) \; .
+	\end{equation}
+
+	\begin{figure}[hb]
+	\centering
+	\frame{\includegraphics[scale=1]{case1_HG00}}
+	\caption{Incoming beam (red) interference with local (blue).}
+	\end{figure}
+
+Following the same approximations for a general tilted beam ($\alpha \textless\textless \frac{\lambda}{w_{0}\pi}$), the first term is the same as in Eq. \ref{eq:12},
+
+	\begin{equation} \nonumber
+			u_{00 (tilt)}(x,y,0) 
+			= u_{00}(x,y,0) + i  \bigfrac{\pi w_{0} \alpha}{\lambda}u_{10} \; , 
+	\end{equation}
+
+while the $u_{10}$ term in Eq. \ref{eq:13} is:
+
+	\begin{align}\label{eq:14}
+		\bigfrac{a}{w_0} u_{10 (tilt))}(x,y,0) 
+			=& \bigfrac{a}{w_0} u_{10}\exp(i \phi)
+		\nonumber\\	
+			= & \bigfrac{a}{w_0} u_{10} \exp \left[ikx \sin(\alpha) \right] 
+		\nonumber\\	
+			\approx & 
+			\bigfrac{a}{w_0}u_{10} \exp \left[ ikx\alpha \right]
+		\nonumber\\
+			= & \bigfrac{a}{w_0}u_{10} \exp \left[ i \bigfrac{2 \pi x \alpha}{\lambda} \right]
+		\nonumber\\ 
+			\approx & 
+			\bigfrac{a}{w_0} 
+			u_{10} 
+			 \left[
+			1 + i \bigfrac{2 \pi x \alpha}{\lambda} \right]
+			\;.
+	\end{align}
+
+In terms of $u_{00}$, the imaginary term in Eq. \ref{eq:14} is:
+
+	\begin{equation}\label{eq:15}
+		 i \bigfrac{2 \pi x \alpha}{\lambda}
+		  u_{10} 
+			= 
+			i \bigfrac{4 \pi x^{2} \alpha a}{w_{0}^{2} \lambda} u_{00}  \;.
+	\end{equation}
+
+Rewriting in terms of $u_{00}$ and $u_{20}$:
+
+	\begin{equation}\label{eq:16}
+	  i \bigfrac{4 \pi x^{2} a \alpha}{w_{0}^{2}\lambda}u_{00} 
+			= i  
+			\bigfrac{2 \pi \alpha a}{\sqrt{2} \lambda}
+			\left[
+			u_{20} + 
+			\frac{\sqrt{2}}{2} u_{00}
+			\right] \;.
+	\end{equation}
+		
+Therefore, Eq. \ref{eq:13} for a shifted then tilted beam of fundamental mode at the waist is
+
+	\begin{equation}\label{eq:17}
+		\sum_{n,m} u_{nm}(x,y,0)=
+			\left[
+				1+
+				i \bigfrac{ \pi a \alpha}{ \lambda}
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{\pi w_{0} \alpha}{\lambda}	
+			\right]			
+			u_{10}
+			+
+			i  
+				\bigfrac{\sqrt{2} \pi a \alpha}{ \lambda}
+			u_{20}	 \; .
+	\end{equation}
+\sectionend
+
+\subsection{Tilting a Misaligned Beam : Halfplane PD}
+
+By Eq. \ref{eq:17}, a shifted then tilted beam of fundamental mode at the waist is
+
+	\begin{equation*}	
+		\sum_{n,m} u_{nm}(x,y,z)=
+			\left[
+				1+
+				i \bigfrac{ \pi a \alpha}{ \lambda}
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{\pi w_{0} \alpha}{\lambda}	
+			\right]			
+			u_{10}
+			+
+			i  
+				\bigfrac{\sqrt{2} \pi a \alpha}{ \lambda}
+			u_{20}	 \; .
+	\end{equation*}
+	
+Expanding in HG modes,
+
+ 	\begin{align*}	
+		\sum_{n,m} u_{nm}(x,y,z)=&
+			\left[
+				1+
+				i \bigfrac{ \pi a \alpha}{ \lambda}
+			\right]
+			\sqrt{\frac{2}{\pi}}
+\bigfrac{1}{w_{0}}
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right]
+\\&
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{\pi w_{0} \alpha}{\lambda}	
+			\right]			
+			\sqrt{\frac{2}{\pi}}
+\bigfrac{2x}{w_{0}^{2}}
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right]
+\\&
+			+
+			i  
+				\bigfrac{\sqrt{2} \pi a \alpha}{ \lambda}
+			\sqrt{\frac{2}{\pi}}
+\left[ \bigfrac{2 \sqrt{2}x^{2}}{w_{0}^{3}}- \frac{\sqrt{2}}{2} \right]
+\exp \left[ - \bigfrac{x^{2}+y^{2}}{w_{0}^{2}} \right]	 \; .
+	\end{align*}	
+	
+For interference with a Gaussian local beam at the half-plane PD's (right side):
+
+\begin{align*}
+C_{nmn'm'}^{R} =& \int_{0}^{\infty} dx\int_{-\infty}^{\infty} dy \; U_{00(LO)}^*(x,y,z) U_{nm(RX)}(x,y,z)
+\\=&
+	\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+			\exp \bigfrac{-2\rho^2}{w_{0}^{2}} 
+		\\&
+					\lbrace\left[
+				1+
+				i \bigfrac{ \pi a \alpha}{ \lambda}
+			\right]
+		\frac{2}{\pi}
+		\frac{1}{w_{0}^2}
+\\&	+
+	\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{\pi w_{0} \alpha}{\lambda}	
+	\right]
+		\Big( \frac{4 x}{\pi w_{0}^3} \Big)		 
+\\& +
+	\left[
+		i \bigfrac{\sqrt{2} \pi a \alpha}{ \lambda}
+	\right]
+						\frac{2}{\pi w_0}
+\left[ \bigfrac{2 \sqrt{2}x^{2}}{w_{0}^{3}}- \frac{\sqrt{2}}{2 w_0 } \right]	
+\rbrace
+\end{align*}
+
+Separating real and imaginary terms:
+
+\begin{align*}
+C_{nmn'm'}^{R} =& \int_{0}^{\infty} dx\int_{-\infty}^{\infty} dy \; U_{00(LO)}^*(x,y,z) U_{nm(RX)}(x,y,z)
+\\=&
+	\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+			\exp \bigfrac{-2\rho^2}{w_{0}^{2}} 
+		\\&
+		\lbrace
+			\left[
+				\frac{2}{\pi w_0^2}
+				+
+				\frac{4xa}{\pi w_0^4}
+			\right]
+			+
+			i
+			\left[
+				\frac{2 a \alpha}{\lambda w_0^2}
+				+
+				\frac{4  \alpha}{ \lambda w_0^2} x
+				+
+				\frac{8 a \alpha}{\lambda w_0^4} x^2
+				-
+				\frac{2 a \alpha}{\lambda w_0^2}				
+			\right]	
+		\rbrace
+\\=&
+	\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+			\exp \bigfrac{-2\rho^2}{w_{0}^{2}} 
+		\\&
+		\lbrace
+			\frac{2}{\pi w_0^2}
+			\left[
+				1
+				+
+				\frac{2a}{w_0^2} x
+			\right]
+			+
+			i
+			\frac{4 \alpha }{\lambda w_0^2}
+			\left[
+				x
+				+
+				\frac{2 a }{ w_0^2} x^2			
+			\right]	
+		\rbrace
+\end{align*}
+
+The real terms:
+
+\begin{align*}
+\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+			\exp \bigfrac{-2\rho^2}{w_{0}^{2}} 
+		\lbrace
+			\frac{2}{\pi w_0^2}
+			\left[
+				1
+				+
+				\frac{2a}{w_0^2} x
+			\right]
+		\rbrace
+	=&
+	\sqrt{\frac{\pi}{2}} w_0
+	\int_{0}^{\infty}dx  \;
+			\exp \bigfrac{-2 x^2}{w_{0}^{2}} 
+		\lbrace
+			\frac{2}{\pi w_0^2}
+			\left[
+				1
+				+
+				\frac{2a}{w_0^2} x
+			\right]
+		\rbrace
+		\\=&
+		\sqrt{\frac{\pi}{2}} w_0
+		\lbrace
+			\frac{2}{\pi w_0^2}
+			\left[
+				\frac{ w_0 \sqrt{2 \pi}}{8}
+				+
+				\frac{2a}{w_0^2} \frac{w_0^2}{4}
+			\right]
+		\rbrace		
+		\\=&
+				\frac{1}{4}
+				+
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+\end{align*}	
+
+The imaginary terms:
+
+\begin{align*}
+		\int_{0}^{\infty}dx\int_{-\infty}^{\infty}  dy \;
+			\exp \bigfrac{-2\rho^2}{w_{0}^{2}} 
+		\lbrace
+			i
+			\frac{4 \alpha }{\lambda w_0^2}
+			\left[
+				x
+				+
+				\frac{2 a }{ w_0^2} x^2			
+			\right]	
+		\rbrace
+		=&
+		\sqrt{\frac{\pi}{2}} w_0
+				\int_{0}^{\infty}dx \;
+			\exp \bigfrac{-2 x^2}{w_{0}^{2}} 
+		\lbrace
+			i
+			\frac{4 \alpha }{\lambda w_0^2}
+			\left[
+				x
+				+
+				\frac{2 a }{ w_0^2} x^2			
+			\right]	
+		\rbrace
+	\\=&
+		\sqrt{\frac{\pi}{2}} w_0
+		\lbrace
+			i
+			\frac{4 \alpha }{\lambda w_0^2}
+			\left[
+				\frac{w_0^2}{4}
+				+
+				\frac{2 a }{ w_0^2} \frac{\sqrt{\pi} w_0^3}{8 \sqrt{2}}			
+			\right]	
+		\rbrace
+	\\=&
+			i
+			\frac{2 \sqrt{2 \pi} \alpha }{\lambda w_0}
+			\left[
+				\frac{w_0^2}{4}
+				+
+				\frac{\sqrt{2 \pi} a w_0 }{8 }		
+			\right]
+	\\=&
+			i
+			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]				
+\end{align*}
+
+The right side is
+
+\begin{equation}
+	C_{nmn'm'}^{R} =
+		\left[
+				\frac{1}{4}
+				+
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]
+		+
+			i
+			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]
+\;,
+\end{equation}		
+		
+
+The left side is
+
+\begin{equation}
+	C_{nmn'm'}^{R} =
+		\left[
+				\frac{1}{4}
+				-
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]
+		+
+			i
+			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				- w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]
+\;,
+\end{equation}	
+
+Phase of the right:
+
+\begin{align*}
+	\phi_R = \arctan \bigfrac{			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]}{\left[
+				\frac{1}{4}
+				+
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]}
+\end{align*}	
+
+Phase of the left:
+
+\begin{align*}
+	\phi_L = \arctan \bigfrac{			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				-w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]}{\left[
+				\frac{1}{4}
+				-
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]}
+\end{align*}		
+
+The offset:
+
+\begin{align*}
+	\Delta \phi =
+	\frac{1}{2}	
+	\left[
+	\arctan \bigfrac{			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]}{\left[
+				\frac{1}{4}
+				+
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]}
+		-
+	 \arctan \bigfrac{			\frac{\sqrt{2 \pi} \alpha }{2 \lambda}
+			\left[
+				-w_0
+				+
+				\frac{\sqrt{2 \pi} a }{2}		
+			\right]}{\left[
+				\frac{1}{4}
+				-
+				\sqrt{\frac{2}{\pi}}\frac{a}{2 w_0}	
+		\right]}		
+	\right]
+\end{align*}
+		
+\subsection{Tilt-to-Length Coupling for a Shifted, Tilted Gaussian}
+
+Let the spatial component of the received beam be given by Eq. \ref{eq:17}. By orthonormality of HG modes, only the imaginary part of the received beam's $u_{00}$ mode contributes to an overall phase shift. The sum of the electric fields of the received and reference beam of the same basis is, effectively,
+
+\begin{equation}
+	E = 
+			E_{0(ref)} 
+			e^{i(( \omega_{ref} t)+\phi_{1})} 
+			u_{00}
+			+
+			E_{0(rec)}			
+			e^{i (( \omega_{rec}t)+\phi_{2})}
+			u_{00}
+			\left[
+				1+i \bigfrac{\pi a \alpha}{\lambda}
+			\right]	 \; ,
+\end{equation}
+
+and, condensing the $E_{0}$ terms,
+
+\begin{equation}
+	E^{*}E = 
+    u_{00}^*u_{00}
+		|E_{0}|^2 
+		\lbrace
+        2
+        +
+        (\frac{\pi a \alpha }{\lambda})^2
+        +
+			e^{i  (\Delta \omega t + \Delta \phi) }
+				\left[
+					1 - i\frac{\pi a \alpha }{\lambda}
+				\right]
+			+
+			e^{-i  (\Delta \omega t + \Delta \phi) }
+				\left[
+					1 + i\frac{\pi a \alpha }{\lambda}
+				\right]
+		\rbrace 
+		\;.
+\end{equation}
+
+Neglecting time-independent terms and $u_{00}$ (factors by orthornormality), and letting $\Delta \omega = \omega_{0 ref}-\omega_{0 rec}$:
+
+\begin{align}
+	E^{*}E =& 
+		|E_{0}|^2 
+		\lbrace
+       			e^{i  (\Delta \omega t + \Delta \phi) }
+				\left[
+					1 - i\frac{\pi a \alpha }{\lambda}
+				\right]
+			+
+			e^{-i  (\Delta \omega t + \Delta \phi) }
+				\left[
+					1 + i\frac{\pi a \alpha }{\lambda}
+				\right]
+		\rbrace 
+		\;
+		\nonumber \\
+		=& 
+		|E_{0}|^2
+		\lbrace
+			\left[
+			e^{i  (\Delta \omega t + \Delta \phi) }
+			+
+			e^{-i  (\Delta \omega t + \Delta \phi) }
+			\right]
+		+
+		i\frac{\pi a \alpha }{\lambda}
+			\left[
+			e^{-i  (\Delta \omega t + \Delta \phi) }
+			-
+			e^{i  (\Delta \omega t + \Delta \phi) }
+			\right]
+		\rbrace 
+		\nonumber \\
+		=&
+		2|E_{0}|^2
+		\lbrace
+			\cos (\Delta \omega t + \Delta \phi)
+			+
+			\frac{\pi a \alpha }{\lambda}
+			\sin (\Delta \omega t + \Delta \phi)
+		\rbrace		\; .
+\end{align}
+
+On demodulating and neglecting $\Delta \phi$ at the phasemeter, the I signal is
+
+\begin{align}
+		I
+	=& 
+	E^{*}E \times \cos (\Delta \omega t)
+	\nonumber \\
+	=& 
+		2|E_{0}|^2
+		\lbrace
+			\cos (\Delta \omega t)
+			+
+			\frac{\pi a \alpha }{\lambda}
+			\sin (\Delta \omega t)
+		\rbrace	
+		\times 
+		\cos (\Delta \omega t)
+		\nonumber \\
+	=& 
+		|E_{0}|^2		
+		\lbrace
+			1+
+			\cos (2 \Delta \omega t)
+			+
+			\frac{\pi a \alpha }{\lambda}
+			\sin (2 \Delta \omega t)
+		\rbrace 
+		\; ,	
+\end{align}
+
+and the Q signal is
+
+\begin{align}
+	Q
+	=& 
+	E^{*}E \times \sin (\Delta \omega t)
+	\nonumber \\
+	=& 
+		2|E_{0}|^2
+		\lbrace
+			\cos (\Delta \omega t)
+			+
+			\frac{\pi a \alpha }{\lambda}
+			\sin (\Delta \omega t)
+		\rbrace	
+		\times 
+		\sin (\Delta \omega t)
+		\nonumber \\
+	=& 
+		|E_{0}|^2		
+		\lbrace
+			\frac{\pi a \alpha }{\lambda}
+			(			
+			1-
+			\cos (2 \Delta \omega t)
+			)
+			+
+			\sin (2 \Delta \omega t)
+		\rbrace	\; ,
+\end{align}
+
+Therefore, after a low pass filter (as the heterodyne frequency is on the order of MHz), the phase is linear in shift and tilt
+
+\begin{align}
+ 		\Phi 
+ 		=&
+ 		 	\arctan	(\frac{Q}{I})	
+ 		\nonumber \\
+ 		=&
+ 			\arctan 
+ 			\bigfrac{
+			\frac{\pi a \alpha }{\lambda}
+			}
+			{1 }
+		\nonumber \\ 
+		\approx &
+			\frac{\pi a \alpha }{\lambda} \; .	
+\end{align}
+
+Shifting a misaligned beam would have rendered the same approximation. Compared to a single misalignment of a beam (Eq. \ref{eq:12}), which only has a phase shift contribution via a $u_{10}$ term, the shifted and tilted beam has phase shift via a $u_{00}$ term in quadrature phase to the reference beam. Moreover, the S/C rotating about the CoM of the TM means the beam with a waist centered on the TM also appears to rotate about the TM CoM, resulting in no TTL coupling as the wavefronts at the receiving S/C appear spherically centered on the TM CoM. The result of a misaligned then tilted beam, however, is tilt-to-length coupling, where jitter has coupled into length.\newline\newline
+
+
+\sectionend
+
+\subsection{Shifted then Tilted Gaussian Beam at waist : Gapless Half-plane PD}
+
+In Sn. 5, Eq. \ref{eq:17} for a shifted then tilted beam of fundamental mode at the waist is
+
+	\begin{equation*}	
+		\sum_{n,m} u_{nm}(x,y,z)=
+			\left[
+				1+
+				i \bigfrac{ \pi a \alpha}{ \lambda}
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{\pi w_{0} \alpha}{\lambda}	
+			\right]			
+			u_{10}
+			+
+			i  
+				\bigfrac{\sqrt{2} \pi a \alpha}{ \lambda}
+			u_{20}	 \; .
+	\end{equation*}
+
+For a gapless half-plane PD, using Eq. \ref{eq:4}, Eq. \ref{eq:5}, and Eq. \ref{eq:6}:
+\begin{align*}
+C_{nmn'm'}^{R} = &\int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+u_{00}^*
+\left(
+\left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]			
+			u_{10}
+			+
+			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+			u_{20}
+\right) 
+\\=& 
+\int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+\big( \frac{2}{\pi} \big)^{1/2} 
+\big( \frac{1}{w_{0}} \big)
+\exp \left[ - \big( \frac{x^{2}+y^{2}}{w_{0}^{2}} \big) \right]
+\\ &
+\big(
+    \left[
+                    1+
+                    i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+                \right]
+                \big( \frac{2}{\pi} \big)^{1/2} 
+\big( \frac{1}{w_{0}} \big)
+\exp \left[ - \big( \frac{x^{2}+y^{2}}{w_{0}^{2}} \big) \right]
+              \\ &  +
+                \left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+                \right]			
+                 \big( \frac{2}{\pi} \big)^{1/2}
+\big( \frac{2x}{w_{0}^{2}}\big)
+\exp \left[ - \big( \frac{x^{2}+y^{2}}{w_{0}^{2}} \big) \right]
+              \\ &   +
+                i  
+                    \big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \big( \frac{2}{\pi} \big)^{1/2}
+\left[ \big( \frac{2 \sqrt{2}x^{2}}{w_{0}^{3}} \big)- \frac{\sqrt{2}}{2 w_0} \right]
+\exp \left[ - \big( \frac{x^{2}+y^{2}}{w_{0}^{2}} \big) \right]
+    \big )  
+   \\ =&
+   \int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+		\exp \big( \frac{-2\rho^2}{w_0^{2}} \big)
+		\\& \Big(
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+          \\ &  +	
+        			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]	
+			\Big( \frac{2 x}{w_0} \Big)
+            \\ & +
+            \left[i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)\right]
+                \big(
+                    \frac{2 \sqrt{2} x^2}{w_0^2}
+                    -
+                    \frac{\sqrt{2} }{2}
+                \big)
+                \Big)
+\end{align*}
+
+Separating the integral, the first term (after $y$ integration):
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{0}^{\infty} dx \;
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+            =&
+w_0 \sqrt{ \frac{\pi}{2} }
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+         \left[
+             \frac{w_0}{2} \sqrt{\frac{\pi}{2}}
+         \right]
+        \\ =&
+         w_0^2 { \frac{\pi}{4} }
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+                    \\ =&
+         { \frac{1}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+\end{align*}
+
+The second integral term:
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{0}^{\infty} dx \;
+\frac{2}{\pi}\Big( \frac{2 x}{w_0^3} \Big)
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)	
+        			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]
+    =&
+       w_0 \sqrt{ \frac{2}{\pi} } 
+        \Big( \frac{2 }{w_0^3} \Big)
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+            \left[
+                \frac{w_0^2}{4}
+            \right]
+       \\ =&
+       \frac{1}{2}
+       \sqrt{ \frac{2}{\pi} } 
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+\end{align*}
+
+The third integral term:
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{0}^{\infty} dx \;
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \left[
+                    \frac{2 \sqrt{2} x^2}{w_0^4}
+                    -
+                    \frac{\sqrt{2}}{2 w_0^2}
+                \right]
+                \exp \big( - \frac{2 \rho^2}{w_0^2} \big)
+                =&
+    w_0 \sqrt{ \frac{\pi}{2} }
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \left[
+                    \frac{2 \sqrt{2}}{w_0^4}
+                	\left[
+                        \sqrt{ \frac{\pi}{2}}
+                        \frac{w_0^3}{8}
+                    \right]
+                   -
+                    \frac{\sqrt{2}}{2 w_0^2}
+                    	\left[
+                    	\frac{w_0}{2}
+                     	\sqrt{ \frac{\pi}{2}}
+                     	\right]
+                \right]
+      \\=&
+                    \sqrt{ \frac{\pi}{2} }
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \left[
+                    {2 \sqrt{2}}
+                    (
+                        \sqrt{ \frac{\pi}{2}}
+                        \frac{1}{8}
+                    )
+                    -
+                    \frac{\sqrt{2}}{4 }
+                  \sqrt{ \frac{\pi}{2}}
+                \right]
+      \\=&
+            			i  
+				\big( \frac{2 \pi a \alpha}{ \lambda} \big)
+                \left[
+                    {2 \sqrt{2}}
+                    (
+                        \sqrt{ \frac{1}{2}}
+                        \frac{1}{8}
+                    )
+                    -
+                    \frac{\sqrt{2}}{4 }
+                  \sqrt{ \frac{1}{2}}
+                \right]
+      \\=&
+            			i  
+				\big( \frac{2 \pi a \alpha}{ \lambda} \big)
+                \left[
+                        \frac{1}{4}
+                    -
+                    \frac{1}{4}
+                \right]
+                      \\=&
+            			0
+\end{align*}
+
+The result is
+
+\begin{align*}
+C_{nmn'm'}^{R} =  &
+	         { \frac{1}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+			+
+			\frac{1}{2}
+       \sqrt{ \frac{2}{\pi} } 
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 		
+		\\ = &
+		\frac{1}{2}	
+		\Big(	         
+        \left[
+				1
+				+
+				  \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+		\right] 
+	+
+		i \big( \frac{ \pi \alpha}{\lambda} \big)	
+		\left[
+			a
+			+
+        	        	\sqrt{\frac{2}{\pi}}
+        	w_0
+		\right] 
+		\Big)	
+\end{align*}
+
+The left side is (sign change only by the second integral, which is odd in $x$):
+\begin{align*}
+C_{nmn'm'}^{L} = &
+	         { \frac{1}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+			-
+			\frac{1}{2}
+       \sqrt{ \frac{2}{\pi} } 
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 	
+		\\ = &
+		\frac{1}{2}	
+		\Big(	         
+        \left[
+				1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+		\right] 
+	+
+		i \big( \frac{ \pi \alpha}{\lambda} \big)	
+		\left[
+			a
+			-
+        	\sqrt{\frac{2}{\pi}}
+        	w_0
+		\right] 
+		\Big)	
+\end{align*}
+
+The phase at right:
+
+\begin{equation*}
+	\phi_R = 		
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 }
+				\right]
+\end{equation*}
+
+The phase at left:
+
+\begin{align*}
+	\phi_L =&
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 }
+				\right]
+\end{align*}
+
+The DWS signal phase from difference at HPPD:
+
+\begin{align*}
+	\Delta \phi = &
+		 \frac{1}{2} 
+		 \left[
+		 	\phi_R - \phi_L
+		 \right]
+		 \\ = &
+		 \frac{1}{2}
+		 \left[
+							\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 }
+				\right]
+		-
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 }
+				\right]	
+			\right]							 	
+\end{align*}
+
+Results for the Gaussian-Gaussian at waist are shown in Fig. \ref{fig:16} and Fig. \ref{fig:18}, AW results in Fig. \ref{fig:17} and Fig. \ref{fig:19}.
+
+\clearpage
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{tilt-shift-waist}}
+	\caption{Shifted-tilted Gaussian-Gaussian at waist. Shift is $100$ micron.}
+	\label{fig:16}
+	\end{figure}
+	
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{AW-tilt-shift-waist}}
+	\caption{AW: Shifted-tilted Gaussian-Gaussian at waist. Shift is $100$ micron.}
+	\label{fig:17}
+	\end{figure}
+	
+\clearpage
+
+\clearpage
+	
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{tilt-shift-waist-DER}}
+	\caption{Slope for tilted,shifted Gaussian-Gaussian at waist.}
+	\label{fig:18}
+	\end{figure}
+	
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.65]{AW-tilt-shift-waist-DER}}
+	\caption{AW: Slope for tilted,shifted Gaussian-Gaussian at waist.}
+	\label{fig:19}
+	\end{figure}
+\clearpage
+
+
+
+\subsection{Shifted then Tilted Gaussian Beam at Waist : Gaps in Half-plane PD}
+
+For a Half-plane PD with left and right gaps $l$ and $r$, the integrals over the right side PD in Sn. 9.1 become (after $y$ integration):
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{r}^{\infty} dx \;
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+            =&
+w_0 \sqrt{ \frac{\pi}{2} }
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+         \left[
+         -
+             \frac{w_0}{2} \sqrt{\frac{\pi}{2}} 
+             \big(
+             \operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             -1
+             \big)
+         \right]
+                    \\ =&
+         -{ \frac{             \big(
+             \operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             -1
+             \big)
+         	}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+\end{align*}
+
+The second integral term:
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{r}^{\infty} dx \;
+\frac{2}{\pi}
+\Big( \frac{2 x}{w_0^3} \Big)
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)	
+        			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]
+    =&
+       w_0 \sqrt{ \frac{\pi}{2} } 
+       \frac{2}{\pi}
+        \Big( \frac{2 }{w_0^3} \Big)			
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+            \left[
+                \frac{w_0^2}{4}
+                \exp( \frac{-2r^2}{w_0^2})
+            \right]
+       \\ =&
+       \frac{\exp( \frac{-2r^2}{w_0^2})}{\sqrt{2 \pi}}
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+\end{align*}
+
+The third integral term:
+
+\begin{align*}
+&w_0 \sqrt{ \frac{\pi}{2} }   \int_{r}^{\infty} dx \;
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \left[
+                    \frac{2 \sqrt{2} x^2}{w_0^4}
+                    -
+                    \frac{\sqrt{2}}{2 w_0^2}
+                \right]
+                \exp \big( - \frac{2 \rho^2}{w_0^2} \big)
+            \\=&   
+    w_0 \sqrt{ \frac{\pi}{2} }
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \Bigg(
+                    \frac{1}{w_0^4}
+                		\left[
+                        	\frac{rw_0^2 \exp({-\frac{2r^2}{w_0^2}})}{\sqrt{2}}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}r}{w_0}\right)-1\right)w_0^3}{4}
+                    	\right]-
+                    	\left[
+                    	\frac{
+							(\sqrt{\pi} w_0
+							\operatorname{erfc}(\frac{\sqrt{2} r}{w_0})
+							}
+							{
+							4 
+							}
+                     	\right]
+                \Bigg)
+      \\=&
+     \sqrt{ {\pi} }
+            			i  
+				\big( \frac{ a \alpha}{ \lambda} \big)
+                2
+                \Bigg(
+                		\left[
+                        	\frac
+                        	{r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{\sqrt{2} w_0}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}r}{w_0}\right)-1\right)}{4}
+                    	\right]
+                   -
+                    	\left[
+                    	\frac{
+							\sqrt{\pi}
+							\operatorname{erfc}(\frac{\sqrt{2} r}{w_0})
+							}
+							{
+							4 
+							}
+                     	\right]
+                \Bigg)
+         \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                    \frac{2}{ \sqrt{\pi}}
+                		\left[
+                        	\frac
+                        	{r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{\sqrt{2} w_0}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}r}{w_0}\right)-1\right)}{4}
+                    	\right]-
+                    	\frac{
+							\operatorname{erfc}( \frac{\sqrt{2} r}{w_0})
+							}
+							{
+							2 
+							}
+                \Bigg)
+           \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	\frac
+                        	{2 r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                        	-
+                        	\frac{
+                        	\operatorname{erf}
+                        		\left(
+                        		\frac{\sqrt{2}r}{w_0}
+                        		\right)
+                        	-
+                        	1
+                        	}
+                        	{2}
+                        	-
+                    	\frac{
+							\operatorname{erfc}( \frac{\sqrt{2} r}{w_0})
+							}
+							{
+							2  
+							}
+                \Bigg)
+                           \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	\frac
+                        	{2 r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                        	-
+                        	\frac{
+                        	\operatorname{erf}
+                        		\left(
+                        		\frac{\sqrt{2}r}{w_0}
+                        		\right)
+                        	-
+                        	1
+                        	}
+                        	{2}
+                        	-
+                    	\frac{
+                    	1-
+							\operatorname{erf}( \frac{\sqrt{2} r}{w_0})
+							}
+							{
+							2  
+							}
+                \Bigg)
+                                           \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	\frac
+                        	{2 r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                \Bigg)                                        
+\end{align*}
+
+
+Performing the left side integrals (integrating $-\infty \rightarrow l$, where $l$ is negative), 
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{-\infty}^{l} dx \;
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+            =&
+w_0 \sqrt{ \frac{\pi}{2} }
+\frac{2}{\pi}
+		\frac{1}{w_0^2}
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+         \left[
+             \frac{w_0}{2} \sqrt{\frac{\pi}{2}} 
+             (
+             \operatorname{erf}
+             (\frac{\sqrt{2} l}{w_0})
+             +1
+             )
+         \right]
+                    \\ =&
+         { \frac{             \big(
+             \operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+             +1
+             \big)
+         	}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+\end{align*}
+
+The second, left integral term:
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{r}^{\infty} dx \;
+\frac{2}{\pi}
+\Big( \frac{2 x}{w_0^3} \Big)
+		\exp \big( \frac{-2 x^2}{w_0^{2}} \big)	
+        			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]
+    =&
+       w_0 \sqrt{ \frac{\pi}{2} } 
+        \Big( \frac{2 }{w_0^3} \Big)	
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+            \left[
+                -\frac{w_0^2}{4}
+                \exp( \frac{-2l^2}{w_0^2})
+            \right]
+       \\ =&
+       -
+       \frac{\exp( \frac{-2l^2}{w_0^2})}{\sqrt{2 \pi}}
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right] 
+\end{align*}
+
+The third, left integral term:
+
+\begin{align*}
+&w_0 \sqrt{ \frac{\pi}{2} }   \int_{-\infty}^{l} dx \;
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \left[
+                    \frac{2 \sqrt{2} x^2}{w_0^4}
+                    -
+                    \frac{\sqrt{2}}{2 w_0^2}
+                \right]
+                \exp \big( - \frac{2 \rho^2}{w_0^2} \big)
+            \\=&   
+    w_0 \sqrt{ \frac{\pi}{2} }
+            			i  
+				\big( \frac{\sqrt{2} \pi a \alpha}{ \lambda} \big)
+                \frac{2}{\pi}
+                \Bigg(
+                    -\frac{1}{w_0^4}
+                		\left[
+                        	\frac{lw_0^2 \exp({-\frac{2l^2}{w_0^2}})}{\sqrt{2}}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}l}{w_0}\right)+1\right)w_0^3}{4}
+                    	\right]-
+                    	\left[
+                    	\frac{
+							\sqrt{\pi} w_0
+							(
+							\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+							+
+							1
+							)
+							}
+							{
+							4 
+							}
+                     	\right]
+                \Bigg)
+      \\=&
+     \sqrt{ {\pi} }
+            			i  
+				\big( \frac{ a \alpha}{ \lambda} \big)
+                2
+                \Bigg(
+                -
+                		\left[
+                        	\frac
+                        	{l \exp({-\frac{2l^2}{w_0^2}})}
+                        	{\sqrt{2} w_0}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}l}{w_0}\right)+1\right)}{4}
+                    	\right]
+                   -
+                    	\left[
+                    	\frac{
+							\sqrt{\pi}
+							(
+							\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+							+
+							1
+							)
+							}
+							{
+							4 
+							}
+                     	\right]
+                \Bigg)
+         \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                -
+                    \frac{2}{ \sqrt{\pi}}
+                		\left[
+                        	\frac
+                        	{r \exp({-\frac{2l^2}{w_0^2}})}
+                        	{\sqrt{2} w_0}
+                        	-\frac{\sqrt{{\pi}}\left(
+                        	\operatorname{erf}\left(\frac{\sqrt{2}l}{w_0}\right)+1\right)}{4}
+                    	\right]-
+                    	\frac{
+							(
+							\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+							+
+							1
+							)
+							}
+							{
+							2 
+							}
+                \Bigg)
+           \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	-\frac
+                        	{2 l \exp({-\frac{2l^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                        	+
+                        	\frac{
+                        	\operatorname{erf}
+                        		\left(
+                        		\frac{\sqrt{2}l}{w_0}
+                        		\right)
+                        	+
+                        	1
+                        	}
+                        	{2}
+                        	-
+                    	\frac{
+							\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+							+
+							1
+							}
+							{
+							2  
+							}
+                \Bigg)
+                                           \\=&
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	-\frac
+                        	{2 l \exp({-\frac{2l^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                \Bigg)                                        
+\end{align*}
+
+The right result is
+
+\begin{align*}
+C_{nmn'm'}^{R} =  &
+                  -{ \frac{             
+             \operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             -1
+         	}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right] 
+	\\& +
+\frac{\exp( \frac{-2r^2}{w_0^2})}{\sqrt{2 \pi}} 
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]
+	\\& +
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	\frac
+                        	{2 r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0} 
+                 \Bigg) 
+  \\=&
+\frac{1}{2}	(	
+		\left[            
+             \operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             -
+             1
+         +
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}}
+         \exp( \frac{-2r^2}{w_0^2})                
+		\right]
+	\\& +
+	i \frac{\pi \alpha}{\lambda}
+	\left[
+	  a 
+		\Bigg(\operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             -
+             1
+             +
+                        	\frac
+                        	{2 \sqrt{2} r \exp({-\frac{2r^2}{w_0^2}})}
+                        	{ \sqrt{\pi} w_0} 
+             \Bigg)        
+        +  
+        w_{0}\sqrt{\frac{2}{\pi}}
+        \Bigg(        	                        	
+                        \exp({-\frac{2r^2}{w_0^2}}) 
+        \Bigg)  
+	\right] )
+\end{align*}
+
+The left result is
+
+\begin{align*}
+C_{nmn'm'}^{L} =  &
+             { \frac{             
+             \operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+             +1
+         	}{2} }
+        \left[
+				1+
+				i \big( \frac{ \pi a \alpha}{ \lambda} \big)
+			\right]
+	\\& -
+\frac{\exp( \frac{-2l^2}{w_0^2})}{\sqrt{2 \pi}}
+        	\left[
+                \frac{a}{w_{0}}		
+                +
+                i  \big( \frac{\pi w_{0} \alpha}{\lambda} \big)
+			\right]
+	\\& -
+            			i  
+				\big( \frac{\pi a \alpha}{ \lambda} \big)
+                \Bigg(
+                        	\frac
+                        	{2 l \exp({-\frac{2l^2}{w_0^2}})}
+                        	{ \sqrt{2 \pi} w_0}
+                \Bigg)
+                  \\=&
+\frac{1}{2}	(	
+		\left[            
+             \operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+             +
+             1
+         -
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}}
+         \exp( \frac{-2l^2}{w_0^2})                
+		\right]
+	\\& +
+	i \frac{\pi \alpha}{\lambda}
+	\left[
+	  a 
+		\Bigg(\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+             +
+             1
+             -
+                        	\frac
+                        	{2 \sqrt{2} l \exp({-\frac{2l^2}{w_0^2}})}
+                        	{ \sqrt{\pi} w_0} 
+             \Bigg)        
+        -  
+        w_{0}\sqrt{\frac{2}{\pi}}
+        \Bigg(        	                        	
+                        \exp({-\frac{2l^2}{w_0^2}}) 
+        \Bigg)  
+	\right] )    
+\end{align*}
+
+The phase at right:
+
+\begin{equation*}
+	\phi_R =
+			\arctan
+				\big(
+				\frac{
+							\frac{\pi \alpha}{\lambda}
+				\left[
+				  a 
+					\Bigg(- \operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+			             +
+			             1
+			             +
+			                        	\frac
+			                        	{2 \sqrt{2} r \exp({-\frac{2r^2}{w_0^2}})}
+			                        	{ \sqrt{\pi} w_0} 
+			             \Bigg)        
+			        +  
+        w_{0}\sqrt{\frac{2}{\pi}}
+        \Bigg(        	                        	
+                        \exp({-\frac{2r^2}{w_0^2}}) 
+			        \Bigg) 
+				\right] }
+				{
+				             -\operatorname{erf}(\frac{\sqrt{2} r}{w_0})
+             +
+             1
+         +
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}}
+         \exp( \frac{-2r^2}{w_0^2}) }
+	\big)
+\end{equation*}
+
+The phase at left:
+
+\begin{align*}
+	\phi_L  =&
+			\arctan
+				\big(
+				\frac{
+							\frac{\pi \alpha}{\lambda}
+				\left[
+				  a 
+					\Bigg(\operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+			             +
+			             1
+			             -
+			                        	\frac
+			                        	{2 \sqrt{2} l \exp({-\frac{2l^2}{w_0^2}})}
+			                        	{ \sqrt{\pi} w_0} 
+			             \Bigg)        
+			        -  
+        w_{0}\sqrt{\frac{2}{\pi}}
+        \Bigg(        	                        	
+                        \exp({-\frac{2l^2}{w_0^2}}) 
+			        \Bigg) 
+				\right] }
+				{
+				             \operatorname{erf}(\frac{\sqrt{2} l}{w_0})
+             +
+             1
+         -
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}}
+         \exp( \frac{-2l^2}{w_0^2}) }
+	\big)
+\end{align*}
+
+
+Recovering the phase at right, recover the gapless approximation:
+
+\begin{equation*}
+	\phi_R |_{r=0} =
+			\arctan
+				\left[
+				\frac{
+							\frac{\pi \alpha}{\lambda}
+				(
+					a      
+			        +  
+			        \sqrt{\frac{2}{\pi}} w_0
+				) }
+				{
+             1
+         +
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}} }
+	\right]
+\end{equation*}
+
+Recovering the phase at left, recover the gapless approximation:
+
+\begin{align*}
+	\phi_L|_{l=0}  =&
+			\arctan
+				\left[
+				\frac{
+							\frac{\pi \alpha}{\lambda}
+				(
+				 	 a      
+			        -  
+			       \sqrt{\frac{2}{\pi}} w_0
+				) }
+				{
+             1
+         -
+         \sqrt{ \frac{2}{\pi} }
+         \frac{a}{w_{0}} }
+	\right]
+\end{align*}
+
+The phase difference:
+
+\begin{align*}
+	\Delta \phi = &
+		 \frac{1}{2} 
+		 \left[
+		 	\phi_R - \phi_L
+		 \right]							 	
+\end{align*}
+
+\clearpage
+AW solution for general shifted,tilted HG00-HG00 in HPPD with gaps follows. Selected results in Fig. \ref{fig:20} to Fig. \ref{fig:23}.
+
+\begin{align*}
+		\Phi(exp) =&
+            \Delta \omega t - \Delta kz + k_2 x_0 sin \theta_0 + \Delta\Psi - \frac{d_2 x_0^2}{z_{r2}W_2^2}
+            \\&+
+            \frac
+            {
+                x_0 W_1^2 (W_1^2 + W_2^2)
+                ( \frac{2d_2 x_0}{z_{r2} W_2^2}-k_2 \sin \theta_0)
+                +
+                W_1^2 W_2^2 (\frac{d_2W_1^2}{z_{r2}}-\frac{d_1 W_2^2}{z_{r1}})
+                (\frac{x_0^2}{W_2^4}-(\frac{d_2 x_0}{z_{r2} W_2^2}-\frac{k_2 \sin\theta_0}{2})^2 )
+            }
+            {
+                (W_1^2+W_2^2) 
+                +
+                (\frac{d_2 W_1^2}{z_{r2} }- \frac{d_1 W_2^2}{z_{r1}})
+            }
+\end{align*}
+
+
+\begin{equation} 
+d_{1,2} = z-z_0
+\end{equation}
+
+\begin{equation}
+    \sigma = \frac{1}{w_1^2(1+i\frac{d_1}{z_{r1}})}
+        + \frac{1}{w_2^2(1-i\frac{d_2}{z_{r2}})}
+\end{equation}
+
+
+\begin{equation}
+    \gamma = \frac{2 x_0}{w_2^2(1-i \frac{d_2}{z_{r2}})}
+        -  ik_2 \sin \theta_0
+\end{equation}
+
+Where $ERROR_L$ and $ERROR_R$ correspond to the error portion of the signal results with $x_t$ and $x_b$ representing upper and lower bounds for the respective left or right PD:
+
+\begin{equation}
+ERROR_{L,R} = 
+    [
+    erf(\sqrt{\sigma}(x_t-\frac{\gamma}{2 \sigma}))
+    -erf(\sqrt{\sigma}(x_b-\frac{\gamma}{2 \sigma}))
+    ]
+\end{equation}
+
+\begin{equation}
+\phi_R = 
+    arg (ERROR_R)
+\end{equation}
+
+\begin{equation}
+\phi_L = 
+    arg (ERROR_L)
+\end{equation}
+
+\begin{equation}
+ DWS = 
+ \frac{1}{2}
+[
+\phi_R-\phi_L
+]
+\end{equation}
+
+
+\begin{equation}
+ GWS = \Phi(exp)  + DWS
+\end{equation}
+
+\clearpage
+	
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.40]{ALEX-HG00-0-0}}
+	\caption{AW: Tilted,shifted Gaussian-Gaussian at 0mm,0mm.}
+	\label{fig:20}
+	\end{figure}
+	
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.4]{ALEX-HG00-0001-0}}
+	\caption{AW: Tilted,shifted Gaussian-Gaussian at 1mm,0mm.}
+	\label{fig:21}
+	\end{figure}
+	
+		\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.4]{ALEX-HG00-0001-0001}}
+	\caption{AW: Tilted,shifted Gaussian-Gaussian at 10mm,10mm.}
+	\label{fig:22}
+	\end{figure}
+	
+
+	\begin{figure}
+	\centering
+	\frame{\includegraphics[scale=.4]{ALEX-HG00-01-01}}
+	\caption{AW: Tilted,shifted Gaussian-Gaussian at 100mm,100mm.}
+	\label{fig:23}
+	\end{figure}
+\clearpage
+
+\subsection{Analytical Shifted then Tilted Gaussian Beam}
+
+ More generally, for a tilt and shift, make the transformation
+ \begin{align}
+ z &\rightarrow z- (x+a) \sin \alpha = z'
+ \\x &\rightarrow (x+a) \cos \alpha + z \sin \alpha = x'
+ \end{align}
+ 
+ Then
+	\begin{equation} 
+		u_{00}(x',y,z') \exp(-ikz')=\bigfrac{2}{\pi}^{1/2}
+		\frac{1}{w(z')}
+		\exp \Big(\frac{-ik(x'^{2}+y^{2})}{2R_{c}(z')}-
+		\frac{x'^{2}+y^{2}}{w(z')^{2}} \Big)
+		\exp(i \Psi (z'))
+		\exp(-ikz')\;.
+	\end{equation}
+ 
+	\begin{align*}
+		u_{00}(x',y,z')=&
+		\bigfrac{2}{\pi}^{1/2}
+		\frac{1}{w(z')}
+		\exp \Big(\frac{-ik((x + a)^2 \cos^2 \alpha +y^{2})}{2R_{c}(z')}-
+		\frac{ (x + a)^2 \cos^2 \alpha + y^{2}}{w(z')^{2}} \Big)
+		\\&		
+		\times \exp(
+		-ikz + ik (x+a) \sin \alpha)	
+		\\&=
+		\bigfrac{2}{\pi}^{1/2}
+		\frac{1}{w(z')}
+		\exp \Big(\frac{-ik((x + a)^2 \cos^2 \alpha			
+		+y^{2})}{2R_{c}(z')}-
+		\frac{(x + a)^2 \cos^2 \alpha +y^{2}}{w(z')^{2}} \Big)
+		\\&		
+		\times 
+		\exp(i \Psi (z'))
+		\exp(-ikz + ik (x+a) \sin \alpha)		
+	\end{align*}
+	
+First order expansion in $\alpha$:
+
+\begin{equation}
+    u_{00}(x',y,z') \rightarrow
+        u_{00}(x',y,z') |_{\alpha=0} + \alpha \big( \frac{\partial u}{\partial \alpha} \big)|_{\alpha=0} 
+\end{equation}
+
+\begin{equation*}
+    u_{00}(x',y,z') |_{\alpha=0} =
+        		\sqrt{ \frac{2}{\pi}}
+                    \frac{1}{w(z)}
+                    \exp \Big(\frac{-ik(x^{2} + a^2 + 2 x a		
+                    +y^{2})}{2R_{c}(z)}-
+                    \frac{x^{2} + a^2 + 2 x a +y^{2}}{w(z)^{2}} \Big)                	
+                    \exp(-ikz)	
+\end{equation*}
+
+\begin{align*}
+    \big( \frac{\partial u}{\partial \alpha} \big)  =&
+        \big( \frac{\partial}{\partial \alpha} \big)
+        \big(
+            \sqrt{\frac{2}{\pi}}
+            \frac{1}{w(z-x \sin \alpha)}
+            \exp \Big(\frac{-ik((x+a)^{2}\cos^2 				\alpha			
+            +y^{2})}{2R_{c}(z-(x+a) \alpha)} \\& -
+            \frac{x^{2}\cos^2 \alpha + a^2 + x a 		\cos \alpha +y^{2}}{w(z-(x+a) \sin \alpha)^{2}} \Big)		
+            \exp(
+            -ikz + ik(x+a) \sin \alpha)
+        \big)
+        \\ =&
+        \big( \frac{\partial}{\partial \alpha} \big)
+        \big(
+            \sqrt{\frac{2}{\pi}} \frac{1}{w_0}
+            \frac{1}{\sqrt{1 + \big( \frac{z-(x+a) \sin \alpha-z_0}{z_R} \big)^2}}
+            \exp \Big(\frac{-ik( (x+a)\cos \alpha + z \sin \alpha)^2			
+            +y^{2})}{2(z-(x+a) \sin \alpha - z_0+ \frac{z_R^2}{z-z_0})} \\& -
+            \frac{ ( (x+a)\cos \alpha + z \sin \alpha)^2 +y^{2}}{w_0^2 ( 1 + \big( \frac{z-x \sin \alpha-z_0}{z_R} \big)^2)} -ikz + ik(x+a) \sin \alpha		\Big) \big)
+\end{align*}
+
+Define the terms
+
+\begin{equation}
+    f \equiv \sqrt{1 + \big( \frac{z- (x+a) \sin \alpha-z_0}{z_R} \big)^2}
+    \,
+\end{equation}
+
+and
+
+\begin{equation}
+g \equiv \exp \Big(\frac{-ik(((x+a)\cos \alpha + z \sin \alpha)^2			
+                +y^{2})}{2(z-(x+a) \sin \alpha - z_0+ \frac{z_R^2}{z-z_0})}-
+                    \frac{((x+a)\cos \alpha + z \sin \alpha)^2 +y^{2}}{w_0^2 ( 1 + \big( \frac{z-(x+a) \sin \alpha-z_0}{z_R} \big)^2)} -ikz + ikx \sin \alpha		\Big) 
+\end{equation}
+
+The derivatives are
+
+\begin{equation}
+    \big( \frac{\partial}{\partial \alpha} \big) f
+    =
+    \frac{x \cos \alpha(z-(x+a) \sin \alpha - z_0)}{z_R^2 (1+ \frac{z - (x+a) \sin \alpha - z_0}{z_R^2})^{3/2}}
+    \,
+\end{equation}
+
+and
+
+\begin{align*}
+    \big( \frac{\partial}{\partial \alpha} \big) g  =& 
+    	g \big( \frac{\partial}{\partial \alpha} \big)
+    	\Big(\frac{-ik(x^{2}\cos^2 \alpha + a^2 + x a \cos \alpha			
+        +y^{2})}{2(z-x \sin \alpha - z_0+ \frac{z_R^2}{z-z_0})} \\&-
+        \frac{x^{2}\cos^2 \alpha + a^2 + x a \cos \alpha +y^{2}}{w_0^2 ( 1 + 			\big( \frac{z-x \sin \alpha-z_0}{z_R} \big)^2)} -ikz + ikx \sin \alpha			\Big)
+\end{align*}
+
+Evaluating at $\alpha = 0$
+
+\begin{equation}
+    \left[
+    \big( \frac{\partial}{\partial \alpha} \big) f
+    \right]_{\alpha = 0}
+    =
+    \frac{x (z - z_0)}{z_R^2 (1+ \frac{z  - z_0}{z_R^2})^{3/2}}
+\end{equation}
+
+\subsection{Analytical Shifted then Tilted Gaussian Beam (tilt approximation)}
+
+If we instead make the immediate, first-order small angle expansion on the coordinate transformation in Sn. 8.6:
+ 
+ \begin{align*}
+ 	z &\rightarrow z-(x+a) \sin \alpha \approx z - (x+a) \alpha = z'
+ 	\\x &\rightarrow (x+a) \cos \alpha + z \sin \alpha \approx x+a + z \alpha = x'
+ \end{align*}
+
+ Then
+	\begin{align*} 
+		u_{00}(x',y,z') \exp(ikz')=&
+			\bigfrac{2}{\pi}^{1/2}
+			\frac{1}{w(z')}
+			\exp \Big(\frac{-ik(x'^{2}+y^{2})}{2R_{c}(z')}-
+			\frac{x'^{2}+y^{2}}{w(z')^{2}} \Big)
+			\exp(i \Psi (z'))
+			\exp(-ikz')
+		\\& \approx
+			\bigfrac{2}{\pi}^{1/2}
+			\frac{1}{w_0 \sqrt{1+\bigfrac{z-(x+a)\alpha -z_0}{z_R}^2}}
+			\\&
+			\times
+			\exp 
+			\Big(
+			\frac
+			{
+			-ik((x+a+z\alpha)^{2}		
+			+y^{2})
+			}
+			{2( z-(x+a)\alpha  - z_0 + 
+			\frac{z_R^2}{z-(x+a)\alpha -z_0 } ) }-
+			\frac{(x+a+z\alpha)^{2}  +y^{2}}
+			{
+				w_0^2 (1+\bigfrac{z-(x+a)\alpha-z_0}{z_R}^2)
+			}
+			\Big)
+			\\&
+			\times \exp(
+			i \arctan( \frac{z-(x+a)\alpha - z_0}{z_R}) )				
+			\\&
+			\times \exp(
+			ik(z - (x+a)\alpha) )						
+	\end{align*}
+
+For the right side of the half-plane PD, seek a solution
+
+\begin{equation*}
+	C_{nmn'm'}^{R} = 
+		\int_{b}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+		u_{00}^* (x,y,z) \times u_{00}(x',y,z')
+\end{equation*}
+
+where
+
+\begin{equation*}
+\left[u_{00}(x,y,z)\times \exp(ikz)\right] ^*= 
+			\bigfrac{2}{\pi}^{1/2}
+			\frac{1}{w(z)}
+			\exp \Big(\frac{ik(x^{2}+y^{2})}{2R_{c}(z)}-
+			\frac{x^{2}+y^{2}}{w(z)^{2}} \Big) 
+			\exp \Big( -i\Psi(z) \Big) \times exp(-ikz)
+			\; .
+\end{equation*}
+
+First, note that
+
+\begin{align*}
+	u_{00}^* (x,y,z) \times u_{00}(x',y,z') =&
+		\frac{2}{\pi}
+		\Big(
+			\frac{1}{w_0 \sqrt{1+\bigfrac{z-(x+a)\alpha -z_0}{z_R}^2}}
+			\\&
+			\times
+			\exp 
+			\Big(
+			\frac
+			{
+			-ik((x+a+z\alpha)^{2}		
+			+y^{2})
+			}
+			{2( z-(x+a)\alpha  - z_0 + 
+			\frac{z_R^2}{z-(x+a)\alpha -z_0 } ) }-
+			\frac{(x+a+z\alpha)^{2}  +y^{2}}
+			{
+				w_0^2 (1+\bigfrac{z-(x+a)\alpha-z_0}{z_R}^2)
+			}
+			\Big)
+			\\&
+			\times \exp(
+			i \arctan( \frac{z-(x+a)\alpha - z_0}{z_R}) )				
+			\\&
+			\times \exp(
+			-ik(x+a)\alpha )	
+		\\ &\times
+		\Big(
+			\frac{1}{w(z)}
+			\exp \Big(\frac{ik(x^{2}+y^{2})}{2R_{c}(z)}-
+			\frac{x^{2}+y^{2}}{w(z)^{2}} \Big) 
+			\exp \Big( -i\Psi(z) \Big)
+		\Big)
+\end{align*}
+
+For gap half-width $b$, the right side PD:
+
+\begin{align*}
+		C_{nmn'm'}^{R} =&
+		\int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+		\frac{2}{\pi}
+		\Big(
+			\frac{1}{w_0 \sqrt{1+\bigfrac{z-(x+a)\alpha -z_0}{z_R}^2}}
+			\\&
+			\times
+			\exp 
+			\Big(
+			\frac
+			{
+			-ik((x+a+z\alpha)^{2}		
+			+y^{2})
+			}
+			{2( z-(x+a)\alpha  - z_0 + 
+			\frac{z_R^2}{z-(x+a)\alpha -z_0 } ) }-
+			\frac{(x+a+z\alpha)^{2}  +y^{2}}
+			{
+				w_0^2 (1+\bigfrac{z-(x+a)\alpha-z_0}{z_R}^2)
+			}
+			\Big)
+			\\&
+			\times \exp(
+			i \arctan( \frac{z-(x+a)\alpha - z_0}{z_R}) )				
+			\\&
+			\times \exp(
+			-ik(x+a)\alpha )	
+		\\ &\times
+		\Big(
+			\frac{1}{w(z)}
+			\exp \Big(\frac{ik(x^{2}+y^{2})}{2R_{c}(z)}-
+			\frac{x^{2}+y^{2}}{w(z)^{2}} \Big) 
+			\exp \Big( -i\Psi(z) \Big)
+\end{align*}
+
+At waist, with $z_0=0$, this is
+
+\begin{align*}
+		C_{nmn'm'}^{R} =&
+		\int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+		\frac{2}{\pi}
+		\Big(
+			\frac{1}{w_0 \sqrt{1+\bigfrac{-(x+a)\alpha}{z_R}^2}}
+			\\&
+			\times
+			\exp 
+			\Big(
+			\frac
+			{
+			-ik((x+a)^{2}		
+			+y^{2})
+			}
+			{2( -(x+a)\alpha  + 
+			\frac{z_R^2}{-(x+a)\alpha  } ) }-
+			\frac{(x+a)^{2}  +y^{2}}
+			{
+				w_0^2 (1+\bigfrac{(x+a)\alpha}{z_R}^2)
+			}
+			\Big)
+			\\&
+			\times \exp(
+			i \arctan( \frac{-(x+a)\alpha }{z_R}) )				
+			\\&
+			\times \exp(
+			-ik(x+a)\alpha )	
+		\\ &\times
+			\frac{1}{w_0}
+			\exp 
+				\Big(-
+					\frac{x^{2}+y^{2}}{w_0^{2}} 
+				\Big) 
+\end{align*}
+
+\clearpage
+
+\sectionend
+
+\section{Higher Order Approximations to Shift-tilted Gaussian}
+
+\subsection{Second-order in Tilt, First-order Shift}
+
+
+A tilt to an already shifted beam to higher-order approximation is
+
+	\begin{equation}
+		\sum_{n,m} u_{nm}(x,y,0)= u_{00 (tilt)}(x,y,0)+ \bigfrac{a}{w_0}u_{10 (tilt)}(x,y,0) \; .
+	\end{equation}
+
+Following the same approximations for a general tilted beam ($\alpha \textless\textless \frac{\lambda}{w_{0}\pi}$), the first term to second-order in $\alpha$:
+
+\begin{align}\label{eq:12}
+		u_{00 (tilt))}(x,y,0) 
+			=&  u_{00}\exp(i \phi)
+		\nonumber\\	
+			= &  u_{00} \exp \left[ikx \sin(\alpha) \right] 
+		\nonumber\\	
+			\approx & 
+			u_{00} \exp 
+			\left[ ikx(\alpha 
+			-
+			 \frac{\alpha^3}{6} )  \right]
+		\nonumber\\ 
+			\approx & 
+			u_{00} 
+			 [
+                1 
+                + \alpha i kx 
+                - \frac{1}{2}\alpha^2 (kx)^2 
+                - \frac{1}{6}\alpha^3 i ((kx)^3+kx) 
+             ]
+			\;.
+\end{align}
+
+,so the $u_{10}$ term in Eq. \ref{eq:13} is:
+
+	\begin{equation*}
+		\frac{a}{w_0} u_{10 (tilt))}(x,y,0) 
+			 \approx 
+			\frac{a}{w_0}
+			u_{10} 
+			 [
+                1 
+                + \alpha i kx 
+                - \frac{1}{2}\alpha^2 (kx)^2 
+                - \frac{1}{6}\alpha^3 i ((kx)^3+kx) 
+             ]
+			\;.
+	\end{equation*}
+
+Therefore, a shifted-tilted beam to third-order in tilt, first-order in shift is described by (using Eq.  \ref{eq:17})
+
+	\begin{align*}
+		\sum_{n,m} u_{nm}(x,y,0)=&
+			\left[
+				1+
+				i \bigfrac{ k a \alpha}{ 2}
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{k w_{0} \alpha}{2}	
+			\right]			
+			u_{10}
+			+
+			i  
+				\bigfrac{\sqrt{2} k a \alpha}{ 2}
+			u_{20}
+			\\ + &
+			 [
+                - \frac{1}{2}\alpha^2 (kx)^2 
+                - \frac{1}{6}\alpha^3 i ((kx)^3+kx) 
+             ]
+ (		
+			u_{00} 
+			+
+			\frac{a}{w_0} u_{10} 
+			)
+				 \; .
+	\end{align*}
+	
+Rewriting the first, second-order term with $u_{00}$ in the second line as HG modes with a constant prefactor, 
+
+\begin{align*}
+	-\frac{1}{2}\alpha^2 (kx)^2 u_{00} = &
+	-\alpha^2 \frac{ (k w_0)^2} {4 \sqrt{2}} u_{20}
+	-\alpha^2 \frac{(kw_0)^2}{8} u_{00}
+	\\ = &
+	-\alpha^2  \frac{(k w_0)^2 }{4}
+		[ \frac{1}{ \sqrt{2}} u_{20}
+		+
+		\frac{1}{2} u_{00}
+		]
+			\\ = &
+	-\alpha^2  \frac{ (k w_0)^2 }{8}
+		[  \sqrt{2} u_{20}
+		+
+		 u_{00}
+		]
+\end{align*}
+
+and with $u_{10}$, using that $u_{30}$ is
+
+\begin{align*}
+u_{30} (x,y,z_0) = &
+ \sqrt{\frac{2}{\pi}}
+ \frac{1}{w_0}
+ [
+ \frac{4 \sqrt{6}}{3} (\frac{x}{w_0})^3
+ -
+ \sqrt{6} \frac{x}{w_0}
+ ]
+ \exp
+ [
+ -\frac{x^2+y^2}{w_0^2}
+ ]
+\end{align*}
+
+
+
+\begin{equation*}
+	- \frac{1}{2}\alpha^2 (kx)^2 \frac{a}{w_0}u_{10} = 
+	-\frac{1}{2}\alpha^2  (k^2 a w_0)
+	[	
+	 \frac{ \sqrt{6}} {4} u_{30}
+	+ \frac{3}{4} u_{10}
+	]
+\end{equation*}
+
+To second-order in $\alpha$, the expression is
+
+	\begin{align*}
+		\sum_{n,m} u_{nm}(x,y,0)=&
+			\left[
+				1+
+				i \bigfrac{ k a \alpha}{ 2}
+			\right]
+			u_{00}
+			+
+			\left[
+			\frac{a}{w_{0}}		
+			+
+			i  \bigfrac{k w_{0} \alpha}{2}	
+			\right]			
+			u_{10}
+			+
+			i  
+				\bigfrac{\sqrt{2} k a \alpha}{ 2}
+			u_{20}
+			\\  &
+	- \frac{1}{2}\alpha^2  (k w_0)^2 
+		[ \frac{1}{2 \sqrt{2}} u_{20}
+		+
+		\frac{1}{4} u_{00}
+		]	
+		-\frac{1}{2}
+		\alpha^2  (k^2 a w_0)
+	[	
+	 \frac{ \sqrt{6}} {4} u_{30}
+	+ \frac{3}{4} u_{10}
+	]
+				 \; .
+	\end{align*}
+
+Integrals over the first line were already evaluated, for the second line (the integral $u_{00}^* u_{20} =0$):
+
+\begin{align*}
+C_{nmn'm'}^{R} =& 
+-\frac{1}{2}
+\alpha^2 k^2
+\int_{0}^{\infty} dx\int_{-\infty}^{\infty}  dy \;
+u_{00}^* \big(
+	  w_0^2 
+		[
+		\frac{1}{4} u_{00}
+		]	
+		+ ( a w_0)
+	[	
+	 \frac{ \sqrt{6}} {4} u_{30}
+	+ \frac{3}{4} u_{10}
+	]
+	\big)
+	\\ =&
+	-\frac{1}{2}\alpha^2 k^2 
+	[
+	 \frac{1}{8} w_0^2
+	+ 
+	a w_0(
+	[
+	\sqrt{\frac{2}{\pi}}
+		(
+		\frac{1}{4}
+		-
+		\frac{3}{8}
+		)
+	]
+	+
+	\frac{3}{8}
+	\sqrt{\frac{2}{\pi}}
+	)
+	]
+		\\ =&
+	-\frac{1}{16}\alpha^2 k^2 
+	[
+	 w_0^2
+	+ 
+	a w_0(
+	2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]
+				 \; .
+\end{align*}
+
+The left side PD is then
+
+\begin{equation*}
+C_{nmn'm'}^{L} =
+	-\frac{1}{16}
+	\alpha^2 k^2 
+	[
+	  w_0^2
+	- 
+	a w_0(
+	2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]
+				 \; .
+\end{equation*}
+
+The phase at right:
+
+\begin{equation*}
+	\phi_R = 		
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 		-\frac{1}{16}\alpha^2 k^2 
+	[
+	 w_0^2
+	+ 
+	a w_0(
+		2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]			 
+				 }
+				\right]
+\end{equation*}
+
+The phase at left:
+
+\begin{align*}
+	\phi_L =&
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+	-\frac{1}{16}
+	\alpha^2 k^2 
+	[
+	 \frac{1}{8} w_0^2
+	- 
+	a w_0(
+	2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]			 
+				 }
+				\right]
+\end{align*}
+
+The DWS signal phase:
+
+\begin{align*}
+	\Delta \phi = &
+		 \frac{1}{2} 
+		 \left[
+		 	\phi_R - \phi_L
+		 \right]
+		 \\ = &
+		 \frac{1}{2}
+		 \left[
+							\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 		-\frac{1}{16}\alpha^2 k^2 
+	[
+	 w_0^2
+	+ 
+	a w_0(
+		2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]			 
+				 }
+				\right]
+		-
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+	-\frac{1}{16}
+	\alpha^2 k^2 
+	[
+	 w_0^2
+	- 
+	a w_0(
+			2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]			 
+				 }
+				\right]
+			\right]							 	
+\end{align*}
+
+\clearpage
+
+\subsection{Third-order Tilt, First-order Shift}
+
+Third-order tilt terms applied to a shifted Gaussian are
+
+\begin{equation}
+-\frac{1}{6} \alpha^3 i [(kx)^3+kx]
+[u_{00} + \frac{2ax}{w_0} u_{00}]
+.
+\end{equation}
+
+To third order in tilt for Gaussian-Gaussian interference at infinite HPPD, the additional phase terms:
+
+\begin{equation}
+C_R=
+    - i
+    \sqrt{\frac{2}{\pi}}
+    \frac{1}{6}
+    \alpha^3
+    [
+        (
+            (k w_0)^3 \frac{1}{8}
+            +
+            (k w_0) \frac {1}{4}
+        )
+        +
+        \frac{a}{w_0}
+        (
+            (k w_0)^3 \frac{3 \sqrt{\pi}}{2^{9/2}}
+            +
+            (k w_0) \frac{\sqrt{\pi}}{2^{5/2}}
+        )
+    ]   
+\end{equation}
+
+\begin{equation}
+C_L=
+    - i
+    \sqrt{\frac{2}{\pi}}
+    \frac{1}{6}
+    \alpha^3
+    [
+    -
+        (
+            (k w_0)^3 \frac{1}{8}
+            +
+            (k w_0) \frac {1}{4}
+        )
+        +
+        \frac{a}{w_0}
+        (
+            (k w_0)^3 \frac{3 \sqrt{\pi}}{2^{9/2}}
+            +
+            (k w_0) \frac{\sqrt{\pi}}{2^{5/2}}
+        )
+    ]   
+\end{equation}
+
+\clearpage
+
+	\begin{figure}
+	\centering
+	\includegraphics[scale=.65]{DWS_tiltshift_HG00HG00_HPPD}
+	\caption{DWS.}
+	\end{figure}
+	
+		\begin{figure}
+	\centering
+	\includegraphics[scale=.65]{LPS_tiltshift_HG00HG00_HPPD}
+	\caption{LPS.}
+	\end{figure}
+	
+\clearpage
+
+\sectionend
+
+\subsection{Second-order Shift, First-order Tilt}
+
+A shifted HG00 to second-order is
+
+	\begin{align*}
+		u_{00}(x-a,y,0) 
+			=&\Big(\frac{2}{\pi}\Big)^{-1/2}
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{(x-a)^{2}+y^{2}}{w_{0}^{2}}\Big)
+		\nonumber\\	
+			= & \Big(\frac{2}{\pi}\Big)^{-1/2} 
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{y^{2}}{w_{0}^{2}}\Big)
+			\exp\Big(-\frac{(x-a)^{2}}{w_{0}^{2}}\Big)
+			\nonumber\\	
+			= &
+			\Big(\frac{2}{\pi}\Big)^{-1/2} 
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{y^{2}}{w_{0}^{2}}\Big)
+			\exp\Big(-\frac{x^2}{w_{0}^{2}}\Big)
+			\exp\Big(-\frac{(a^2-2ax)}{w_{0}^{2}}\Big)
+		\nonumber\\	
+			= & u_{00}(x,y,0) \times exp \Big( \frac{2ax - a^{2}}{w_{0}^2} 			\Big)
+		\nonumber\\
+			=	& u_{00}(x,y,0)
+			\left[ 
+			1+ \frac{2ax}{w_{0}^{2}}
+			+ \frac{a^2(2x^2-w_0^2)}{w_0^4}			
+			+ \mathcal{O} \bigfrac{a}{w}^{3} \right]
+		\nonumber\\ 
+		\nonumber\approx	& 
+		u_{00} 
+		+ \frac{2ax}{w_{0}^{2}} u_{00}
+		+ a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		u_{00}
+			\\
+	= &
+	u_{00}(x,y,0)
+	+ 
+	\frac{a}{w_{0}}u_{10}(x,y,0) 
+	+
+	a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+	\;.
+	\end{align*}
+	
+The first two terms (after tilting into higher order modes) have already been calculated for integration. Applying a first-order tilt to the $a^2$ terms:
+
+
+
+\begin{align*}
+[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+		]_{tilt}
+		=&
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+		]
+		\left[
+			1 + i \bigfrac{2 \pi x \alpha}{\lambda} \right]
+			\\=&
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+		]
+		+
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+		]	
+		i \bigfrac{2 \pi x \alpha}{\lambda}
+\\=&
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2w_0^2} u_{00}
+		)
+		]
+		+
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+		)
+		]	
+		i \bigfrac{2 \pi x \alpha}{\lambda}
+		-
+		\frac{ a^2}{2w_0^2}
+		[i  \bigfrac{\pi w_{0} \alpha}{\lambda}u_{10}
+		 ]	 
+		 \\=&
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+			-			
+			\frac{1}{2 w_0^2} u_{00}
+		)
+		]
+		+
+		[a^2
+		(
+			\frac{1}{\sqrt{2}w_0^2} u_{20}
+		)
+		]	
+		i \bigfrac{2 \pi x \alpha}{\lambda}
+		-
+		\frac{a^2}{2w_0^2}
+		[i  \bigfrac{\pi w_{0} \alpha}{\lambda}u_{10}
+		 ]	
+\end{align*}
+
+The first term vanishes on integration, the second yields $-a^2 \frac{1}{4 w_0^2}$, the fourth $-\frac{\sqrt{2 \pi} a^2}{4w_0^2}
+		[i  \bigfrac{ w_{0} \alpha}{\lambda}
+		 ]$
+
+The $u_{20}$ term yields on integration with a local HG00:
+
+\begin{align*}
+w_0 \sqrt{ \frac{\pi}{2} }   \int_{0}^{\infty} dx \;
+            			i  
+				\big( \frac{2 \pi x a^2 \alpha}{ \lambda \sqrt{2} w_0^2} \big)
+                \frac{2}{\pi}
+                \left[
+                    \frac{2 \sqrt{2} x^2}{w_0^4}
+                    -
+                    \frac{\sqrt{2}}{2 w_0^2}
+                \right]
+                \exp \big( - \frac{2 \rho^2}{w_0^2} \big)
+                =&
+    w_0 \sqrt{ \frac{2}{\pi} } 
+            			i  
+				\big( \frac{2 \pi  a^2 \alpha}{ \lambda \sqrt{2} w_0^2} \big)
+                \left[
+                    \frac{2 \sqrt{2}}{w_0^4}
+                    [\frac{w_0^4}{8}]
+                    -
+                    \frac{\sqrt{2}}{2 w_0^2}                 
+                    [\frac{w_0^2}{4}]
+                \right]
+                               \\ =&
+     \sqrt{ \frac{2}{\pi} } 
+            			i  
+				\big( \frac{2 \pi  a^2 \alpha}{ \lambda \sqrt{2} w_0} \big)
+                \left[
+                    \frac{2 \sqrt{2}}{8}
+                    -
+                    \frac{\sqrt{2}}{8}
+                \right]
+                                               \\ =&
+     \sqrt{ \frac{2}{\pi} } 
+            			i  
+				\big( \frac{2 \pi  a^2 \alpha}{ \lambda  w_0} \big)
+                \left[
+                    \frac{1}{8}
+                \right]
+                                                               \\ =&
+            			i  
+				\big( \frac{\sqrt{2 \pi}  a^2 \alpha}{ 4\lambda  w_0} \big)
+\end{align*}
+
+Therefore, the additional integrals resolve to:
+
+\begin{equation*}
+				-
+				a^2 \frac{1}{4 w_0^2}
+\end{equation*}
+
+The DWS for second-order shift:
+
+\begin{align*}
+	\Delta \phi = &
+		 \frac{1}{2} 
+		 \left[
+		 	\phi_R - \phi_L
+		 \right]
+		 \\ = &
+		 \frac{1}{2}
+		 \left[
+							\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]			
+					}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 		-
+				a^2 \frac{1}{4 w_0^2}
+				 }
+				\right]
+		-
+						\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]				
+					}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 		-
+				a^2 \frac{1}{4 w_0^2}
+				 }
+				\right]
+			\right]							 	
+\end{align*}
+
+\sectionend
+
+\subsection{Third-order Shift, First-order Tilt}
+
+Taking the previous section to third order:
+
+	\begin{align*}
+		u_{00}(x-a,y,0) 
+			=&\Big(\frac{2}{\pi}\Big)^{-1/2}
+			\Big(\frac{1}{w_{0}}\Big)
+			\exp\Big(-\frac{(x-a)^{2}+y^{2}}{w_{0}^{2}}\Big)
+		\nonumber\\
+			=	& u_{00}(x,y,0)
+			\left[ 
+			1+ \frac{2ax}{w_{0}^{2}}
+			+ \frac{a^2(2x^2-w_0^2)}{w_0^4}			
+			+ \mathcal{O} \bigfrac{a}{w}^{3} \right]
+		\nonumber\\ 
+		\nonumber\approx	& 
+		u_{00} 
+		+ \frac{2ax}{w_{0}^{2}} u_{00}
+		+ a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		u_{00}
+		+
+		a^3
+		(
+			\frac{4x^3}{3w_0^6}
+			-
+			\frac{2x}{w_0^4}
+		)
+		u_{00}
+	\end{align*}
+
+Applying a first-order tilt to third-order shift term, then integration over $y$ for HPPD:
+
+\begin{align*}
+		a^3
+		(
+			\frac{4x^3}{3w_0^6}
+			-
+			\frac{2x}{w_0^4}
+		)
+		(
+			1
+			+
+			i\frac{2 \pi x \alpha}{\lambda}
+		)
+		u_{00}
+		=&
+		a^3
+		(
+			x^3
+			\frac{4}{3w_0^6}
+			-
+			x
+			\frac{2}{w_0^4}
+		+
+		i\frac{2 \pi  \alpha}{\lambda}
+		[
+			x^4
+			\frac{4}{3w_0^6}
+			-
+			x^2
+			\frac{2}{w_0^4}
+		]
+		)
+		u_{00}
+		\\
+		\rightarrow &
+		a^3
+		[
+			w_0 \sqrt{\frac{\pi}{2}}
+		]
+		(
+			x^3
+			\frac{4}{3w_0^6}
+			-
+			x
+			\frac{2}{w_0^4}
+		+
+		i\frac{2 \pi  \alpha}{\lambda}
+		[
+			x^4
+			\frac{4}{3w_0^6}
+			-
+			x^2
+			\frac{2}{w_0^4}
+		]
+		)
+		u_{00}
+\end{align*}
+
+Integrating over HPPD right and left sides (neglected $w_0$ from from $x$ integral):
+
+\begin{align*}
+C_R =&
+		a^3
+		[
+			w_0 \sqrt{\frac{\pi}{2}}
+		]
+		(
+			[\frac{1}{8}]
+			\frac{4}{3w_0^6}
+			-
+			[\frac{1}{4}]
+			\frac{2}{w_0^4}
+		+
+		i\frac{2 \pi  \alpha}{\lambda}
+		\big[
+			[\frac{3}{32} \sqrt{\frac{\pi}{2}}]
+			\frac{4}{3w_0^6}
+			-
+			[\frac{1}{8} \sqrt{\frac{\pi}{2}}]
+			\frac{2}{w_0^4}
+		\big]
+		)
+		\frac{2}{\pi}\frac{1}{w_0^2}
+		\\
+		=&
+		a^3 \frac{1}{w_0}
+			\sqrt{\frac{2}{\pi}}
+		(
+			[\frac{1}{8}]
+			\frac{4}{3w_0^6}
+			-
+			[\frac{1}{4}]
+			\frac{2}{w_0^4}
+		+
+		i\frac{2 \pi  \alpha}{\lambda}
+		\big[
+			[\frac{3}{32} \sqrt{\frac{\pi}{2}}]
+			\frac{4}{3w_0^6}
+			-
+			[\frac{1}{8} \sqrt{\frac{\pi}{2}}]
+			\frac{2}{w_0^4}
+		\big]
+		)	
+		\\
+				=&
+		a^3 \frac{1}{w_0}
+		(
+			\sqrt{\frac{2}{\pi}}
+			[\frac{1}{8}]
+			\frac{4}{3w_0^6}
+			-
+			\sqrt{\frac{2}{\pi}}
+			[\frac{1}{4}]
+			\frac{2}{w_0^4}
+		+
+		i\frac{2 \pi  \alpha}{\lambda}
+		\big[
+			[\frac{3}{32}]
+			\frac{4}{3w_0^6}
+			-
+			[\frac{1}{8} ]
+			\frac{2}{w_0^4}
+		\big]
+		)
+		\\
+						=&
+		a^3 \frac{1}{w_0}
+		(
+			\sqrt{\frac{2}{\pi}}
+			\frac{1}{6 w_0^6}
+			-
+			\sqrt{\frac{2}{\pi}}
+			\frac{1}{2 w_0^4}
+		+
+		i\frac{ \pi  \alpha}{\lambda}
+		\big[
+			\frac{2}{3w_0^6}
+			-
+			\frac{1}{2 w_0^4}
+		\big]
+		)
+\end{align*}
+
+Over the right side then (restoring $w_0$ terms):
+
+\begin{equation*}
+C_R=
+			a^3
+			\frac{1}{w_0^3}
+		(
+			\sqrt{\frac{2}{\pi}}
+			\frac{1}{6}
+			-
+			\sqrt{\frac{2}{\pi}}
+			\frac{1}{2}
+		+
+		i\frac{ \pi  \alpha w_0}{\lambda}
+		\big[
+			\frac{2}{3}
+			-
+			\frac{1}{2}
+		\big]
+		)
+\end{equation*}
+
+Finally, for right and left sides (odd in $x$ change sign):
+
+\begin{equation*}
+C_R=
+			a^3
+			\frac{1}{6 w_0^3}
+		(
+			-2 \sqrt{\frac{2}{\pi}}		
+		+
+		i\frac{ \pi  \alpha w_0}{\lambda}
+		)
+\end{equation*}
+
+\begin{equation*}
+C_L=
+			a^3
+			\frac{1}{6 w_0^3}
+		(
+			2 \sqrt{\frac{2}{\pi}}		
+		+
+		i\frac{ \pi  \alpha w_0}{\lambda}
+		)
+\end{equation*}
+
+The phase at right:
+
+\begin{equation*}
+	\phi_R = 		
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+						+
+						a^3
+			\frac{1}{6 w_0^2}
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				-
+				a^2
+				\frac{1}{4 w_0^2}
+				-
+				a^3
+			\frac{1}{6 w_0^3}
+		(
+			2 \sqrt{\frac{2}{\pi}}	)
+				 }
+				\right]
+\end{equation*}
+
+The phase at left:
+
+\begin{align*}
+	\phi_L =&
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+						+
+						a^3
+			\frac{1}{6 w_0^2}
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				-
+				a^2
+				\frac{1}{4 w_0^2}
+				 +
+				 a^3
+			\frac{1}{6 w_0^3}
+		(
+			2 \sqrt{\frac{2}{\pi}}	)
+				 }
+				\right]
+\end{align*}
+
+The signal phases are largely unchanged for higher-order approximation in shift, shown below.
+
+		\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=.5]{DWS_shift_to_3rd}
+	\caption{DWS first-order tilt, up to third-order shift.}
+	\end{figure}
+	
+			\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=.5]{LPS_shift_to_3rd}
+	\caption{LPS first-order tilt, up to third-order shift.}
+	\end{figure}
+
+\sectionend
+
+\subsection{Second-order tilt and shift}
+
+For second-order shift, then second-order tilt:
+
+\begin{equation}
+\sum u_{nm} =
+	u_{00}
+	\Big[
+		1
+		+ 
+		\frac{2ax}{w_{0}^{2}}
+		+ a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		\Big]
+		\Big[
+				1
+				+ i \frac{2 \pi x \alpha}{\lambda}
+                - \frac{1}{2}\alpha^2 (kx)^2 
+         \Big]
+\end{equation}
+
+Cross terms from the first two values in each set of brackets have already been worked to first-order in small parameters. What remains is
+
+\begin{align*}
+                - \frac{1}{2}\alpha^2 (kx)^2 
+                \Big[
+		1
+		+ 
+		\frac{2ax}{w_{0}^{2}}
+		\Big]	
+                +
+		a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		\Big[
+		1
+				+ i \frac{2 \pi x \alpha}{\lambda}				
+		\Big]
+		+
+		a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		(	
+                - \frac{1}{2}\alpha^2 (kx)^2 
+		)
+\end{align*}
+
+Second-order with first-order cross terms were solved in other subsections, leaving:
+
+\begin{align*}
+		a^2
+		(
+			\frac{2x^2}{w_0^4}
+			-
+			\frac{1}{w_0^2} 
+		)
+		(	
+                - \frac{1}{2}\alpha^2 (kx)^2 
+		)
+		=
+		(a \alpha)^2 k^2
+		(
+		\frac{x^2}{2 w_0^2}
+		-
+		\frac{x^4}{w_0^4}
+		)
+\end{align*}
+
+Additional terms on integration over right side HPPD:
+
+\begin{align*}
+C_R=&
+		(a \alpha)^2 k^2
+		\sqrt{\frac{2}{\pi}}
+		(
+		\frac{1}{8 }
+		-
+		\frac{3}{32}
+		)
+		\\=&
+		(a \alpha)^2 k^2
+		\sqrt{\frac{2}{\pi}}
+		(
+		\frac{1}{32}
+		)	
+		\\=&
+		C_L	
+\end{align*}
+
+Combine this term with second/first-order cross term additional values:
+
+The phase at right:
+
+\begin{equation*}
+	\phi_R = 		
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						+
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				+
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+				 		-\frac{1}{16}\alpha^2 k^2 
+	[
+	 w_0^2
+	+ 
+	a w_0(
+		2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]			
+		-
+	a^2 \frac{1}{4 w_0^2} 
+	+
+			(a \alpha)^2 k^2
+		\sqrt{\frac{2}{\pi}}
+		(
+		\frac{1}{32}
+		)	
+				 }
+				\right]
+\end{equation*}
+
+The phase at left:
+
+\begin{align*}
+	\phi_L =&
+			\arctan
+				\left[
+					\frac
+					{ \frac{\pi \alpha}{\lambda}
+					\left[
+						a 
+						-
+						\sqrt{\frac{2}{\pi}} w_0
+					\right]}					
+				{1
+				-
+				 \sqrt{\frac{2}{\pi}} \frac{a}{w_0}
+	-\frac{1}{16}
+	\alpha^2 k^2 
+	[
+	 \frac{1}{8} w_0^2
+	- 
+	a w_0(
+	2
+	\sqrt{\frac{2}{\pi}}
+	)
+	]		
+	-
+	a^2 \frac{1}{4 w_0^2}	
+		+
+			(a \alpha)^2 k^2
+		\sqrt{\frac{2}{\pi}}
+		(
+		\frac{1}{32}
+		)	 
+				 }
+				\right]
+\end{align*}
+
+\clearpage
+
+The signal phases are largely unchanged for higher-order approximation in shift, shown below.
+
+		\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=.5]{DWS_shift_to_2nd_both}
+	\caption{DWS second-order tilt and shift.}
+	\end{figure}
+	
+			\begin{figure}[ht]
+	\centering
+	\includegraphics[scale=.5]{LPS_shift_to_2nd_both}
+	\caption{LPS second-order tilt and shift.}
+	\end{figure}
+
+
+\sectionend
+
+
+\section{Modulating TTL over LISA's Long Arm}
+Jitter of a tilted beam, as outlined in the previous section, can be used to model TTL coupling in LISA's long arm.
+
+Sinusoidal modulation of the terms in Eq. \ref{eq:17} which came as an effect of jitter, scaled in $m$, yields:
+
+	\begin{equation}
+		u(x,y,0)=
+			\left[
+				u_{00}
+				+
+				\frac{a}{w_{0}}				
+				u_{10}		
+			\right]	
+			+
+            i\frac{\pi \alpha}{\lambda}
+			\left[
+			a
+			\Big (	
+				u_{00}
+			+
+				\sqrt{2}			
+				u_{20}
+			\Big )	
+			+
+			w_{0}
+			u_{10}
+			\right]
+			m \sin(\omega t - \phi) 
+			\;.
+	\end{equation}
+
+Assume an arm of 2.5 Gm, $w_{0}=15$ cm, and PD radius = 15 cm.
+
+\sectionend
+
+\section{Movable Aperture}
+The MA in Fig. \ref{fig:4} is designed to reduce TTL coupling via adjustable compensation during mission maintenance sessions. A discrete, artificial jitter applied to the S/C generates a measurable offset which may be subtracted with positional calibration of the MA. 
+
+	\begin{figure}[ht]
+	\centering
+	\frame{\includegraphics[scale=.3]{movable_app}}
+	\caption{Incoming beam (red) passes a movable aperture and interferes with local beam (blue).}
+	\label{fig:4}
+	\end{figure}
+
+
+
+\sectionend
+
+\section{Tophat-Gaussian Interference}
+
+\subsection{Tophat Representation as Superposition of HG modes}
+
+\clearpage
+
+\subsection{First-order Shifting and Tilting Tophat}
+
+In shifting and tilting the tophat (to first order), we gain from the exponential terms in HG modes
+
+\begin{align*}
+\sum u_{nm} \rightarrow_{shift,tilt} &
+    \sum u_{nm}' \left[
+        1+ i k \alpha x
+    \right]
+\end{align*}
+
+
+where the second term arises from tilting exponential terms in HG modes. The new modes $u_{nm}'$ are functions of $H_n(\frac{\sqrt{2}(x+a)}{w(z)})$, resulting from the unidirectional shift $x+a$. To first order, the new modes resulting from this shift follow
+
+\begin{align*}
+	u_{nm}' =& u_{nm} + a \frac{\partial u_{nm}}{\partial x}
+	\\=&
+		u_{nm} 
+		-
+		\frac{2ax}{w(z)^2} 
+		u_{nm}
+		\\&+
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)(\Psi(z))		
+		\Big)\;
+		\times
+		a 		
+		\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+			\\=&
+		u_{nm}
+		[
+		1
+		-
+		\frac{2ax}{w(z)^2}]		
+		+
+		a 	
+		u_{nm}(	
+		\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+		)
+		.
+\end{align*}
+
+Derivative of Hermite polynomials:
+
+
+\begin{equation*}
+	H_n'(x) = 2n H_{n-1} (x)
+\end{equation*}
+
+Therefore
+
+\begin{align*}
+	\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+	=&
+	\frac{2 \sqrt{2} n}{w(z)} H_{n-1}\Big(\frac{\sqrt{2}x}{w(z)}\Big)
+\end{align*}
+
+so that the tophat is now expressed as
+
+\begin{align*}
+	\sum u_{nm} \rightarrow_{shift,tilt}&
+    \left[
+    u_{nm} 
+    [
+		1
+		-
+		\frac{2ax}{w(z)^2}]	
+	+ 
+	a \frac{2 \sqrt{2} n}{w(z)} 
+	u_{nm}(H_{n-1}) \right]
+	\left[
+        1+ i k \alpha x
+    \right]
+    \\=&
+     u_{nm}
+        \left[
+        1 - \frac{2 a }{w(z)^2} x + i k \alpha x - i \frac{2 k \alpha a}{w(z)^2} x^2 
+    \right]
+    + 
+	a \frac{2 \sqrt{2} n}{w(z)} 
+	u_{nm}(H_{n-1})
+	\left[
+        1+ i k \alpha x
+    \right]
+\end{align*}
+
+where $u_{nm} (H_{n-1})$ can be rewritten
+
+\begin{align*}
+	u_{nm} (H_{n-1}) =&
+	(\frac{2 n }{2 n})^{1/2}
+			\exp(-i \Psi(z))\exp(i \Psi(z))
+			\\& \times
+	[
+	(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\Psi(z)		
+		\Big)
+				]
+		\\=&
+		(\frac{1}{2 n}) ^{1/2}
+		\exp(i \Psi(z))
+			(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-1)+m+1)\Psi(z)			
+		\Big)
+		\\=&
+		\sqrt{\frac{1}{2 n}}
+		\exp(i \Psi(z))
+		u_{n-1,m}
+\end{align*}
+
+The new tophat modes after applying first-order shift ($x+a$) and tilt are 
+
+\begin{equation}
+	u_{n,m} \rightarrow
+     u_{n,m}
+        \left[
+        1 - \frac{2 a }{w(z)^2} x + i k \alpha x - i \frac{2 k \alpha a}{w(z)^2} x^2 
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi(z))
+	u_{n-1,m}
+	\left[
+        1+ i k \alpha x
+    \right]	 \; .
+\end{equation}
+
+Rewriting this explicitly
+
+
+\begin{align*}
+u_{n,m} \rightarrow &
+     		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)(\Psi(z))		
+		\Big)
+		\\& \times
+        \left[
+        1 - \frac{2 a }{w(z)^2} x + i k \alpha x - i \frac{2 k \alpha a}{w(z)^2} x^2 
+    \right]
+    \\& + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi(z))
+	(\frac{1}{2 n}) ^{1/2}
+		\exp(i \Psi(z))
+			(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-1)+m+1)\Psi(z)			
+		\Big)
+	\left[
+        1+ i k \alpha x
+    \right]	 \; .
+\end{align*}
+
+
+
+\subsection{Tophat Change of Basis (AW) }
+
+To account for different basis in
+
+\begin{equation*}
+	\int_{-Y}^{Y}dy \int_{x_1}^{x_2}
+	dx \; HG_{0,0}^*HG_{a,b}
+\end{equation*}
+
+also represented as
+
+\begin{equation*}
+	\langle 0,0 | a,b \rangle
+\end{equation*}
+
+This goes to 
+
+\begin{align*}
+	\langle 0,0 | a,b \rangle
+	\rightarrow &
+	\frac
+	{
+		2^{a+b+1}
+		\sqrt{a!b!}
+		e^{i(\Delta w t 
+		- (k_2 Z - k_1d_1)
+		)}
+	}
+	{
+		\pi \sqrt{\sigma_x \sigma_y^{1+b}}
+		w_1 w_2^{1+a+b}
+		(1+i \frac{d_1}{z_r1})
+		(1-i \frac{Z}{z_r2})^{1+a+b}
+	}
+	\\& \times
+	\sum_{A=0}^{\lfloor{\frac{a}{2}} \rfloor}
+	\sum_{B=0}^{\lfloor{\frac{b}{2}} \rfloor}
+	\frac
+	{
+		-\frac{1}{8}^{A+B}
+		W_2^{2(A+B)}
+		\sigma_y^B		
+	}
+	{
+		A!B!(b-2B)!
+	}
+	\\& \times
+	[
+		G(\sqrt{\sigma}Y;b-2B)
+		-
+		G(-\sqrt{\sigma}Y;b-2B)		
+	]
+	\\& \times
+	\frac{1}{(a-2A)!\sigma^{\frac{a}{2}-A}}
+	\\& \times
+	[
+		G(\sqrt{\sigma}x_2;a-2A)
+		-
+		G(\sqrt{\sigma}x_1;a-2A)			
+	]
+\end{align*}
+
+which is equivalent to 
+
+\begin{align*}
+ \langle 0,0 | a,b \rangle =&
+ 	\frac
+ 	{
+ 		2^{a+b+1}
+ 		\sqrt{a!b!}
+ 		e^{i(\Delta w t 
+			- (k_2 Z - k_1d_1)
+		)}
+ 	}
+ 	{
+ 		\pi \sqrt{\sigma^{2+a+b}}
+ 		w_1 w_2^{1+a+b}
+ 		(1+i \frac{d_1}{z_{r1}})
+ 		(1-i \frac{Z}{z_{r2}})^{1+a+b}	
+ 	}
+ 	\\& \times
+		\sum_{A=0}^{\lfloor{\frac{a}{2}} \rfloor}
+		\sum_{B=0}^{\lfloor{\frac{b}{2}} \rfloor}
+		\frac
+		{
+			-\frac{\sigma}{8}^{A+B}
+			W_2^{2(A+B)}	
+		}
+		{
+			A!B! (a-2A)!(b-2B)!
+		}
+ 	\\& \times
+ 		[
+		G(\sqrt{\sigma}Y;b-2B)
+		-
+		G(-\sqrt{\sigma}Y;b-2B)		
+	]
+	[
+		G(\sqrt{\sigma}x_2;a-2A)
+		-
+		G(\sqrt{\sigma}x_1;a-2A)			
+	]
+\end{align*}
+
+The $G$ functions have symmetry in the $y$ case
+
+\begin{equation*}
+	G(-x;T) = -G(x;T)
+\end{equation*}
+
+for even $T$ and 
+
+\begin{equation*}
+	G(-x;T) = -G(x;T)
+\end{equation*}
+
+for odd $T$. So $ 		[
+		G(\sqrt{\sigma}Y;b-2B)
+		-
+		G(-\sqrt{\sigma}Y;b-2B)		
+	]$ is 0 if $b$ odd and if $2G(\sqrt{\sigma}Y;b-2B)$ is even.\\ 
+Therefore, for odd $b$:
+
+\begin{equation*}
+	\langle a,b| 0,0 \rangle=0
+\end{equation*}
+
+for even $b$:
+
+\begin{align*}
+ \langle 0,0 | a,b \rangle =&
+ 	\frac
+ 	{
+ 		2^{a+b+1}
+ 		\sqrt{a!b!}
+ 		e^{i(\Delta w t 
+			- (k_2 Z - k_1d_1)
+		)}
+ 	}
+ 	{
+ 		\pi \sqrt{\sigma^{2+a+b}}
+ 		w_1 w_2^{1+a+b}
+ 		(1+i \frac{d_1}{z_{r1}})
+ 		(1-i \frac{Z}{z_{r2}})^{1+a+b}	
+ 	}
+ 		\\& \times
+			\sum_{A=0}^{\lfloor{\frac{a}{2}} \rfloor}
+			\sum_{B=0}^{\lfloor{\frac{b}{2}} \rfloor}
+			\frac
+			{
+				-(\frac{\sigma}{8})^{A+B}
+				W_2^{2(A+B)}
+				\Gamma(\frac{b+1}{2}-B)		
+			}
+			{
+				A!B!(a-2A)!(b-2B)!
+			}
+		\\& \times
+			[
+				\mathrm{erf}(\sqrt{\sigma}Y)
+				-
+				\frac{2e^{-\sigma Y^2}}{\sqrt{\pi}}
+				\sum_{M=0}^{\frac{b}{2}-(B+1)}
+				\frac{(M+1)!}{(2(M+1))!}
+				(2\sqrt{\sigma}Y)^{2M+1}
+			]
+		\\& \times
+			[
+				G(\sqrt{\sigma}x_2;a-2A)
+				-
+				G(\sqrt{\sigma}x_1;a-2A)			
+			]
+\end{align*}
+
+For the functions
+
+\begin{equation*}
+	G(x;m) = \frac{m!}{2^m (\frac{m}{2})!}
+	[
+		\sqrt{\pi}\frac{erf(x)}{2}
+		-
+		\frac{e^{-x^2}}{\pi}
+		\sum_{M=0}^{\frac{m}{2}-1}
+		\frac{(M+1)!}{(2(M+1))!} (2x)^{2M+1}	
+	]
+\end{equation*}
+
+This can be rewritten, for even $m$:
+
+\begin{equation*}
+	G(x;m) = \Gamma(\frac{m+1}{2})
+	[
+		\frac{erf(x)}{2}
+		-
+		\frac{e^{-x^2}}{\pi}
+		\sum_{M=0}^{\frac{m}{2}-1}
+		\frac{(M+1)!}{(2(M+1))!} (2x)^{2M+1}	
+	]
+\end{equation*}
+
+and for odd $m$:
+
+\begin{equation*}
+	G(x;m) = 
+		-\frac{(\frac{m-1}{2})! e^{-x^2}}{2}
+		\sum_{M=0}^{\frac{m-1}{2}} \frac{x^{2M}}{M!}
+\end{equation*}
+
+and $\sigma$ is defined as
+
+\begin{equation}
+	\sigma = 
+		\frac{1}{w_1^2 (1+i\frac{d_1}{z_{r1}})}
+		+
+		\frac{1}{w_2^2 (1-i\frac{Z}{z_{r2}})}			
+\end{equation}
+
+\sectionend
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% BIBLIOGRAPHY
+\clearpage
+\newpage
+\nocite{*}
+\bibliography{PauLisa}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+
+
+\clearpage
+\newpage
+
+\renewcommand\thefigure{A.\arabic{figure}} 
+\appendix
+
+
+\section{Intensity Plots}
+
+\setcounter{figure}{0}
+  
+\begin{figure}[h] 
+\centering\includegraphics[width=\linewidth]{intensity-plots}
+\caption{Intensity profiles for HG modes $HG_{00}$ to $HG_{33}$ ($n$ vertical, $m$ horizontal) at the beam waist, taken from PauLISA.py. Arbitary units.}
+\label{fig:A1}
+\end{figure}
+
+\newpage
+\section{Acronyms}
+\begin{align*}
+\textbf{ACRONYMS}&\\
+\textbf{CoM}\tab& center\; of\; mass\\
+\textbf{HG}\tab &Hermite-Gauss\\
+\textbf{OB}\tab &optical bench\\
+\textbf{PD}\tab &photodetector\\
+\textbf{PDD}\tab &Payload\; Definition\; Document\\
+\textbf{S/C}\tab &spacecraft\\
+\textbf{TM}\tab &test\; mass\\
+\textbf{TTL}\tab &tilt\; to\; length\\
+\end{align*}
+
+\newpage
+\section{Optical Parameters Reference}
+
+\begin{equation}
+\text{Beam Spot}
+= w(z)
+ = w_0 \sqrt{1 + \big( \frac{z-z_0}{z_R} \big)^2}
+\end{equation}
+
+\begin{equation}
+\text{Rayleigh Range}
+= z_R = \frac{\pi w_0^2}{\lambda} \approx 3 m
+\end{equation}
+
+\begin{equation}
+\text{Diffraction Angle}
+= \Theta
+ = \arctan \frac{w_0}{z_R} = \arctan \frac{\lambda}{\pi w_0} \approx \frac{w_0}{z_R}
+\end{equation}
+
+\begin{equation}
+\text{q-param}
+= q(z)
+ = i z_r + z - z_0 = q_0 + z - z_0 , q_0 = i z_R
+\end{equation}
+
+\begin{equation}
+\text{Radius of Curvature}
+= R_c
+ = z-z_0+ \frac{z_R^2}{z-z_0}
+ = D + \frac{z_R^2}{D}
+\end{equation}
+
+\[
+  R_c \approx \begin{cases}
+               \infty \tab\tab\tab(D<<z_R ; \text{Near})\\
+               z \tab\tab\tab\;\;(z>>z_R,z_0 ; \text{Far Field})\\
+               2 z_R \tab\tab\;(D=z_R; \text{Maximum Curvature})
+            \end{cases}
+\]
+
+\end{document}
