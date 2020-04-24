@@ -75,7 +75,7 @@ defaultParams = Params(1064e-9, 1e-3, 0)
 def radius_curvature(z, params):
     # r=z-z0+(Zr**2/(z-z0))
 
-    if z == params.getZ0():
+    if (z == params.getZ0() ):
         r = float('inf')
     else:
         r = z - params.getZ0() + (params.getZr() ** 2) / (z - params.getZ0())
@@ -85,16 +85,16 @@ def radius_curvature(z, params):
 
 
 ## Gouy phase
-def gouy_phase(z, order, params):
-    Gouy = atan((z - params.getZ0()) / params.getZr())
-    return Gouy
+def gouy_phase(z, params):
+    gouy = atan((z - params.getZ0()) / params.getZr())
+    return gouy
 
 
 ## Phase lag
 def phase_lag(z, order, params):
     # phaselag = (order + 1) * atan(z / params.getZr())
-    phaselag = (order + 1) * gouy_phase(z, order, params)
-    return phaselag
+    phase = (order + 1) * gouy_phase(z, order, params)
+    return phase
 
 
 ## Spot size (LR eq. 9.16)
@@ -113,23 +113,79 @@ def q(z, params):
 ##INITIAL INPUT:
 # --------------------------------------------------------------------------------------------------------
 
-##Get user input modes, create 2-d modes array, show array
-def modes(*argv):
+##Get user input modes, from array of 3-element arrays
+def modes(modes_array):
     # get number of modes passed by user
-    NumberModes = (len(argv))
-
+    
+    NumberModes = (len(modes_array))
     # create lists for n,m,c of length equal to number of modes
     listN = [None] * NumberModes
     listM = [None] * NumberModes
     listC = [None] * NumberModes
 
     # parse args into lists (n,m, & c) to set modes
-    for i in range(0, len(argv)):
-        listN[i], listM[i], listC[i] = argv[i]
+    for i in range(0, len(modes_array)):      
+        listN[i], listM[i], listC[i] = modes_array[i][0],modes_array[i][1],modes_array[i][2]
 
     # get a modes 2-d array created from lists of n,m,c of required size
     return (create_modes(listN, listM, listC, NumberModes))
 
+def return_array(arr):
+    arr1 = arr
+    return(arr)
+
+##Create modes from 1D array (as in sim)############################################
+def modes_from_1d_array(modes_array):
+
+    NumberModes = int(len(modes_array))
+    listModesN = [None] * NumberModes
+    listModesM = [None] * NumberModes
+    listModesC = [None] * NumberModes
+    
+    for i in range(NumberModes):
+        A=i
+        N= N_f(A)
+        listModesN[i] = int(m(N,A))
+        listModesM[i] = int(n(N,A))
+        listModesC[i] = modes_array[i]
+    
+    modes_list =create_modes(listModesN, listModesM, listModesC, NumberModes) 
+    return (modes_array)
+
+##Create modes from 1D array (as in sim)############################################
+def modes_from_1d_array_LV(modes_array_real,modes_array_imag):
+
+    NumberModes = int(len(modes_array_real))
+    listModesN = [None] * NumberModes
+    listModesM = [None] * NumberModes
+    listModesC = [None] * NumberModes
+    
+    for i in range(NumberModes):
+        A=i
+        N= N_f(A)
+        listModesN[i] = int(m(N,A))
+        listModesM[i] = int(n(N,A))
+        C_real = modes_array_real[i]
+        C_imag = modes_array_imag[i]
+        listModesC[i] = C_real+ (1)*C_imag
+    
+    modes_list =create_modes(listModesN, listModesM, listModesC, NumberModes) 
+    return (np.array(modes_list))
+
+def n(N,A):
+    res = (N+1)*(N+2)/2 - (A+1)
+    return(res)
+
+def m(N,A):
+    res = A - (N*(N+1)/2)
+    return(res)
+
+def N_f(A):   
+    res = np.floor((np.sqrt(8*A+1)-1)/2)  
+    return(res)
+
+
+##################################################################################
 
 ##Create the modes 2-d array
 def create_modes(listN, listM, listC, NumberModes):
@@ -143,9 +199,30 @@ def create_modes(listN, listM, listC, NumberModes):
 
     # initialize 2-d array
     modes = [[0 for m in range(cols)] for n in range(rows)]
+    
     # iterate through lists to set modes in grid
     for i in range(0, NumberModes):
         modes[listN[i]][listM[i]] = listC[i]
+        
+    return (modes)
+
+##Create the modes 2-d array
+def create_modes_order18(listN, listM, listC, NumberModes):
+    # get max n and m to create modes grid with size based on user highest modes
+    MaxN = max(listN)
+    MaxM = max(listM)
+
+    # get number of rows/cols for modes grid (plus 1 for 0 index..)
+    rows = 18 + 1
+    cols = 18 + 1
+
+    # initialize 2-d array
+    modes = [[0 for m in range(cols)] for n in range(rows)]
+    
+    # iterate through lists to set modes in grid
+    for i in range(0, NumberModes):
+        if (listN[i] + listM[i]) < 19:
+            modes[listN[i]][listM[i]] = listC[i]
 
     return (modes)
 
@@ -171,7 +248,135 @@ def show_modes(modes):
                 List.append(modes[n][m])
                 if m == cols - 1:
                     print(str(n) + "   " + str(List))
+# --------------------------------------------------------------------------------------------------------
 
+# where alpha an array
+def iterative_scatter_case2(z,params,a,alpha,modes):
+    modes_list = []
+    
+    for i in range(len(alpha)):
+        mode = scatter_case2(z,params,a,alpha[i],modes)
+        modes_list.append(mode)
+    return(modes_list)
+
+# Apply general mode scatter formulas for x-dependence (uni-directional offset coord.), RETURN modes
+def scatter_case2_first_order(z,params,a,alpha,modes):
+    
+    k = params.getK()
+    w0 = params.getW0()
+    zr = params.getZr()
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params) 
+    
+    #iterate through modes
+    rows = len(modes)
+    cols = len(modes[0])
+    
+    number_modes = rows*cols
+    
+    #build new modes (up to 2 orders larger for quad. dep.)
+    new_modes = [[0 for m in range(cols+2)] for n in range(rows+2)]
+    
+    
+    # Add u(n+2,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm = modes[n][m]
+                sc_plus_2 = x_plus_2(w0,z,zr,n)       #scattering factor from x terms (factor with off_plus_2)        
+                off_plus_2 = -( (1j)*2*k*a*alpha/(w_z**2) )  #factor from shift/tilt offset terms(factor with sc_plus_2)
+                
+                #Add at n+2
+                new_modes[n+2][m] += c_nm*(sc_plus_2*off_plus_2)
+                
+    # Add u(n+1,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm = modes[n][m]
+                sc_plus_1 = x_plus_1(w0,z,zr,n)       #scattering factor from x terms        
+                off_plus_1 = ( (1j)*k*alpha - (2*a)/w_z**2 )  #factor from shift/tilt offset terms
+                
+                #Add at n+1
+                new_modes[n+1][m] += c_nm*(sc_plus_1*off_plus_1)
+
+    # Add u(n,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm = modes[n][m]
+                
+                sc_plus_1 = x_plus_1(w0,z,zr,n)       #scattering factor from x terms        
+                off_plus_1 = ( (1j)*k*alpha*(2*a*sqrt(n))/w_z * e**((1j)*gouy) )  #factor from shift/tilt offset terms
+                
+                sc_zero_2 = x_zero_2(w0,z,zr,n)
+                off_zero_2 = -( (1j)*2*k*a*alpha/w_z**2 )
+                
+                #Add at n
+                new_modes[n][m] += c_nm*(1 + (sc_plus_1*off_plus_1) + (sc_zero_2*off_zero_2) )
+                
+    # Add u(n-1,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0 and (n>0) ): #neglect n-1
+                c_nm = modes[n][m]
+                
+                sc_minus_1 = x_minus_1(w0,z,zr,n)       #scattering factor from x terms        
+                off_minus_1 = ( (1j)*k*alpha - 2*a/w_z**2)  #factor from shift/tilt offset terms
+
+                sc = ( 2*a*sqrt(n)*e**( (1j)*gouy)/w_z )
+                
+                #Add at n
+                new_modes[n-1][m] += c_nm*(sc + (sc_minus_1*off_minus_1) )
+                
+    # Add u(n-2,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0 and (n>1) ): #neglect n=0,1
+                c_nm = modes[n][m]
+                
+                sc_minus_1 = x_minus_1(w0,z,zr,n)       #scattering factor from x terms        
+                off_minus_1 = ( (1j)*k*alpha*a*2*sqrt(n)*e**((1j)*gouy)/w_z )  #factor from shift/tilt offset terms
+
+                sc_minus_2 = x_minus_2(w0,z,zr,n)       #scattering factor from x terms        
+                off_minus_2 = -( (1j)*2*k*a*alpha/w_z**2 )  #factor from shift/tilt offset terms
+                
+                #Add at n
+                new_modes[n-2][m] += c_nm*( (sc_minus_1*off_minus_1) + (sc_minus_2*off_minus_2) )
+                
+                  
+    return(new_modes)
+
+# --------------------------------------------------------------------------------------------------------
+#x dep
+def x_plus_1(w0,z,zr,n):    
+    factor = (w0/2)*( ( 1-(1j)*(z/zr) )*np.sqrt(n+1))
+    return(factor)
+
+#x dep
+def x_minus_1(w0,z,zr,n):
+    factor = (w0/2)*( np.sqrt(n)*(1+(1j)*(z/zr)) )
+    return(factor)
+
+#x**2 dep
+def x_plus_2(w0,z,zr,n):
+    factor = (w0/2)**2 * ( (1-(1j)*z/zr)**2 * np.sqrt((n+1)*(n+2)) )
+    return(factor)
+
+#x**2 dep
+def x_zero_2(w0,z,zr,n):
+    factor = (w0/2)**2 *( (2*n+1) * (1+(z/zr)**2 ) )
+    return(factor)
+
+#x**2 dep
+def x_minus_2(w0,z,zr,n):
+    factor = (w0/2)**2 * ( np.sqrt(n*(n-1)) * (1+(1j)*(z/zr))**2 )
+    return(factor)
 
 # --------------------------------------------------------------------------------------------------------
 ##Get X,Y plane for calculation
@@ -240,6 +445,58 @@ defaultPlane = Plane(-2e-2, 2e-2, 1000, -2e-2, 2e-2, 1000)
 def calculate(params, plane, modes, z):
     X, Y = np.meshgrid(plane.getX(), plane.getY())
     amp = amplitude(params, X, Y, z, modes)
+    
+    #get phase from amp.
+    result_row = len(amp)
+    result_col = len(amp[0])
+    phase = np.zeros((result_row,result_col), dtype=float)
+    for r in range(result_row):
+        for c in range(result_col):
+            phase[r,c] = (np.angle(amp[r][c]))
+    #phase = Phase(params, X, Y, z, modes)
+
+    f = Result(params, plane, modes, z, amp, phase)
+
+    return (f)
+
+def calculate_x(params, plane, modes, z):
+    X, Y = np.meshgrid(plane.getX(), plane.getY())
+    amp = amplitude_x(params, X, Y, z, modes)
+    
+    #get phase from amp.
+    result_row = len(amp)
+    result_col = len(amp[0])
+    phase = np.zeros((result_row,result_col), dtype=float)
+    for r in range(result_row):
+        for c in range(result_col):
+            phase[r,c] = (np.angle(amp[r][c]))
+    #phase = Phase(params, X, Y, z, modes)
+
+    f = Result(params, plane, modes, z, amp, phase)
+
+    return (f)
+
+def calculate_x2(params, plane, modes, z):
+    X, Y = np.meshgrid(plane.getX(), plane.getY())
+    amp = amplitude_x2(params, X, Y, z, modes)
+    
+    #get phase from amp.
+    result_row = len(amp)
+    result_col = len(amp[0])
+    phase = np.zeros((result_row,result_col), dtype=float)
+    for r in range(result_row):
+        for c in range(result_col):
+            phase[r,c] = (np.angle(amp[r][c]))
+    #phase = Phase(params, X, Y, z, modes)
+
+    f = Result(params, plane, modes, z, amp, phase)
+
+    return (f)
+
+# Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
+def calculate_case2(params, plane, modes, z,a,alpha):
+    X, Y = np.meshgrid(plane.getX(), plane.getY())
+    amp = amplitude_case2(params, X, Y, z, modes,a,alpha)
 
     result_row = len(amp)
     result_col = len(amp[0])
@@ -253,6 +510,22 @@ def calculate(params, plane, modes, z):
 
     return (f)
 
+# Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
+def calculate_case2_no_scatter(params, plane, modes, z,a,alpha):
+    X, Y = np.meshgrid(plane.getX(), plane.getY())
+    amp = amplitude_case2_no_scatter(params, X, Y, z, modes,a,alpha)
+
+    result_row = len(amp)
+    result_col = len(amp[0])
+    phase = np.zeros((result_row,result_col), dtype=float)
+    for r in range(result_row):
+        for c in range(result_col):
+            phase[r,c] = (np.angle(amp[r][c]))
+    #phase = Phase(params, X, Y, z, modes)
+
+    f = Result(params, plane, modes, z, amp, phase)
+
+    return (f)
 
 # --------------------------------------------------------------------------------------------------------
 # Calculate peak and its location from result
@@ -331,457 +604,499 @@ class Result:
 
 # Amplitutude calculation from w0,Zr. (LR eq. 9.26)
 def amplitude(params, x, y, z, modes):
-    # Unm a sum over modes
-    UnmSum = 0
+    # Unm, U spatial sum over HG modes n,m
+    Unm_Sum = 0
+    Unm = 0
     rows = len(modes)
     cols = len(modes[0])
 
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params)
+
+    
     # Iterate through modes
     for n in range(rows):
         for m in range(cols):
 
-            coeff = 0
-            # n array for hermpol
-            carrN = [0] * rows
-            carrN[n] = modes[n][m]
+            #coefficient for mode (n,m) from modes array
+            coeff = modes[n][m]
 
-            # m array for hermpol
-            carrM = [0] * cols
-            carrM[m] = modes[n][m]
+            # neglect 0 coefficient modes
+            if(coeff != 0):
+                
+                # n array for hermpol
+                carrN = [0] * rows
+                carrN[n] = modes[n][m]
+                
+                # m array for hermpol
+                carrM = [0] * cols
+                carrM[m] = modes[n][m]
+                
+                # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes
+                if (carrN[n] != 0):
+                    carrN[n] = 1
+                if (carrM[m] != 0):
+                    carrM[m] = 1
+                    
+                order = n + m
 
-            # Avoid double-counting coefficient
-            if (carrN[n] != 0):
-                carrN[n] = 1
+                Unm = (
+                    coeff*
+                    HG(n,m,params, x, y, z, modes,rows,cols)
+                )
+                
+                # Add each to result
+                Unm_Sum += Unm
 
-            order = n + m
+    return (Unm_Sum)
 
-            Unm = (1 / sqrt(2 ** (order - 1) * factorial(n) * factorial(m) * pi)) * \
-                  (1 / w(z, params)) * e ** ((1j) * (order + 1) * gouy_phase(z, order, params)) * \
-                  e ** ((-1j) * ((params.getK() * (x ** 2 + y ** 2) / (2.0 * radius_curvature(z, params)))) -
-                        ((x ** 2 + y ** 2) / ((w(z, params)) ** 2))) * \
-                  herm_poly(n, x, carrN, z, params) * \
-                  herm_poly(m, y, carrM, z, params)
+# Amplitutude calculation from w0,Zr. (LR eq. 9.26)
+def amplitude_x(params, x, y, z, modes):
+    # Unm, U spatial sum over HG modes n,m
+    Unm_Sum = 0
+    Unm = 0
+    rows = len(modes)
+    cols = len(modes[0])
 
-            # Add each to result
-            UnmSum += Unm
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params)
 
-    return (UnmSum)
+    
+    # Iterate through modes
+    for n in range(rows):
+        for m in range(cols):
 
+            #coefficient for mode (n,m) from modes array
+            coeff = modes[n][m]
+
+            # neglect 0 coefficient modes
+            if(coeff != 0):
+                
+                # n array for hermpol
+                carrN = [0] * rows
+                carrN[n] = modes[n][m]
+                
+                # m array for hermpol
+                carrM = [0] * cols
+                carrM[m] = modes[n][m]
+                
+                # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes
+                if (carrN[n] != 0):
+                    carrN[n] = 1
+                if (carrM[m] != 0):
+                    carrM[m] = 1
+                    
+                order = n + m
+
+                Unm = (
+                    x*coeff*
+                    HG(n,m,params, x, y, z, modes,rows,cols)
+                )
+                
+                # Add each to result
+                Unm_Sum += Unm
+
+    return (Unm_Sum)
+
+# Amplitutude calculation from w0,Zr. (LR eq. 9.26)
+def amplitude_x2(params, x, y, z, modes):
+    # Unm, U spatial sum over HG modes n,m
+    Unm_Sum = 0
+    Unm = 0
+    rows = len(modes)
+    cols = len(modes[0])
+
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params)
+
+    
+    # Iterate through modes
+    for n in range(rows):
+        for m in range(cols):
+
+            #coefficient for mode (n,m) from modes array
+            coeff = modes[n][m]
+
+            # neglect 0 coefficient modes
+            if(coeff != 0):
+                
+                # n array for hermpol
+                carrN = [0] * rows
+                carrN[n] = modes[n][m]
+                
+                # m array for hermpol
+                carrM = [0] * cols
+                carrM[m] = modes[n][m]
+                
+                # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes
+                if (carrN[n] != 0):
+                    carrN[n] = 1
+                if (carrM[m] != 0):
+                    carrM[m] = 1
+                    
+                order = n + m
+
+                Unm = (
+                    (x**2)*coeff*
+                    HG(n,m,params, x, y, z, modes,rows,cols)
+                )
+                
+                # Add each to result
+                Unm_Sum += Unm
+
+    return (Unm_Sum)
 
 ## Get herm polys from modes
 # mode: working mode (as Calculate iterates through n,m grid
-# coord: x or y
+# coord: x(n) or y(m) coordinate space
 # carr: coefficient array
-def herm_poly(mode, coord, carr, z, params):
-    herm = hermval(coord * sqrt(2.0) / w(z, params), carr)
+def herm_poly(mode, coord, coeff_array, w_z):
+    herm_argument=(coord * sqrt(2) / w_z)
+    herm = hermval(herm_argument, coeff_array)    
     return herm
 
+# mode: n or m
+# coord: x or y
+# calculate hermite polynomials H_n(sqrt(2)x/w(z)) or H_m(sqrt(2)y/w(z)) 
 
-# --------------------------------------------------------------------------------------------------------
-## 2D INTENSITY PLOT:
+    
+#only for n
+def herm_poly_case2(mode, coord,a, coeff_array, z, w_z):
+    herm_argument=( (coord - a) * sqrt(2) / w_z)
+    herm = hermval(herm_argument, coeff_array)
+    return herm
 
-# These IntensitySlice's require recalculation at x and y plane.
-# Plotting calc at, e.g., halfway points in x-y grid for x=0 (center col.) or y=0 (center row) accomplishes the same.
-def ampslicex(y, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
+# Amplitutude calculation from w0,Zr. (LR eq. 9.26)
+def amplitude_case2(params, x, y, z, modes,a,alpha):
+    # Unm, U spatial sum over HG modes n,m
+    Unm_Sum = 0
+    rows = len(modes)
+    cols = len(modes[0])
 
-    # Calc amp from z and modes in f
-    if('labels' in kwargs):
-        for i in range(0, len(argv)):
-            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), amp, label=kwargs['labels'][i])
-    else:
-        for i in range(0, len(argv)):
-            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), amp, label=i + 1)
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params)
+    
+    # Iterate through modes
+    for n in range(rows):
+        for m in range(cols):
 
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
+            #coefficient for mode (n,m) from modes array
+            coeff = modes[n][m]
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # format x axis to mm or microns depending on order of x limits
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-    plt.title('Amp. along x')
-    plt.xlabel('X (m)')
-    plt.ylabel('Amplitude')
-    plt.legend(loc='upper right')
-    # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
+            # neglect 0 coefficient modes
+            if(coeff != 0):
+                
+                # n array for hermpol
+                carrN = [0] * rows
+                carrN[n] = modes[n][m]
+                
+                # m array for hermpol
+                carrM = [0] * cols
+                carrM[m] = modes[n][m]
+                
+                # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes
+                if (carrN[n] != 0):
+                    carrN[n] = 1
+                if (carrM[m] != 0):
+                    carrM[m] = 1
+                    
+                order = n + m
+
+                Unm = (
+                    coeff*
+                    (
+                        1 / sqrt( 2**(order-1)*factorial(n)*factorial(m)*pi )
+                    ) 
+                    * (1 / w_z ) 
+                    * e**( 
+                            (1j)*(order+1)*gouy 
+                         ) 
+                    * e**
+                    ( 
+                        (
+                            -(1j)*(k * ( (x-a)**2 + y**2) ) 
+                            / 
+                            (2 * r_c)
+                        ) 
+                        - 
+                        (
+                            ( (x-a) **2 + y**2) / w_z**2
+                        )
+                    ) 
+                    * herm_poly_case2(n, x,a, carrN, z, w_z) 
+                    * herm_poly(m, y, carrM, w_z) 
+                    * e**(-(1j)*k*(z-x*np.sin(alpha) )) 
+                )
+                
+                # Add each to result
+                Unm_Sum += Unm
+
+    return (Unm_Sum)
+
+#Amplitutude calculation from w0,Zr. (LR eq. 9.26)
+#shift is x+a
+def amplitude_case2_no_scatter(params, x, y, z, modes,a,alpha):
+    # Unm, U spatial sum over HG modes n,m
+    Unm_Sum = 0
+    Unm_nminus1 = 0
+    Unm_second_order = 0
+    rows = len(modes)
+    cols = len(modes[0])
+
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    w_0 = w(0,params)
+    gouy = gouy_phase(z,params)
+    
+    # Iterate through modes
+    for n in range(rows):
+        for m in range(cols):
+
+            #coefficient for mode (n,m) from modes array
+            coeff = modes[n][m]
+
+            # neglect 0 coefficient modes
+            if(coeff != 0):
+                
+                # Arrays for hermpoly
+                carrN = [0] * rows
+                carrM = [0] * cols
+                
+                # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes. Factor coeff. after.
+                carrN[n] = 1
+                carrM[m] = 1
+                    
+                Unm = (coeff*
+                    HG(n,m,params, x, y, z, modes,rows,cols)
+                    * (1 
+                       - x*2*a/(w_z**2)
+                       + x*(1j)*k*alpha 
+                       - (x**2)*(1j)*2*k*a*alpha/(w_z**2) 
+                      )
+                )
+                
+                # n array for hermpol
+                if(n>0):
+                    Unm_nminus1 = (coeff*
+                        (a*2*sqrt(n)/w_z)
+                        * e**((1j)*gouy)
+                        *(1+(1j)*k*alpha*x)
+                        *HG( (n-1),m,params, x, y, z, modes,rows,cols)
+                    )
+                
+                
+                first=0
+                second=0
+                if(n>0):
+                    first = HG( (n-1),m,params, x, y, z, modes,rows,cols)
+                    
+                if(n>1):
+                    second = (HG( (n-2),m,params, x, y, z, modes,rows,cols)*
+                    (4/w_z**2)
+                                                    * sqrt(n*(n-1))
+                                                    *e**(2*(1j)*gouy) 
+                             )
+                
+                Unm_second_order = (
+                                    coeff/2*
+                                        (
+                                             a**2*(1+(1j)*k*alpha*x)
+                                            *(
+                                                 (4*(x**2)-2*(w_z**2))/(w_z**4)
+                                                    *HG(n,m,params, x, y, z, modes,rows,cols)   
+                                                 - 8*x/(w_z**3)*(sqrt(n))*e**((1j)*gouy)
+                                                    *first
+                                                 +  second
+                                            )
+                                        )                                   
+                                    )
+                
+                #Add each to result
+                Unm_Sum += Unm + Unm_nminus1 + Unm_second_order
+
+    return (Unm_Sum)
+
+# def amplitude_case2_no_scatter(params, x, y, z, modes,a,alpha):
+#     # Unm, U spatial sum over HG modes n,m
+#     Unm_Sum = 0
+#     Unm_nminus1 = 0
+#     rows = len(modes)
+#     cols = len(modes[0])
+
+#     k = params.getK()
+#     r_c = radius_curvature(z, params)
+#     w_z = w(z,params)
+#     w_0 = w(0,params)
+#     gouy = gouy_phase(z,params)
+    
+#     # Iterate through modes
+#     for n in range(rows):
+#         for m in range(cols):
+
+#             #coefficient for mode (n,m) from modes array
+#             coeff = modes[n][m]
+
+#             # neglect 0 coefficient modes
+#             if(coeff != 0):
+                
+#                 # n array for hermpol
+#                 carrN = [0] * rows
+#                 carrN[n] = modes[n][m]
+                
+#                 carrN_minus1 = [0] * rows
+#                 carrN_minus1[n] = modes[n][m]
+                
+#                 # m array for hermpol
+#                 carrM = [0] * cols
+#                 carrM[m] = modes[n][m]
+                
+#                 # Only calculate Herm pol. sum w/ coeff. 1 for non-zeroes
+#                 if (carrN[n] != 0):
+#                     carrN[n] = 1
+#                     carrN_minus1[(n-1)]=1
+#                 if (carrM[m] != 0):
+#                     carrM[m] = 1
+                    
+#                 order = n + m
+
+#                 Unm = (coeff*
+#                         (
+#                         (
+#                             1 / sqrt( 2**(order-1)*factorial(n)*factorial(m)*pi )
+#                         ) 
+#                         * (1 / w_z ) 
+#                         * e**( 
+#                                 (1j)*(order+1)*gouy 
+#                              ) 
+#                         * e**
+#                         ( 
+#                             (
+#                                 -(1j)*(k * (x**2 + y**2) ) 
+#                                 / 
+#                                 (2 * r_c)
+#                             ) 
+#                             - 
+#                             (
+#                                 (x**2 + y**2) / w_z**2
+#                             )
+#                         ) 
+#                         * herm_poly(n, x, carrN, w_z) 
+#                         * herm_poly(m, y, carrM, w_z) 
+#                         * e**(-(1j)*k*z)
+#                         * e**((1j)*gouy)
+#                     )
+#                     * (1 
+#                        - x*2*a/(w_z**2)
+#                        + x*(1j)*k*alpha 
+#                        - (x**2)*(1j)*2*k*a*alpha/(w_z**2) 
+#                       )
+#                 )
+                
+#                 carrN[n]=0
+#                 # n array for hermpol
+#                 if(n>0):
+#                     Unm_nminus1 = (coeff*
+#                         (a*2*sqrt(n)/w_z)
+#                         * e**((1j)*gouy)
+#                         *(1+(1j)*k*alpha*x)
+#                         *(
+#         (
+#             1 / sqrt( 2**(order-2)*factorial(n-1)*factorial(m)*pi )
+#         ) 
+#         * (1 / w_z ) 
+#         * e**( 
+#                 (1j)*(order)*gouy 
+#              ) 
+#         * e**
+#         ( 
+#             (
+#                 -(1j)*(k * (x**2 + y**2) ) 
+#                 / 
+#                 (2 * r_c)
+#             ) 
+#             - 
+#             (
+#                 (x**2 + y**2) / w_z**2
+#             )
+#         ) 
+#         * herm_poly(n-1, x, carrN_minus1, w_z) 
+#         * herm_poly(m, y, carrM, w_z) 
+#         * e**(-(1j)*k*z)
+#         * e**((1j)*gouy)
+#     )
+#                     )
+#                     print(Unm_nminus1)
+#                 # Add each to result
+#                 Unm_Sum += Unm + Unm_nminus1
+
+#     return (Unm_Sum)
 
 
-def ampslicey(x, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
+#Calculate HG modes
+def HG(n,m,params, x, y, z, modes,rows,cols):
+    # Unm, U spatial sum over HG modes n,m
 
-    # Calc amp from z and modes in f
-    for i in range(0, len(argv)):
-        amp = amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), np.real(amp), label=i + 1)
+    k = params.getK()
+    r_c = radius_curvature(z, params)
+    w_z = w(z,params)
+    w_0 = w(0,params)
+    gouy = gouy_phase(z,params)
+   
+    Unm = 0
+    
+    # n array for hermpol
+    carrN = [0] * rows
 
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
+    # m array for hermpol
+    carrM = [0] * cols
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
+    # HG is called for non-zero coeff. The coeff. is factored in by calling fxn.
+    carrN[n] = 1
+    carrM[m] = 1
 
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
+    order = n + m
 
-    plt.title('amp along y')
-    plt.xlabel('Y (m)')
-    plt.ylabel('amp')
-    plt.legend(loc='upper right')
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
+    Unm = (
+        (
+            1 / sqrt( 2**(order-1)*factorial(n)*factorial(m)*pi )
+        ) 
+        * (1 / w_z ) 
+        * e**( 
+                (1j)*(order+1)*gouy 
+             ) 
+        * e**
+        ( 
+            (
+                -(1j)*(k * (x**2 + y**2) ) 
+                / 
+                (2 * r_c)
+            ) 
+            - 
+            (
+                (x**2 + y**2) / w_z**2
+            )
+        ) 
+        * herm_poly(n, x, carrN, w_z) 
+        * herm_poly(m, y, carrM, w_z) 
+        * e**(-(1j)*k*z)
+        * e**((1j)*gouy)
+    )
+               
+    return (Unm)
 
-
-def intslicex(y, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
-
-    # Calc amp from z and modes in f
-
-    if('labels' in kwargs):
-        for i in range(0, len(argv)):
-            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=kwargs['labels'][i])
-    else:
-        for i in range(0, len(argv)):
-            amp = amplitude(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=i + 1)
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    if ('ylim' in kwargs):
-        plt.ylim(kwargs['ylim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # format x axis to mm or microns depending on order of x limits
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-    plt.title('Intensity along X ')
-    plt.xlabel('X [m]')
-    plt.ylabel('Intensity [a.u.]')
-    plt.legend(loc='upper right')
-    # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
-
-
-def intslicey(x, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
-
-    # Calc amp from z and modes in f
-    for i in range(0, len(argv)):
-        amp = amplitude(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), abs(amp ** 2), label=i + 1)
-
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Intensity along y')
-    plt.xlabel('Y (m)')
-    plt.ylabel('Intensity')
-    plt.legend(loc='upper right')
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
-
-
-def Contour(f, **kwargs):
-    fig, ax = plt.subplots(figsize=(7, 6))
-    cs = plt.contourf(f.plane.getX(), f.plane.getY(), abs(f.getAmp() ** 2))
-    # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-        # optionally set limits. default is last result's range
-    if ('ylim' in kwargs):
-        plt.ylim(kwargs['ylim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    ax.yaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0), useMathText=True)
-
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    for i in plt.ylim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
-            ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
-            ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.xlabel('X [m]')
-    plt.ylabel('Y [m]')
-    cbar = fig.colorbar(cs)
-    plt.title('Intensity')
-
-
-# formatting axes
-class OOMFormatter(matplotlib.ticker.ScalarFormatter):
-    def __init__(self, order=0, fformat="%1.1f", offset=True, useMathText=True):
-        self.oom = order
-        self.fformat = fformat
-        matplotlib.ticker.ScalarFormatter.__init__(self, useOffset=offset, useMathText = True)
-
-    def _set_orderOfMagnitude(self, nothing):
-        self.orderOfMagnitude = self.oom
-
-    def _set_format(self, vmin, vmax):
-        self.format = self.fformat
-        if self._useMathText:
-            self.format = '$%s$' % matplotlib.ticker._mathdefault(self.format)
-
-
-# --------------------------------------------------------------------------------------------------------
-## 3D PLOT:
-#
-def IntensityPlot(f):
-    # Get data
-
-    ## Make the plot, amp. rather than int.
-    fig = plt.figure()
-    ax = Axes3D(fig)
-
-    ax.plot_surface(f.plane.getX(), f.plane.getY(), abs(f.getAmp()) ** 2, rstride=1, cstride=1,
-                    cmap='viridis', edgecolor='none')
-    # Labels and render
-    plt.xlabel("x")
-    plt.ylabel("y")
-    ax.set_zlabel("Intensity")
-    # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
-    plt.show()
-
-
-#
-#
-# def IntensityPlot2(z):
-#     # Get data
-#
-#     x = np.arange(-.03, .03, 0.001)
-#     y = np.arange(-.03, .03, 0.001)
-#     x, y = np.meshgrid(x, y)
-#     f2 = np.vectorize(Amplitude2)
-#     ## Make the plot, amp. rather than int.
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#
-#     ax.plot_surface(x, y, abs(f2(0, y, z)) ** 2, rstride=1, cstride=1,
-#                     cmap='viridis', edgecolor='none')
-#     # Labels and render
-#     plt.xlabel("x")
-#     plt.ylabel("y")
-#     ax.set_zlabel("Intensity")
-#     # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
-#     plt.show()
-#
-#
-# --------------------------------------------------------------------------------------------------------
 ## PHASE CALCULATIONS:
 
 def phase(params, x, y, z, modes):
     return (np.angle(amplitude(params, x, y, z, modes)))
-
-
-# --------------------------------------------------------------------------------------------------------
-## Phase Map
-# def PhaseMap(f):
-#     x = f.getX()
-#     y = f.getY()
-#     z = f.getZ()
-#     modes = f.getModes()
-#     x, y = np.meshgrid(x, y)
-#     ph = np.vectorize(Phase)
-#
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#     ax.plot_surface(x, y, ph(x, y, z), rstride=1, cstride=1,
-#                     cmap='viridis', edgecolor='none');
-#     # Labels and render
-#     plt.xlabel("x")
-#     plt.ylabel("y");
-#     ax.set_zlabel("deg.")
-#     # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
-#     plt.show()
-#
-#
-# def PhaseMap2(z):
-#     # Get data
-#     x = np.arange(-.003, .003, 0.00001)
-#     y = np.arange(-.003, .003, 0.00001)
-#     x, y = np.meshgrid(x, y)
-#     f = np.vectorize(Phase2)
-#     ## Make the plot, amp. rather than int.
-#     fig = plt.figure()
-#     ax = Axes3D(fig)
-#
-#     ax.plot_surface(x, y, f(x, y, z), rstride=1, cstride=1,
-#                     cmap='viridis', edgecolor='none');
-#     # Labels and render
-#     plt.xlabel("x")
-#     plt.ylabel("y");
-#     ax.set_zlabel("deg.")
-#     # plt.title('Intensity Profile HG Modes n,m=' + str(carrN) + "," + str(carrM))
-#     plt.show()
-
-
-def PhaseContour(f, **kwargs):
-    fig, ax = plt.subplots()
-    cs = plt.contourf(f.plane.getX(), f.plane.getY(), f.getPhase())
-    # cs = plt.contourf(f[0],f[1],abs(f[3]**2), locator=matplotlib.ticker.LogLocator())
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-        # optionally set limits. default is last result's range
-    if ('ylim' in kwargs):
-        plt.ylim(kwargs['ylim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    ax.yaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='y', style='sci', scilimits=(0, 0), useMathText=True)
-    # scale x
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-    # scale y
-    for i in plt.ylim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.xlabel('x (m)')
-    plt.ylabel('y (m)')
-    cbar = fig.colorbar(cs)
-    plt.title('Phase')
-
-
-def phaseslicex(y, *argv, **kwargs):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    # calc at from z and modes in f (*argv)
-    if('labels' in kwargs):
-        for i in range(0, len(argv)):
-            angle = phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), angle, label=kwargs['labels'][i])
-    else:
-        for i in range(0, len(argv)):
-            angle = phase(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), angle, label=i + 1)
-
-    # optionally, set limits. default is last result
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # scale x
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Phase along x')
-    plt.xlabel('X [m]')
-    plt.ylabel('Angle [rad]')
-    plt.legend(loc='upper right')
-
-    plt.grid()
-
-
-def phaseslicey(x, *argv, **kwargs):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    # Calc phase from z and modes in f
-
-    for i in range(0, len(argv)):
-        angle = phase(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), angle, label=i + 1)
-
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # scale x
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Phase along y')
-    plt.xlabel('Y [m]')
-    plt.ylabel('Angle [rad]')
-    plt.legend(loc='upper right')
-
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
 
 
 # =========================================================================================================
@@ -885,182 +1200,4 @@ def calculate_q(params, plane, modes, z):
     return (f)
 
 
-def ampslicex_q(y, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
 
-    # Calc amp from z and modes in f
-    for i in range(0, len(argv)):
-        amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getX(), amp, label=i + 1)
-
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # format x axis to mm or microns depending on order of x limits
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-    plt.title('Amp2 along x')
-    plt.xlabel('X [m]')
-    plt.ylabel('Amplitude [a.u.]')
-    plt.legend(loc='upper right')
-    # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
-
-
-def intslicex_q(y, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
-
-    # Calc amp from z and modes in f
-    if('labels' in kwargs):
-        for i in range(0, len(argv)):
-            amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=kwargs['labels'][i])
-    else:
-        for i in range(0, len(argv)):
-            amp = amplitude_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), abs(amp) ** 2, label=i + 1)
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    if ('ylim' in kwargs):
-        plt.ylim(kwargs['ylim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # format x axis to mm or microns depending on order of x limits
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-    plt.title('Intensity along x')
-    plt.xlabel('X [m]')
-    plt.ylabel('Intensity [a.u]')
-    plt.legend(loc='upper right')
-    # ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0))
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
-
-
-def intslicey_q(x, *argv, **kwargs):
-    fig = plt.figure(figsize=(6, 6))
-    ax = fig.add_subplot(111)
-
-    # Calc amp from z and modes in f
-    for i in range(0, len(argv)):
-        amp = amplitude_q(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), abs(amp ** 2), label=i + 1)
-
-    # optionally set limits. default is last result's range
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Intensity along y')
-    plt.xlabel('Y [m]')
-    plt.ylabel('Intensity [a.u]')
-    plt.legend(loc='upper right')
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
-
-
-def phase_q(params, x, y, z, modes):
-    return (np.angle(amplitude_q(params, x, y, z, modes)))
-    # return degrees(cmath.phase(Amplitude2(params, x, y, z, modes)))
-
-
-def phaseslicex_q(y, *argv, **kwargs):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    # calc at from z and modes in f (*argv)
-
-    if('labels' in kwargs):
-        for i in range(0, len(argv)):
-            angle = phase_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), angle, label=kwargs['labels'][i])
-    else:
-        for i in range(0, len(argv)):
-            angle = phase_q(argv[i].getParams(), argv[i].plane.getX(), y, argv[i].getZ(), argv[i].getModes())
-            plt.plot(argv[i].plane.getX(), angle, label=i + 1)
-    # optionally, set limits. default is last result
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # scale x
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Phase along x')
-    plt.xlabel('X [m]')
-    plt.ylabel('Angle [rad]')
-    plt.legend(loc='upper right')
-
-    plt.grid()
-
-
-def phaseslicey_q(x, *argv, **kwargs):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    # Calc phase from z and modes in f
-
-    for i in range(0, len(argv)):
-        angle = phase_q(argv[i].getParams(), x, argv[i].plane.getY(), argv[i].getZ(), argv[i].getModes())
-        plt.plot(argv[i].plane.getY(), angle, label=i + 1)
-
-    if ('xlim' in kwargs):
-        plt.xlim(kwargs['xlim'])
-
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.2f"))
-    ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # scale x
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
-
-    plt.title('Phase along y')
-    plt.xlabel('Y [m]')
-    plt.ylabel('Angle [rad]')
-    plt.legend(loc='upper right')
-
-    plt.grid()
-    # plt.savefig('IntCheck.pdf')
