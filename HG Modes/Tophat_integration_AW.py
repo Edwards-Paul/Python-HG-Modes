@@ -33,7 +33,7 @@ def G_even(x,m):
         *(2*x)**(2*M+1) )
            for M in range(0, stop,1)])
      
-    res = ( gamma((m+1)/2) * (erf(x)/2 - e**(-x**2)/pi * sum_M) )   
+    res = ( gamma((m+1)/2) * (erf(x)/2 - e**(-x**2)/pi * sum_M) )
     return(res)
 
 #odd m G(x;m) fxn
@@ -56,13 +56,18 @@ def overlap(a,b,w_1,w_2,zR_1,zR_2,k_1,k_2,d_1,W_2,x_1,x_2,Z,Y):
     
     s = sigma(w_1,w_2,zR_1,zR_2,d_1,Z) #calculate sigma once
     
-    prefactor = ( 2**(a+b+1) * sqrt(fact(a)*fact(b))*e**(-(k_2*Z-k_1*d_1)) )
+    
+    prefactor_num = ( 2**(a+b+1) * sqrt(fact(a)*fact(b))*e**(-(1j)*(k_2*Z-k_1*d_1)) )
+    
+    prefactor_denom = pi*sqrt(s**(2+a+b))*w_1*w_2**(1+a+b)*(1+(1j)*d_1/zR_1)*(1-(1j)*Z/zR_2)**(1+a+b)
+    
+    prefactor = prefactor_num/prefactor_denom
     
     stop_A = int(np.floor(a/2))+1
     stop_B = int(np.floor(b/2))+1
     sum_terms = (
         sum( (
-            sum_first_term(s,A,B,a,b,W_2)
+            sum_first_term(s,A,B,a,b,x_1,x_2,W_2)
             * sum_second_term(s,Y,b,B,x_2,x_1,A,a)
         )
             for A in range(0,stop_A,1) 
@@ -72,21 +77,39 @@ def overlap(a,b,w_1,w_2,zR_1,zR_2,k_1,k_2,d_1,W_2,x_1,x_2,Z,Y):
     res = prefactor * sum_terms
     return(res)
     
-def sum_first_term(s,A,B,a,b,W_2):
+def sum_first_term(s,A,B,a,b,x_1,x_2,W_2):
 
-    res = (
-        (
-            -(s/8)**(A+B) 
-             * W_2**(2*(A+B)) 
-             * gamma( (b+1)/2-B) 
-        )
-        /
-        (
-            fact(A)*fact(B)*fact(a-2*A)*fact(b-2*B)
-        )
-    )
+    m = a-2*A
     
-    return(res)
+    sum_ab = 0 
+    if m % 2 == 0:
+        sum_ab = (
+            (
+                (-s/8)**(A+B) 
+                 * W_2**(2*(A+B)) 
+                 * gamma( (b+1)/2-B) 
+            )
+            /
+            (
+                fact(A)*fact(B)*fact(a-2*A)*fact(b-2*B)
+            )
+        )
+    
+    #even G(x;m) fxn
+    if m % 2 == 0:
+        g=(G_even(sqrt(s)*x_2,a-2*A)
+            -
+           G_even(sqrt(s)*x_1,a-2*A)
+        )
+        
+    else:
+        g=(G_odd(sqrt(s)*x_2,a-2*A)
+            -
+           G_odd(sqrt(s)*x_1,a-2*A)
+        )
+    
+    
+    return(sum_ab*g)
     
 def sum_second_term(s,Y,b,B,x_2,x_1,A,a):
     res = (
@@ -105,29 +128,13 @@ def sum_b(b,B,s,Y,x_2,x_1,A,a):
     
     m = a-2*A
     
-    if m % 2 == 0:
-        res = (
-               sum([
-                fact(M+1)/fact(2*(M+1))
-                   * (2*sqrt(s)*Y)**(2*M+1)
-                   * (
-                      G_even(sqrt(s)*x_2,a-2*A)
-                       -
-                       G_even(sqrt(s)*x_1,a-2*A)
-                   )
-               for M in range(0, stop,1)])     
-        )
-    else:
-        res = (
-               sum([
-                fact(M+1)/fact(2*(M+1))
-                   * (2*sqrt(s)*Y)**(2*M+1)
-                   * (
-                      G_odd(sqrt(s)*x_2,a-2*A)
-                       -
-                       G_odd(sqrt(s)*x_1,a-2*A)
-                   )
-               for M in range(0, stop,1)])     
-        )    
+
+    res = (
+           sum([
+            fact(M+1)/fact(2*(M+1))
+               * (2*sqrt(s)*Y)**(2*M+1)
+           for M in range(0, stop,1)])     
+    )
+   
     
     return(res)
