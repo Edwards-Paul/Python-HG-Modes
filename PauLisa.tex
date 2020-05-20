@@ -1,3 +1,4 @@
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Modeling LISA tilt-to-length(TTL) coupling with HG modes.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -22,7 +23,7 @@
 \usepackage{fancyhdr}		%header
 \usepackage{titlesec}		%section format
 \usepackage[colorlinks=true]{hyperref}  %last
-
+\usepackage{booktabs}
 %title page border
 \usepackage{fancybox}
 
@@ -92,8 +93,8 @@
 \newcommand{\Hn}{H_{n}\Big(\frac{\sqrt{2}x}{w(z)}\Big)}
 \newcommand{\Hm}{H_{m}\Big(\frac{\sqrt{2}y}{w(z)}\Big)}
 \newcommand{\bigfrac}[2]{\Big( \frac{#1}{#2}\Big)}
-
-
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
 
 \newcommand{\sectionend}{\clearpage \newpage \vspace{.5in}\sepline}
 
@@ -114,7 +115,7 @@
 \affiliation{University of Florida}
 \begin{abstract}
 \sepline\vspace{20pt}
-In LISA, a critical noise source is expected to arise from small misalignments between the test mass and spacecraft optical elements, which is then coupled into angular jitter of the spacecraft itself. This noise is termed tilt-to-length (TTL) coupling noise. We model TTL noise originating from these intrinsic misalignments via interference of tilted, laterally-shifted beams using the Hermite-Gauss model for approximately paraxial beams.
+In LISA, a critical noise source is expected to arise from small misalignments between the test mass and spacecraft optical elements, which is then coupled into angular jitter of the spacecraft itself. This noise is termed tilt-to-length (TTL) coupling noise. We model TTL noise originating from these intrinsic misalignments via interference of tilted, laterally-shifted measurement beams with on-axis reference Gaussian beams using the Hermite-Gauss model for approximately paraxial beams.
 \end{abstract}
 
 
@@ -153,13 +154,20 @@ Large cosmic events, such as SMBH mergers, produce measurable gravitational wave
 
 \medskip
 
-The Laser Interferometer Space Antenna (LISA) is a space-based gravitational wave detector commissioned by ESA, in collaboration with NASA and an international consortium, as a successor to LPF. The project will consist of constellation of three satellites, forming an equilateral triangle, which will trail in Earth's orbit with an arm length of $\sim$2.5 million km. Each of the three satellites will house several interferometers, as well as two free-falling, gold-coated test masses. Telescopes will send and receive light between the satellites. Test mass interferometers will measure path length changes between the TM and OB. The long-arm interferometer will measure path length changes between S/C. Combined, these are used to detect gravitational waves in the $10^{-4}$ to 1 Hz range (LIGO ranges 10 Hz to 10 kHz).
+The Laser Interferometer Space Antenna (LISA) is a space-based gravitational wave detector commissioned by ESA, in collaboration with NASA and an international consortium. The project will consist of constellation of three satellites, forming an equilateral triangle, which will trail in Earth's orbit with an arm length of $\sim$2.5 million km. Each of the three satellites will house several interferometers (Spacecraft/long-arm, TM, Reference), as well as two free-falling, gold-coated test masses. Telescopes will send and receive light between the satellites. Test mass interferometers will measure path length changes between the TM and OB. The long-arm interferometer will measure path length changes between S/C. Combined, these are used to detect gravitational waves in the $10^{-4}$ to 1 Hz range (LIGO ranges 10 Hz to 10 kHz).
 
+	\begin{figure}[hb]
+	\centering
+	\includegraphics[scale=.7]{fxnal}
+	\caption{Functional diagram showing primary components of the OB and beam paths to local S/C backlink and transceiving far S/C. Large white blocks are TM structure, O/B, laser assembly, and TS.}
+	\label{fig:fxnal}
+	\end{figure}
 
 \sectionend
 
-\section{Tilt-to-Length Coupling}
+\section{Tilt-to-Length Coupling Noise and Signals}
 
+\subsection{Tilt-to-length}
 In LISA, it is expected that intrinsic misalignments between the optical bench (OB) and
 the attached bi-directional telescope are the main avenues for laser beam pointing noise, also known as tilt-to-length
 (TTL) coupling, into the gravitational wave signal.
@@ -181,36 +189,28 @@ shape combinations of tophat-Gaussian interference.
 
 \medskip
 
-LISA uses PD's to measure interference of a received beam with a reference beam, resulting in heterodyne beat notes which are used to determine phase difference ($\Delta \phi = \phi_{1}-\phi_{2}$) of the two beams. Fields of the reference and received beam defined with a basis $(w_{0},z_{0})$ are, respectively:
+\subsection{Signals Demodulation Formalism}
 
-\begin{equation} \label{eq:19}
-	E_{ref} = 
-		E_{0\; (ref)} e^{i(( \omega_{ref} t)+\phi_{1})}
-		u_{00}(w_{0\; ref},z_{0\; ref})	
-	\;.
+Using full information of the electric fields, one can determine signals produced at LISA's interferometers. Consider the sum of the receieved and reference fields 
+
+\begin{equation}
+E = E_{RX}+E_{LO}.
 \end{equation}
 
-\begin{equation} \label{eq:18}
-	E_{rec} = 
-		E_{0\; (rec)} e^{i (( \omega_{rec}t)+\phi_{2})} 			
-		\sum_{n,m=0}u_{nm}(w_{0\; rec},z_{0\; rec}) 		
-	\;,
-\end{equation}
-	
+More explicitly: 
 
-
-These fields produce a beat note signal at a single PD (assuming the PD area is large relative to the beam)
-
-\begin{equation}\label{eq:20}
-	\phi_{beat}= \arg \Big[
-	 \int_{- \infty}^{\infty}\int_{- \infty}^{\infty} E_{LO}^*E_{RX} \; dxdy
-	 \Big ]
-	 \; ,
+\begin{equation}
+	E = 
+			E_{0(ref)} 
+			e^{i(( \omega_{ref} t)+\phi_{1})} 
+			u_{00}
+			+
+			E_{0(rec)}			
+			e^{i (( \omega_{rec}t)+\phi_{2})} \; ,
 \end{equation}
 
-where the electric field is the sum of the received and reference fields. 
 
-On demodulating and neglecting $\Delta \phi$ at the phasemeter, the in-phase signal $I$ is
+Demodulating and neglecting $\Delta \phi$ at the phasemeter yields an in-phase signal $I$ is
 
 \begin{equation}
 	I
@@ -226,24 +226,86 @@ and the quadrature phase signal $Q$ is
 	E^{*}E \times \sin (\Delta \omega t) \; .
 \end{equation}
 
+
 Therefore, after a low pass filter (as the heterodyne frequency is on the order of MHz), the phase is 
 
 \begin{equation}
- 		\Phi 
+ 		\phi_{beat}
  		=
  		 	\arctan	(\frac{Q}{I})	
 \end{equation}
 
-The DWS (Differential Wavefront Sensing) signal for a half-plane PD is calculated as:
+
+\subsection{Signals}
+
+LISA uses PD's to measure interference of a received beam with a reference beam, resulting in heterodyne beat notes which are used to determine phase difference ($\phi_{beat} = \phi_{1}-\phi_{2}$) of the two beams. Fields of the reference Gaussian beam (LO) and received tophat beam (RX) defined with a basis $(w_{0},z_{0})$ are, respectively:
+
+\begin{equation} \label{eq:19}
+	E_{LO} = 
+		E_{0\; (LO)} e^{i(( \omega_{LO} t)+\phi_{1})}
+		u_{00}(w_{0\; LO},z_{0\; LO})	
+	\;,
+\end{equation}
+
+and
+
+\begin{equation} \label{eq:18}
+	E_{RX} = 
+		E_{0\; (RX)} e^{i (( \omega_{RX}t)+\phi_{2})} 			
+		\sum_{n,m=0}
+		c_{nm}u_{nm}(w_{0\; RX},z_{0\; RX}) 		
+	\;,
+\end{equation}
+	
+where $c_{nm}$ represent coeffients relative to modes $n$ and $m$ of an electric field spatial component $u_{nm}$, and $w_0$ and $z_0$ represent beam waist and waist location.\\
+
+Power at the PD, given an electric field $E$, is
+
+\begin{align*}
+P_{pd} =& \int_{-\infty}^{\infty}\int_{\infty}^{\infty} E^* E dx dy
+\\=&	 \int_{- \infty}^{\infty}\int_{- \infty}^{\infty}[
+E_{LO}^*E_{LO}+E_{RX}^*E_{RX}+E_{RX}^*E_{LO}+E_{RX}E_{LO}^*]
+\\=&	 \int_{- \infty}^{\infty}\int_{- \infty}^{\infty}[
+P_{LO} + P_{RX} + E_{RX}^*E_{LO}+E_{RX}E_{LO}^*]
+\end{align*}
+
+The only A/C component comes from the second two terms, so the beat note signal is obtained from the argument of its power (with bounds assuming the PD area is large relative to the beam)
+
+\begin{equation}\label{eq:20}
+	\phi_{beat}= \arg \Big[
+	 \int_{- \infty}^{\infty}\int_{- \infty}^{\infty} E_{LO}^*E_{RX} \; dxdy
+	 \Big ]
+	 \; ,
+\end{equation}
+
+For a half-plane PD, only the bounds of integration need be adjusted. For the left side of the HPPD
+
+\begin{equation}
+	\phi_{L}= \arg \Big[
+	 \int_{- \infty}^{\infty}\int_{- \infty}^{0} E_{LO}^*E_{RX} \; dxdy
+	 \Big ]
+	 \; ,
+\end{equation}
+
+and for the right side
+
+\begin{equation}
+	\phi_{R}= \arg \Big[
+	 \int_{- \infty}^{\infty}\int_{0}^{\infty} E_{LO}^*E_{RX} \; dxdy
+	 \Big ]
+	 \; .
+\end{equation}
+
+The DWS (Differential Wavefront Sensing) signal for a half-plane PD is calculated as a difference of right and left beat note signals:
 
 \begin{equation}
  		\Phi_{DWS} 
  		=
- 		 	\frac{1}{2}[\phi_R - \phi_L]
+ 		 	[\phi_R - \phi_L]
 \end{equation}
 
 
-The DWS (Differential Wavefront Sensing) signal (for HPPD) is calculated as:
+The LPS (Longitudinal Pathlength Signal) For HPPD is calculated as:
 
 \begin{equation}
  		\Phi_{LPS} 
@@ -252,7 +314,6 @@ The DWS (Differential Wavefront Sensing) signal (for HPPD) is calculated as:
 \end{equation}
 
 The spatial component of the electric fields can be formulated using Hermite-Gauss modes.
-
 
 \sectionend
 
@@ -326,13 +387,20 @@ The Hermite polynomials can be derived from recurrence relations:
 
 \sectionend
 
-\subsection{General Scattering into Higher Order HG Modes}
+\subsection{General Coupling into Higher Order HG Modes via Transverse Coordinate Dependence}
+
+
+
+
+
+
+
 
 In general, modes with a spatial component prefactor (e.g., $x$ and $x^2$) can be written as higher order modes. 
 
 For $x$:
 
-\begin{equation}
+\begin{equation}\label{scatter_x}
 x u_{n,m} = \frac{w_0}{2}
 \Big[
 	(1 - i \frac{z}{z_R})
@@ -344,9 +412,27 @@ x u_{n,m} = \frac{w_0}{2}
 \Big]
 \end{equation}
 
-For $x^2$:
+Splitting these factors (ignoring $u_{n,m}$ into two terms:
 
 \begin{equation}
+X_+^1 = \frac{w_0}{2}
+\Big[
+	(1 - i \frac{z}{z_R})
+	\sqrt{n+1} 
+\Big]
+\end{equation}
+
+\begin{equation}
+X_-^1 = \frac{w_0}{2}
+\Big[
+	\sqrt{n}
+	(1+i \frac{z}{z_R})
+\Big]
+\end{equation}
+
+For $x^2$:
+
+\begin{equation}\label{scatter_x2}
 x^2 u_{n,m} = \frac{w_0^2}{4}
 \Big[
 	(1 - i \frac{z}{z_R})^2
@@ -359,6 +445,32 @@ x^2 u_{n,m} = \frac{w_0^2}{4}
 	\sqrt{n(n-1)}
 	(1+i \frac{z}{z_R} )^2
 	u_{n-2,m}
+\Big]
+\end{equation}
+
+Splitting these factor into three terms:
+
+\begin{equation}
+X_-^2 = \frac{w_0^2}{4}
+\Big[
+	\sqrt{n(n-1)}
+	(1+i \frac{z}{z_R} )^2
+\Big]
+\end{equation}
+
+\begin{equation}
+X_0^2 = \frac{w_0^2}{4}
+\Big[
+	(2n+1)
+	(1+ (\frac{z}{z_R})^2)
+\Big]
+\end{equation}
+
+\begin{equation}
+X_+^2 = \frac{w_0^2}{4}
+\Big[
+	(1 - i \frac{z}{z_R})^2
+	\sqrt{(n+1)(n+2)}
 \Big]
 \end{equation}
 
@@ -407,16 +519,753 @@ Expressing $u_{10}$ and $u_{20}$ in terms of $u_{00}$ at the beam waist (neglect
 	\end{equation}	
 	
 	In PauLisa.py, Eq. \ref{eq:1} is represented by the \textit{calculate} function and Eq. \ref{eq:3} as \textit{calculate\_q}. The outputs of both functions agree exactly. In the appendix, intensity profiles produced by PauLisa.py for $u_{00}$ to $u_{33}$ are shown in Fig. \ref{fig:A1}.	
+
+\rule{\textwidth}{0.4pt}
+
+The spatial component of the field in the Hermite-Gaussian representation is
+
+\begin{equation}
+	E(x,y,z) = 
+	e^{-ikz} \sum_{n,m} C_{n,m} u_{n,m}(x,y,z)
+\end{equation}
+
+where $C_{n,m}$ are mode coefficients, and $u_{n,m}$ are the Hermite-Gaussian modes,
+
+	\begin{equation} \label{eq:hg}
+		u_{n,m}(x,y,z)=(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w^{2}(z)} 
+		+i(n+m+1)\psi(z))	
+		\Big)\;.
+	\end{equation}
+
+The goal is to simplify Taylor expansions of off-axis HG modes following coordinate transformations, such as the $z$-coordinate transformation from a beam rotation to first order in the rotational angle $\alpha$,
+
+\begin{align*}
+z \rightarrow z-x\alpha, \mathrm{(first-order\;rotation)}
+\end{align*}
+
+which results in transverse coordinate (i.e., $x$) dependence in the coupling coefficient,
+
+\begin{align*}
+	u_{nm}(x,y,z) e^{ikx\alpha}
+	\rightarrow &
+	u_{nm}(x,y,z)+(ik \alpha x)u_{nm}(x,y,z).
+\end{align*}
+
+The overall coupling coefficient is $ik\alpha x$. For purposes of signal calculation, the $ik\alpha$ factor can be viewed a constant prefactor to an otherwise pure HG mode. However, transverse coordinate factors $x$ can be viewed to couple directly into the hermite polynomial , $H_n (\frac{\sqrt{2} x}{w(z)})$ (they're the only $x$-dependence outside of the exponential functions).
+This results in a splitting of the hermite polynomial into a sum of higher and lower order polynomials. The following equivalence, for example, substitutes a polynomial with a factor of linear $x$-dependence for higher and lower order polynomials (proven Section 2):
+
+\begin{equation}\label{eq:3}
+x H_n(\frac{\sqrt{2}x}{w(z)}) =
+	\frac{\sqrt{2} w(z)}{4}
+	H_{n+1}(\frac{\sqrt{2}x}{w(z)})
+	+
+	\frac{\sqrt{2} w(z) n}{2} H_{n-1} (\frac{\sqrt{2}x}{w(z)})
+\end{equation}
+
+
+This isn't enough to transform $x u_{n,m} \rightarrow u_{n-1,m}$, for example, because other factors in the HG modes have dependence on index $n$. However, any $u_{n,m}$ with a factor of $x$ to any order can be rewritten purely as higher and lower order modes to some "constant" prefactor. Do this by defining a set of pseudo-operators $X_\pm^K$ for $x$, our coordinate of unidirectional offset. For example, a linear factor would follow
+
+\begin{equation}
+x u_{nm} (x,y,z) = 
+	X_+^1 u_{n+1,m}(x,y,z)
+	+
+	X_-^1 u_{n-1,m}(x,y,z) 
+\end{equation}
+
+where $X_+^1$ represents a coupling from $u_{nm}$ up to $u_{n+1,m}$ and $X_-^1$ represents a coupling from $u_{nm}$ down to $u_{n-1,m}$. This notation makes it simpler to trace back to the original mode. \\
+
+A quadratic factor in $x$ would follow (proven later),
+
+\begin{equation}
+x^2 u_{n, m} =
+	X_-^2 u_{n+2,m}
+	+
+	X_0^2 u_{n,m}
+	+
+	X_-^2 u_{n-2,m}	.
+\end{equation}
+
+Note the "self-contribution" term $X_0^2 u_{n,m}$.\\
+
+The benefit of making these transformations is the ability to rewrite the transverse coordinate dependence as a new set of mode coefficients for pure, on-axis modes. In other words, the quadratic dependence in $x$, for example, transforms the modes relative to this new coupling and relative to an original mode coefficient $C_{n,m}$, s.t. 
+
+\begin{align*}
+C_{n+2,m} \rightarrow &C_{n+2,m} + C_{nm}X_+^2
+\\
+C_{nm} \rightarrow & C_{nm}X_0^2
+\\
+C_{n-2,m} \rightarrow & C_{n-2,m} + C_{nm}X_-^2
+\end{align*}
+
+where the transformation must be applied to all modes $u_{n,m}$ in the set of non-zero mode coefficients $C_{n,m}$.\\
+
+As another example, suppose $C_{0,0}=C_{1,0} \neq 0$, then $\sum_{n,m} C_{n,m} x u_{n,m}$ leads to $C_{1,0} x u_{1,0}$ and $C_{0,0} x  u_{0,0}$, so that
+
+\begin{align*}
+C_{2,0} \rightarrow & C_{1,0}X_+^1
+\\
+C_{1,0} \rightarrow & C_{0,0}X_+^1
+\\
+C_{0,0} \rightarrow & C_{1,0} X_-^1
+\end{align*}
+
+To determine the additional coupling that results from incrementing or decrementing $n$ in the HG modes to match the hermite polynomial and reproduce a "pure" mode, consider an arbitrary shift in index $n$ by integer $K$: 
+
+	\begin{align*} 
+		u_{n \pm K,m}(x,y,z) \rightarrow &
+		(2^{n \pm K} (n \pm K)!)^{-1/2}
+		\exp(i(n\pm K)\psi(z))
+				H_{n \pm K} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		\\&
+		(2^{m-1}m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(m+1)\psi(z))	
+		\Big)\;.
+	\end{align*}
+
+
+The top line exhibits all $n$-dependence in the equation. Recall that the polynomial $H_{n\pm K}$ term came from $x$ coupling.
+So the generalized pseudo-operator ,which itself represents the entire coupling coefficient from the $x$ factor, is
+
+\begin{equation}
+	X_{\pm }^K u_{n \pm k, m} = 
+		\eta_{\pm}^K
+		(2^{\mp K} )^{-1/2}
+		\sqrt{\frac{(n \pm k)!}{n!} }
+		\exp(\mp iK  \psi(z))
+		u_{n \pm k, m}		
+		\;,
+\end{equation}
+
+where $\eta_{\pm}^K$ represents the factor that comes directly from the transformation $x^{\pm K} H_n \rightarrow \eta H_{n\pm K}$ (with additional terms, and, $\eta_{\pm}^K$ is used arbitrarily to represent any of the prefactors in the right side of Eq. \ref{eq:3}, for example).\\
+
+To summarize, a transverse coordinate dependence results in higher and lower order mode hermite polynomials to some factor $\eta_{\pm}^K$. Rewriting the rest of $u_{n,m}$ to account for the index-shifted polynomial in $n$ means also having to account for $n$-dependence in the normalization factor $(2^{n+m-1}n!m!\pi)^{-1/2}$ and the Gouy phase term, $\exp(i(n+m+1)\psi(z))$.\\
+
+
+
+
+
+\clearpage
+
+\subsection{Linear Transverse Coordinate Coupling}
+
+Calculating the $\eta$ factor follows from identities on the Hermite polynomials. Hermite polynomials using Rodrigues formula, where $y^2 \equiv (ax)^2 = \frac{2 x^2}{w^2(z)}$ for the case of HG modes, are \textbf{(note y is not the y-coordinate, a is not shift as in usual notation)}:
+
+\begin{equation}\label{eq:1}
+	H_n(x) = 
+		(-1)^n e^{y^2} \frac{d^n}{dy^n}e^{-y^2}
+\end{equation}
+
+so,
+
+\begin{align*}
+	H_n(\frac{\sqrt{2}x}{w(z)} )
+	= 
+		(-1)^n e^{({\frac{ \sqrt{2} x}{w(z)}})^2} \frac{d^n}{dy^n}e^{({\frac{ \sqrt{2} x}{w(z)}})^2},
+\end{align*}
+
+The coupling $\eta$ can be determined through deriving the HG counterpart to the identity
+
+\begin{equation}\label{id}
+	H_{n+1}(y) = 2y H_n(y) - nH_{n-1}(y)
+\end{equation}
+
+\rule{\textwidth}{0.4pt}
+
+Start with the first derivative of Eq. \ref{eq:1}, where $D \equiv \frac{d}{dy}$:
+
+\begin{align*}
+	D H_n(y) =&
+	D [ (-1)^n e^{-y^2} D^n e^{-y^2} ]
+	\\=&
+		(-1)^n (2y) e^{y^2} D^n e^{-y^2}
+		+
+		(-1)^n e^{y^2} D^{n+1} e^{-y^2}
+		\\=&
+		2y H_n(y)
+		-
+		(-1)^{n+1} e^{y^2} D^{n+1}e^{-y^2}
+		\\=&
+		2y H_n(y)	
+		-
+		H_{n+1}(y)	
+\end{align*}
+
+or
+
+\begin{equation}\label{res1}
+D H_n(\frac{\sqrt{2}x}{w(z)})
+=
+		2\frac{\sqrt{2}x}{w(z)} H_n(\frac{\sqrt{2}x}{w(z)})	
+		-
+		H_{n+1}(\frac{\sqrt{2}x}{w(z)})	
+\end{equation}
+
+\rule{\textwidth}{0.4pt}
+
+However, an equivalent solution exists for $D H_n$ without immediately applying the $(-1)$ factor,
+
+
+\begin{align*}
+D H_n(y) =&
+	D [ (-1)^n e^{-y^2} D^n e^{-y^2} ]
+\\=&
+(-1)^n
+	2ye^{y^2}
+	D^n e^{-y^2}
+	+
+	(-1)^n
+	e^{y^2}
+	D^{n+1}
+	(e^{-y^2})
+	\\=&
+	2y H_n(y)
+	+
+	(-1)^n
+	e^{y^2}
+	D^{n+1}
+	(e^{-y^2})
+	\\=&
+		2y  H_n(y)
+	+
+	(-1)^n
+	e^{y^2}
+	D^{n}
+	(-2y)
+	(e^{-y^2})
+\end{align*}
+
+using the general Leibniz rule, where $f = -2y$ and $g = e^{-y^2}$,
+
+\begin{align*}
+	D^n(fg)=&
+	\sum_{k=0}^n {n \choose k} 
+	D^k f
+	D^{n-k} g	
+\end{align*}
+
+but the result after substituting $f$ and $g$ is $0$  $\forall$ $k>1$.\\
+
+Using the Leibniz rule for the derivative in the last term then,
+
+
+\begin{align*}
+	D^n(fg)=&
+	\sum_{k=0}^1 {n \choose k} 
+	D^k f
+	D^{n-k} g	
+	\\=&
+	{n \choose 0} 
+	f D^{n} (g)
+	+
+	{n \choose 1}
+	D(f) D^{n-1} (g)
+		\\=&
+	-2 y D^{n} (e^{-y^2})
+	+
+	n
+	(-2) D^{n-1} (e^{-y^2})
+\end{align*}
+
+This means $D H_n(y)$ is
+
+\begin{align*}
+D H_n(y) 
+	=&
+	2 y H_n(y)
+	+
+	(-1)^n e^{y^2}
+	[
+		-2y  D^{n} (e^{-y^2})
+	+
+	n
+	(-2) D^{n-1} (e^{-y^2})
+	]
+	\\=&
+	2y H_n(y)
+	-
+	2y H_n(y)
+	+
+	2n H_{n-1}(y)
+	\\=&
+	2n H_{n-1} (y)
+\end{align*}
+
+or
+
+\begin{equation}\label{res2}
+D H_n(\frac{\sqrt{2}x}{w(z)}) 
+	=
+	2n H_{n-1} (\frac{\sqrt{2}x}{w(z)})
+\end{equation}
+
+\rule{\textwidth}{0.4pt}
+
+Setting the two solutions, Eq. \ref{res1}, and Eq. \ref{res2}, equal and rewriting (again $a= \frac{\sqrt{2}}{w(z)}$),
+
+\begin{align*}
+x H_n(ax) =&
+	\frac{1}{2a}
+	[
+	H_{n+1}(ax)
+	+
+	2n H_{n-1} (ax)
+	]
+	\\=&
+		\frac{1}{2a}
+	H_{n+1}(ax)
+	+
+	\frac{n}{a} H_{n-1} (ax)
+\end{align*}
+
+or
+
+\begin{equation}
+x H_n(\frac{\sqrt{2}x}{w(z)}) =
+	\frac{\sqrt{2} w(z)}{4}
+	H_{n+1}(\frac{\sqrt{2}x}{w(z)})
+	+
+	\frac{\sqrt{2} w(z) n}{2} H_{n-1} (\frac{\sqrt{2}x}{w(z)})
+\end{equation}
+
+
+Check this for $n=1$, using that $H_1(\zeta) = 2 \zeta$ for any argument $\zeta$,
+
+\begin{align*}
+xH_1(y) =&
+2xy \\=& 2\frac{\sqrt{2 } x^2}{w(z)}
+\end{align*}
+
+the new solution matches,
+
+\begin{align*}
+x H_1(y) =&
+	 \frac{1}{2a}H_{2}(y) +  \frac{1}{a} H_{0}(y)
+	 \\=&
+	 \frac{1}{2a}
+	 [
+	 4y^2 - 2
+	 ]
+	 +
+	\frac{1}{a}
+	 \\=&
+	 \frac{w(z)}{2 \sqrt{2} }
+	 [
+	 4(\frac{2x^2}{w^2(z)}) - 2
+	 ]
+	 +
+	 \frac{w(z)}{\sqrt{2} }	 
+	 \\=&
+	 2\frac{\sqrt{2 } x^2}{w(z)}
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+With the linear result, 
+
+\begin{equation*}
+x H_n(\frac{\sqrt{2}x}{w(z)}) =
+	\frac{\sqrt{2} w(z)}{4}
+	H_{n+1}(\frac{\sqrt{2}x}{w(z)})
+	+
+	\frac{\sqrt{2} w(z) n}{2} H_{n-1} (\frac{\sqrt{2}x}{w(z)})
+\end{equation*}
+
+the prefactors $\eta$ discussed previously, which might also be written as pseudo-operators for linear $x$, are clearly
+
+\begin{align*}
+\eta_+^1 = \frac{\sqrt{2}w(z)}{4}
+\end{align*}
+
+\begin{align*}
+\eta_-^1 = \frac{\sqrt{2} w(z) n}{2}
+\end{align*}
+
+Note
+
+\begin{align*}
+	\eta_- \neq \eta_+
+\end{align*}
+
+because of complicated dependence on the hermite polynomial. The factors will also be different for each higher-order $x$. However, these factors at higher orders can all be calculated following a similar procedure (shown later for quadratic $x$). \\
+
+The coupling pseudo-operator for linear $x$ dependence is now known:
+
+
+\begin{equation*}
+x u_{n,m} \rightarrow
+	X_+^1
+	u_{n+1,m}
+	+
+	X_-^1
+	u_{n-1,m}
+\end{equation*}
+
+where
+
+\begin{align*}
+	X_{\pm }^1 u_{n \pm 1, m} = &
+		\eta_{\pm}^1	
+		(2^{\mp 1} )^{-1/2}
+		\sqrt{\frac{(n \pm 1)!}{n!} }
+		\exp(\mp i  \psi(z)).
+\end{align*}
+
+
+
+
+Therefore, the overall result from $x u_{n,m}$ is
+
+\begin{align*}
+	x u_{n, m} \rightarrow &
+		X_+^1 u_{n+1,m} + X_-^1 u_{n-1,m}
+		\\=&
+	\left[
+		\frac{1}{2a}
+				(2 )^{1/2}
+		\sqrt{\frac{ (n+1)!}{ n!} }
+		\exp(-i  \psi(z))
+		\right]
+		u_{n+1,m}		
+		\\ & + 
+		\left[
+		\frac{n}{a}
+				(2 )^{-1/2}
+		\sqrt{\frac{ (n-1) !}{n!} }
+		\exp( i \psi(z))
+		\right]
+		u_{n-1,m}
+		\\ = &
+	\left[
+		\frac{w(z)}{2}
+		\sqrt{n+1 }
+		\exp(-i  \psi(z))
+	\right]
+		u_{n+1,m}		
+		\\  & +
+		\left[
+		\frac{w(z)}{ 2}
+		 \sqrt{n} 
+		\exp( i \psi(z))
+		\right]
+		u_{n-1,m} 
+		\\= & 
+			\left[
+		\frac{w_0}{2}
+		\sqrt{n+1 }
+		(1-i\frac{z}{z_R} )
+	\right]
+		u_{n+1,m}		
+		\\& + 
+		\left[
+		\frac{w_0}{ 2}
+		 \sqrt{n} 
+		(1+i\frac{z}{z_R} )
+		\right]
+		u_{n-1,m}
+\end{align*}
+
+or (also accounting for mode coefficient)
+
+\begin{equation}
+C_{n,m} x u_{n,m}
+=
+\frac{w_0}{2}
+			\left[
+		\sqrt{n+1 }
+		(1-i\frac{z}{z_R} )
+	\right]
+	C_{n,m}
+		u_{n+1,m}		
+		+
+		\frac{w_0}{2}
+		\left[
+		 \sqrt{n} 
+		(1+i\frac{z}{z_R} )
+		\right]
+		C_{n,m}
+		u_{n-1,m}
+\end{equation}
+
+where it was used that
+
+\begin{align*}
+	\exp(\pm i \arctan\frac{z}{z_R})
+		=\frac{1\pm i\frac{z}{z_R}}{\sqrt{1+(\frac{z}{z_R})^2}}		.			
+\end{align*}
+
+
+\rule{\textwidth}{0.4pt}
+
+\clearpage
+
+\subsection{Quadratic (or Greater) Transverse Coordinate Coupling}
+
+For $x^2$ dependence, again use the identity \textbf{(where $a = \frac{\sqrt{2}}{w(z)}$, $y = ax$)}
+
+\begin{align*}
+x H_n(y) =&
+		\frac{1}{2a}
+	H_{n+1}(y)
+	+
+	\frac{n}{a} H_{n-1} (y).
+\end{align*}
+
+Multiplying both sides by $x$,
+
+\begin{align*}
+x^2 H_n(y)
+	=&
+		\frac{1}{2a}
+	x H_{n+1}(y)
+	+
+	\frac{n}{a} x H_{n-1} (y)
+\end{align*}
+
+Now, to solve $xH_{n+1}$, all that changes in the identity are the $n$ orders. This includes $n \rightarrow n+1$ as a result of the Leibniz rule's binomial coefficient, $ {n+1 \choose 1} = n+1$. So
+
+\begin{align*}
+x H_{n+1}(y) =&
+		\frac{1}{2a}
+	H_{n+2}(y)
+	+
+	\frac{n+1}{a} H_{n} (y)
+\end{align*}
+
+Similarly for $xH_{n-1}$
+
+\begin{align*}
+x H_{n-1}(y) =&
+		\frac{1}{2a}
+	H_{n}(y)
+	+
+	\frac{n-1}{a} H_{n-2} (y)
+\end{align*}
+
+The overall solution leads to self coupling, as well as coupling two orders higher and lower
+
+\begin{align*}
+x^2 H_n(y)
+	=&
+		\frac{1}{2a} 
+		x H_{n+1}(y)
+	+
+	\frac{n}{a} x H_{n-1} (y)
+	\\	=&
+		\frac{1}{2a}
+		\left[
+		\frac{1}{2a}
+		H_{n+2}(y)
+		+
+		\frac{n+1}{a} H_{n} (y)
+	\right]
+	+
+	\frac{n}{a} 
+	\left[
+		\frac{1}{2a}
+		H_{n}(y)
+		+
+		\frac{n-1}{a} H_{n-2} (y)
+	\right]
+	\\ = &
+	\frac{1}{4a^2} H_{n+2} (y)
+	+
+	\frac{2n+1}{2a^2} H_{n}(y)
+	+
+	\frac{n(n-1)}{a^2} H_{n-2}(y)
+\end{align*}
+
+The additional couplings are again
+
+\begin{align*}
+	X_{\pm/0}^2 = &
+	\eta_{\pm/0}^2	
+		(2^{\mp K} )^{-1/2}
+		\sqrt{\frac{(n \pm K)!}{n!} }
+		\exp(\mp iK  \psi(z))
+\end{align*}
+
+so that
+
+\begin{align*}
+x^2 u_{n, m} \rightarrow &
+	X_-^2 u_{n+2,m}
+	+
+	X_0^2 u_{n,m}
+	+
+	X_-^2 u_{n-2,m}	
+	\\=&
+	\left[
+		(2^{- 2} )^{-1/2}
+		\sqrt{\frac{(n + 2)!}{n!} }
+		\exp(- i2  \psi(z))
+		\frac{1}{4a^2}
+	\right]
+	u_{n+2,m}
+\\ & +
+	\left[
+		\frac{2n+1}{2a^2}
+	\right]
+		u_{n,m}
+\\ & +	
+	\left[
+		(2^{ 2} )^{-1/2}
+		\sqrt{\frac{(n - 2)!}{n!} }
+		\exp( i2  \psi(z))
+		\frac{n(n-1)}{a^2}
+	\right]	
+	u_{n-2,m}
+	\\=&
+			\left[
+		\sqrt{(n+1)(n+2)}
+		\exp(- i2  \psi(z))
+		\frac{w^2(z)}{4}
+	\right]
+	u_{n+2,m}
+\\ & +
+	\left[
+	\frac{w^2(z)}{4}
+		(2n+1)
+	\right]
+		u_{n,m}
+\\ & +	
+	\left[
+		\frac{w^2(z)}{4}
+		\sqrt{n(n-1)}
+		\exp( i2  \psi(z))
+	\right]	
+		u_{n-2,m}
+\\ =&
+	\frac{w_0^2 (z)}{4}
+				\left[
+		\sqrt{(n+1)(n+2)}
+		(1-i \frac{z}{z_R})^2
+	\right]
+	u_{n+2,m}
+\\ & +
+	\left[
+		(2n+1)
+		(1 + (\frac{z}{z_R})^2 )
+	\right]
+		u_{n,m}
+\\ & +	
+	\left[	
+		\sqrt{n(n-1)}
+		(1 + \frac{z}{z_R} )^2		
+	\right]	
+		u_{n-2,m}
+\end{align*}
+
+or, with the mode coefficient,
+
+\begin{align*}
+	C_{n,m} x^2 u_{n,m} \rightarrow&
+	C_{n,m}
+	\frac{w_0^2}{4}
+	\Big(
+				\left[
+		\sqrt{(n+1)(n+2)}
+		(1-i \frac{z}{z_R})^2
+	\right]
+	u_{n+2,m}
+\\ & +
+	\left[
+		(2n+1)
+		(1 + (\frac{z}{z_R})^2 )
+	\right]
+		u_{n,m}
+\\ & +	
+	\left[	
+		\sqrt{n(n-1)}
+		(1 + \frac{z}{z_R} )^2		
+	\right]	
+		u_{n-2,m}
+		\Big)
+\end{align*}
+
+where it was used that
+
+\begin{align*}
+	\exp(  \pm i2  \psi(z)) =&
+		\frac{1 \pm i \frac{z}{z_R}  }{1 \mp i \frac{z}{z_R} }
+\end{align*}
+
+Equivalently (keeping the explicit Gouy phase dependence),
+
+\begin{align*}
+	x^2 u_{n,m} \rightarrow&
+	\frac{w^2(z)}{4}
+	\Big(
+				\left[
+		\sqrt{(n+1)(n+2)}
+		\phi^{-2}
+	\right]
+	u_{n+2,m}
++
+	\left[
+		(2n+1)
+	\right]
+		u_{n,m}
++	
+	\left[	
+		\sqrt{n(n-1)}
+		\phi^{2}	
+	\right]	
+		u_{n-2,m}
+		\Big)
+\end{align*}
+
+where
+
+\begin{equation}
+\phi = \exp( i \Psi(z))
+\end{equation}
+
+This result shows that all higher-order transverse coordinate dependence can be accounted for simply by iterating over the first-order identity, Eq. \ref{id}.
+
 	
 	
 \sectionend
 
-\section{Shifted Beam Approximation}
-For a small shift of the input axis, $a \textless\textless w_{0}$, in the -x-direction relative to the cavity axis, the shifted $u_{00}$ mode can be solved in terms of an added $u_{10}$ mode up to a constant factor.
+\section{Shifted Gaussian Beam Approximations}
+For a small shift of the input axis, $a \textless\textless w_{0}$, in the -x-direction relative to the cavity axis, $x\rightarrow x-a$, and the shifted $u_{00}$ mode can be solved to first-order in terms of an added $u_{10}$ mode up to a constant factor. This is equivalent to representing the off-axis beam in terms of on-axis modes. Each higher order approximation would yield an additional mode incremented in $n$, the mode associated with the unidirectional shift because of the $H_n(\frac{\sqrt{2}x}{w(z)})$ term in the HG mode representation.
 
-\subsection{Shifted Beam : $z = z_0$}
+\subsection{Shifted Beam at the Waist : $(z = z_0 = 0)$}
 
-At $z= z_0 = 0$, a shifted beam can be expresssed as
+The HG modes at waist (if $z_0 = 0$) are given by
+
+	\begin{align*} 
+		u_{nm}(x,y,z)=&(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\arctan(\Psi(z))	
+		\Big)
+		\\=&
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w_0}H_{n} \Big( \frac{\sqrt{2}x}{w_0} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w_0} \Big)
+		\exp 
+		\Big(
+		-\frac{x^{2}+y^{2}}{w_0^{2}} 
+		\Big)
+	\end{align*}
+
+So a shifted beam at the waist can be rewritten to first-order in shift $a$ as
 
 	\begin{align}\label{eq:9}
 		u_{00}(x-a,y,0) 
@@ -450,7 +1299,7 @@ The phase is 0, as expected from the Gouy phase. The shift for mode coefficients
 	\begin{figure}[ht]
 	\centering
 	\includegraphics[scale=.7]{beamshift}
-	\caption{Intensity at the beam waist and $y=0$ for HG(0,0) and HG(1,0) modes alongside combined modes. The variable A represents the scale of the HG(1,0) mode, where 1 is the HG(0,0) mode coefficient.}
+	\caption{First-order approximation, Gaussian beam laterally offset in $x$. Intensity at the original beam center ($y=z=0$) for $u_{00}$ and $u_{10}$ modes alongside combined modes. The variable A represents the scale of the $u_{10}$ mode, where 1 is the $u_{00}$ mode coefficient.}
 	\label{fig:1}
 	\end{figure}
 	
@@ -471,87 +1320,328 @@ The phase is 0, as expected from the Gouy phase. The shift for mode coefficients
 	\end{table}
 	\end{center}
 \sectionend
-\subsection{Shifted Beam : $z = z_R$}
-At $z = z_R$, $U_{10}$ ITO $U_{00}$ is
+\subsection{Shifted Beam at Rayleigh Range: $(z = z_R)$}
+At $z = z_R$ (and $z_0=0$), the beam spot is 
 
-\begin{equation} \label{eq:23}
-U_{10}(x,y,z_R) = U_{00}(x,y,z_R) \left[ 1 + \frac{\sqrt{2}x}{w_0}\right]
-\end{equation}
+\begin{align*}
+w(z)
+ =& 
+ w_0 \sqrt{1 + \big( \frac{z-z_0}{z_R} \big)^2}
+ \\=&
+ w_0 \sqrt{2} ,
+\end{align*}
 
-For a shifted beam with ($z=z_R$):
+the radius of curvature is 
+
+\begin{align*}
+	R_c (z) =& 
+	z-z_0 + \frac{z_R^2}{z-z_0}
+	\\=&
+	2 z_R ,
+\end{align*}
+
+and the Gouy phase is 
+
+\begin{align*}
+\Psi(z)
+ =& \arctan\Big( \frac{z-z_0}{z_R} \Big)
+ \\=& \frac{\pi}{4}.
+\end{align*}
+
+
+$u_{00}$ i.t.o. $u_{10}$ at $z=z_R$ is 
+
+\begin{align*}
+u_{00}(x,y,z_R) =&
+ 	\frac{w_0\sqrt{2}}{2\sqrt{2} x} 
+ u_{10}(x,y,z_R) 	
+ 	\\=&
+ 	\frac{w_0}{2x} 
+ 	u_{10} (x,y,z_R) 
+\end{align*}
+
+Note that this representation does not account for the additional Gouy phase ($e^{i\Psi(z)}$ term), so the result is expected to have an additional phase $\frac{\pi}{4}$. For a shifted beam with ($z=z_R$), making a first-order approximation in the smaller term $a$ from the shift $x\rightarrow x-a$ with propagation along $z$:
 	\begin{align}\label{eq:22}
-		u_{tilt (0,0)} (x,y,z=z_R)
-			= & u_{00} \exp \left[ ik \bigfrac{2 a x }{4 z_R} \right] \exp \left[ \frac{ax}{w_0^2}\right]
+		u_{00} (x,y,z=z_R)
+			\rightarrow_{shift} \; & u_{00} \exp 
+			\left[ 
+				ik \bigfrac{2 a x }{2 R_c(z)} 
+			\right] 
+			\exp 
+			\left[ 
+				\frac{2ax}{w(z)^2}
+			\right]
 		\nonumber\\ 
-			\approx & u_{00} \left[
-			1 + ik \bigfrac{a x}{2z_R} 
-			+ \frac{\sqrt{2}ax}{w_0^2}
-			\right]
-			\nonumber\\
-			= & u_{00}(x,y,0) +
-			 \left[
-			 i  \frac{1}{\sqrt{2}}+\frac{1}{\sqrt{2}}
-			\right]
-			\bigfrac{a}{w_0}
-			 u_{10}(x,y,0)\; .
-	\end{align}
-
-The phase is $\frac{\pi}{4}$, in agreement with the Guoy phase.
-
-\subsection{Shifted Beam : $z >> z_R$}
-At $z >> z_R$, $U_{10}$ ITO $U_{00}$ is
-
-\begin{equation} \label{eq:23}
-U_{10}(x,y,z>>z_R) =  \bigfrac{2xz_R}{zw_0}U_{00}(x,y,z>>z_R) 
-\end{equation}
-
-Then, for a tilted beam with ($z>>z_R$):
-	\begin{align}\label{eq:22}
-		u_{tilt (0,0)} (x,y,z>>z_R)
-			= & u_{00} \exp \left[ ik \bigfrac{a x }{ z} \right] \exp \left[ \frac{2ax}{w_0^2}\bigfrac{z_R}{z}^2\right]
+		= & u_{00} \exp 
+			\left[ 
+				ik \bigfrac{a x }{2 z_R} 
+			\right] 
+		\exp 
+			\left[ 
+				\frac{2ax}{w_0^2}
+			\right]		
 		\nonumber\\ 
-			\approx & u_{00} \left[
-			1 + ik \bigfrac{a x}{z} 
-			\right]
+			\approx & u_{00} 
 			\left[
-			1
-			+
-			 \frac{2ax}{w_0^2}\bigfrac{z_R}{z}^2
+				1 + ik \bigfrac{a x}{2z_R} 
+				+ \frac{ax}{ w_0^2}
 			\right]
 			\nonumber\\
-			= & u_{00}(x,y,z>>z_R) +
-			 \left[
-			 \frac{z_R}{z}+i
+			= & 
+			u_{00} (x,y,z_R)
+			+ 
+			\left[
+				i\bigfrac{k a x}{2z_R} 
+				+ \frac{ax}{w_0^2}
 			\right]
-			\bigfrac{a}{w_0}
-			 u_{10}(x,y,z>>z_R)\; .
+			\frac{w_0}{2x} 
+			u_{10} (x,y,z_R)
+			\nonumber\\						
+			= & 
+			u_{00}(x,y,z_R) +
+			\frac{a}{2}
+			 \left[
+			 i  \frac{k w_0}{2z_R}
+			 +
+			 \frac{1}{w_0}
+			\right]
+			 u_{10}(x,y,z_R)
+			 \nonumber\\
+			 			= & 
+			u_{00}(x,y,z_R) +
+			\frac{a}{2}
+			 \left[
+			 i  \frac{ w_0 (2\pi / \lambda )}
+			 {2 (\pi w_0^2  /\lambda)}
+			 +
+			 \frac{1}{w_0}
+			\right]
+			 u_{10}(x,y,z_R)
+			 \nonumber\\
+			 			 			= & 
+			u_{00}(x,y,z_R) +
+			\frac{a}{4 w_0}
+			 \left[
+			 i 
+			 +
+			 1
+			\right]
+			 u_{10}(x,y,z_R)
 	\end{align}
 
-The phase is $\frac{\pi}{2}$, in agreement with the Guoy phase.
+ 
+
+The phase of the $u_{10}$ term is $\arctan(1) = \frac{\pi}{4}$, in agreement with the Gouy phase.
+
+\clearpage
+
+\subsection{Shifted Beam in the Far Field: $z >> z_R$}
+
+For propagation far beyond the Rayleigh range, $z >> z_R$ (and $z_0=0$), the beam spot is 
+
+\begin{align*}
+w(z)
+ =& 
+ w_0 \sqrt{1 + \big( \frac{z-z_0}{z_R} \big)^2}
+ \\ \approx &
+ w_0 \sqrt{1 + z^2}
+\\ \approx & 
+  w_0 z,
+\end{align*}
+
+the radius of curvature is 
+
+\begin{align*}
+	R_c (z) =& 
+	z-z_0 + \frac{z_R^2}{z-z_0}
+	\\ \approx &
+	z ,
+\end{align*}
+
+and the Gouy phase is 
+
+\begin{align*}
+\Psi(z)
+ =& \arctan\Big( \frac{z-z_0}{z_R} \Big)
+ \\ \approx & \frac{\pi}{2}.
+\end{align*}
+
+
+$u_{00}$ i.t.o. $u_{10}$ at $z=z_R$ is 
+
+\begin{align*}
+u_{00}(x,y,z>> z_R) =&
+ 	\frac{ w(z)}{2\sqrt{2} x} 
+ u_{10}(x,y,z>>z_R) 	
+ 	\\=&
+ 	\frac{\sqrt{2} w_0 z}{4x} 
+ 	u_{10} (x,y,z>> z_R) 
+\end{align*}
+
+
+Not accounting for the additional Gouy phase in the conversion means an additional $\frac{\pi}{2}$ phase is to be expected. Then, for a shifted beam in the first-order approximation with ($z>>z_R$):
+	\begin{align*}
+		u_{00} (x,y,z>>z_R)
+			\rightarrow_{shift} \; & u_{00} \exp 
+			\left[ 
+				ik \bigfrac{2 a x }{2 R_c(z)} 
+			\right] 
+			\exp 
+			\left[ 
+				\frac{2ax}{w(z)^2}
+			\right]
+		\nonumber\\ 
+		\approx & u_{00} \exp 
+			\left[ 
+				ik \bigfrac{a x }{z} 
+			\right] 
+		\exp 
+			\left[ 
+				\frac{2ax}{ (w_0 z)^2}
+			\right]		
+		\nonumber\\ 
+			\approx & u_{00} 
+			\left[
+				1 + ik \bigfrac{a x}{z} 
+				+ \frac{2ax}{ (w_0 z)^2}
+			\right]
+			\nonumber\\
+			= & 
+			u_{00} (x,y,z)
+			+ 
+			\left[
+				i\bigfrac{k a x}{z} 
+				+ \frac{2 ax}{ (w_0 z)^2}
+			\right]
+			\frac{\sqrt{2} w_0}{4x} 
+			u_{10} (x,y,z)
+			\nonumber\\						
+			= & 
+			u_{00}(x,y,z) +
+			\sqrt{2} a
+			 \left[
+			 i  \frac{k w_0}{4z}
+			 +
+			 \frac{1}{2 w_0 z^2}
+			\right]
+			 u_{10}(x,y,z)
+			 \nonumber\\
+			 			= & 
+			u_{00}(x,y,z) +
+			\sqrt{2} a
+			 \left[
+			 i  \frac{ w_0 (2\pi / \lambda )}
+			 {4z (\pi w_0^2  /\lambda)}
+			 +
+			 \frac{1}{2 w_0 z^2}
+			\right]
+			 u_{10}(x,y,z)
+			 \nonumber\\
+			 			 			= & 
+			u_{00}(x,y,z) +
+			\frac{\sqrt{2} a}{2 w_0z} 
+			 \left[
+			 i 
+			 +
+			 \frac{1}{z}
+			\right]
+			 u_{10}(x,y,z)
+	\end{align*}
+
+The additional phase for very large $z$ is approximated as $\arctan(\infty) = \frac{\pi}{2}$, in agreement with the Guoy phase.
 
 \sectionend
 
-\section{Tilted Beam Approximation}
+\section{Tilted Gaussian Beam Approximations}
 The following subsections show that a tilted beam at varying propagation distances can also be approximated as a sum of $U_{00}$ and $U_{10}$ modes, with an imaginary component in the$U_{10}$ contribution.
 
-\subsection{Tilted Beam : $z=z_0$}	
-For a tilt with added phase in $x$:
+A beam can be tilted i.t.o. of its coordinate system relative to the optical axis by applying a simple rotation matrix, to first-order for small tilt,
+
+	\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+ \approx &
+ 	\begin{pmatrix}
+x \\
+z 
+\end{pmatrix}
+\begin{pmatrix}
+\cos\alpha & \sin\alpha \\
+-\sin\alpha & \cos\alpha
+\end{pmatrix}
+\\
+\approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\end{align*}	
+
+\subsection{Tilted Beam at Waist: $z=z_0=0$}	
+For the rotation at $z=z_0=0$:
+	
+	\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+ \approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\rightarrow_{(z=0)}
+	\begin{pmatrix}
+x \\
+-x\alpha
+\end{pmatrix}
+\end{align*}	
+
+The HG modes at waist (if $z_0 = 0$) are then transformed given by
+
+	\begin{align*} 
+		u_{nm}(x,y,z)=&(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i \psi(z) - ikz )	
+		\Big)
+		\\=&
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w_0}H_{n} \Big( \frac{\sqrt{2}x}{w_0} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w_0} \Big)
+		\exp 
+		\Big(
+		-\frac{x^{2}+y^{2}}{w_0^{2}} 
+		+i \psi(-x\alpha) + ikx\alpha
+		\Big)
+	\end{align*}
+
+This implies an additional phase as
 	
 	\begin{equation} \label{eq:11}
-		u_{tilt}(x,y,0)=u_{00}(x,y,0) \exp(i\phi)\;.
+		u_{tilt}(x,y,0) \rightarrow 
+		u_{00}(x,y,0) \exp(ikx\alpha)\;.
 	\end{equation}
 
-This phase is a result of transforming $x \rightarrow x \cos \alpha$ and $z \rightarrow z - x sin \alpha$.
+along with a Gouy phase
 
-	Approximating this in terms of a quadrature phase addition of $u_{10}$, with $\alpha \textless\textless \frac{\lambda}{2\pi w_{0}}$:
+\begin{align*}
+\Psi(-x\alpha)
+ =& \arctan\Big( \frac{ -x\alpha}{z_R} \Big)
+\end{align*}
+
+
+Approximating the tilt in terms of a quadrature phase addition of $u_{10}$, with $\alpha \textless\textless \frac{\lambda}{2\pi w_{0}}$:
 	
 	
 	\begin{align}\label{eq:12}
 		u_{tilt (0,0)} 
-			=& u_{00} \exp(i \phi)
-		\nonumber\\	
-			= & u_{00} \exp \left[ikx \sin(\alpha) \right] 
-		\nonumber\\	
 			\approx & u_{00} \exp \left[ ikx\alpha \right]
 		\nonumber\\
 			= & u_{00} \exp \left[ i \bigfrac{2 \pi x \alpha}{\lambda} \right]
@@ -611,9 +1701,247 @@ Figure \ref{fig:3} shows agreement with this approximation.
 	
 \sectionend
 
+\subsection{Tilted Beam at Rayleigh Range: $z=z_R$}
 
-\section{Tilted Beam at Half-Plane}
-\subsection{Gapless Approximation}
+For the rotation at $z=z_R$:
+	
+	\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+ \approx &
+	\begin{pmatrix}
+x+z_R\alpha \\
+z_R - x\alpha
+\end{pmatrix}
+\end{align*}	
+
+The HG modes at $z=z_R$ (if $z_0 = 0$) are then transformed given by
+
+	\begin{align*} 
+		u_{nm}(x,y,z)=&(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i \psi(z) - ikz )	
+		\Big)
+		\\=&
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n} \Big( \frac{\sqrt{2} (x+z \alpha)}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\\ \times &		
+		\exp 
+		\Big(
+		\frac{-ik( (x+z\alpha)^2 +y^{2})}{2R_{c}(z)}
+		-\frac{(x+z\alpha)^2 +y^{2}}{w(z)^{2}} 
+		+i \psi(z-x\alpha) - ik(z-x\alpha)
+		\Big)
+	\end{align*}
+
+This again implies an additional phase as
+	
+	\begin{equation} 
+		u_{tilt}(x,y,z_R) \rightarrow 
+		u_{00}(x,y,z_R) \exp(ikx\alpha)\;.
+	\end{equation}
+
+
+along with a Gouy phase
+
+\begin{align*}
+\Psi(z-x\alpha)
+ =& \arctan\Big( \frac{ z-x\alpha}{z_R} \Big)
+\end{align*}
+
+At $z = z_R$ (and $z_0=0$), the beam spot is 
+
+\begin{align*}
+w(z)
+ =& 
+ w_0 \sqrt{1 + \big( \frac{ (z_R-x\alpha)}{z_R} \big)^2}
+\end{align*}
+
+the radius of curvature is 
+
+\begin{align*}
+	R_c (z) =& 
+	z_R-x\alpha + \frac{z_R^2}{z_R-x\alpha}
+\end{align*}
+
+and the Gouy phase is 
+
+\begin{align*}
+\Psi(z)
+ =& \arctan\Big( \frac{z_R-x\alpha}{z_R} \Big)
+\end{align*}
+
+$u_{00}$ i.t.o. $u_{10}$ at $z=z_R$ is 
+
+\begin{align*}
+u_{00}(x,y,z_R) =&
+ 	\frac{w(z)}{2\sqrt{2} x} 
+ u_{10}(x,y,z_R)  
+\end{align*}
+
+Approximating the tilt in terms of a quadrature phase addition of $u_{10}$, with $\alpha \textless\textless \frac{\lambda}{2\pi w_{0}}$:
+	
+	
+	\begin{align*}
+		u_{00}(x,y,z) \rightarrow_{tilt} & 
+			u_{00}(x,y,z) 			
+			\exp 
+			\left[ -ik
+			\frac{2xz_R \alpha +z\alpha^2}{2R_c(z)}
+			-			
+			\frac{2xz_R \alpha +z_R\alpha^2}{w^2(z)}			
+			\right]
+			\exp \left[ ikx\alpha \right]
+		\nonumber\\
+			\approx & 
+			u_{00}(x,y,z) 
+			\exp 
+			\left[ -ik \frac{xz_R\alpha}{R_c(z)}
+			- \frac{2xz_R \alpha}{w^2(z)}
+			\right]	
+			\exp \left[ i kx\alpha \right]
+		\nonumber\\ 
+			\approx & 
+			u_{00} (x,y,z)
+			\left[
+			1 
+			- ik \frac{xz_R \alpha}{R_c(z)}
+			- \frac{2xz_R \alpha}{w^2(z)}
+			\right]
+			\left[
+			1 + i kx\alpha \right]
+			\nonumber\\
+			\\ \approx &
+						u_{00} (x,y,z)
+			\left[
+			1 
+			+ i kx \alpha			
+			- ik \frac{xz_R \alpha}{R_c(z)}
+			- \frac{2xz_R \alpha}{w^2(z)}
+			\right]
+			\\= &
+									u_{00} (x,y,z)
+									+
+			\left[
+			 i kx \alpha			
+			- ik \frac{xz_R \alpha}{R_c(z)}
+			- \frac{2xz_R \alpha}{w^2(z)}
+			\right]
+			 	\frac{w(z)}{2\sqrt{2} x} 
+ u_{10}(x,y,z) 
+ 			\\= &
+									u_{00} (x,y,z)
+									+
+			\left[
+			 i k \alpha	\frac{w(z)}{2\sqrt{2} } 		
+			- ik \frac{z_R \alpha}{R_c(z)}
+			\frac{w(z)}{2\sqrt{2} } 
+			- \frac{z_R \alpha}{w(z)}
+			\frac{1}{\sqrt{2} } 
+			\right]			 	
+ u_{10}(x,y,z) 
+	\end{align*}
+
+\begin{align*}
+\arctan \left[	
+	\frac
+	{
+	 k 
+	 (
+	 	1		
+			- \frac{z_R}{R_c(z)}
+	 )
+	}
+	{	
+			- 2\frac{z_R}{w^2(z)}
+	}
+	\right]
+\end{align*}
+
+Note that coordinate transformations are neglected for 
+
+\begin{align*}
+	w(z') \rightarrow 
+	w_0^2
+	\sqrt{1-(
+	\frac{z- x\alpha}
+	{z} )^2}
+\end{align*}
+
+and
+
+\begin{align*}
+	R_c(z')
+ =&
+  z - x \alpha + \frac{z^2}{z - x \alpha}
+\end{align*}
+
+assuming the Rayleigh range 
+
+\begin{align*}
+	z_R = \frac{\pi w_0^2}{\lambda} \approx 3 \; \mathrm{meters}
+\end{align*}
+
+dominates in the propagation range of interest ($\sim$ 1 mm).
+
+\clearpage
+
+
+\subsection{Tilted Beam at Far Field: $z>>z_R$}
+
+For the rotation at $z>>z_R$:
+	
+	\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+ \approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\end{align*}	
+
+The HG modes at $z=z_R$ (if $z_0 = 0$) are then transformed given by
+
+	\begin{align*} 
+		u_{nm}(x,y,z)=&(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}H_{n} \Big( \frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp 
+		\Big(
+		\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}
+		-\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i \psi(z) - ikz )	
+		\Big)
+		\\=&
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z_R)}
+		H_{n} \Big( \frac{\sqrt{2} (x+z_R \alpha)}{w(z_R)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z_R)} \Big)
+		\\ \times &		
+		\exp 
+		\Big(
+		\frac{-ik( (x+z_R\alpha)^2 +y^{2})}{2R_{c}(z_R)}
+		-\frac{(x+z_R\alpha)^2 +y^{2}}{w(z_R)^{2}} 
+		+i \psi(z_R-x\alpha) - ik(z_R-x\alpha)
+		\Big)
+	\end{align*}
+
+\clearpage
+
+\section{Tilted Gaussian Beam at Half-Plane Photodetector}
+\subsection{Gapless Approximation ($z=z_0$)}
 Initially, we describe a tilted beam, incoming from S/C 1, interfering with a Gaussian local beam at S/C 2. The incoming tilted beam ITO HG modes is
 
 	\begin{equation} \nonumber
@@ -1019,7 +2347,7 @@ Thus, after a LPF, results agree with SN 8.1:
 \Phi = \arctan \bigfrac{Q}{I} = 0
 \end{equation}
 
-\subsection{Gap Approximation}
+\subsection{Gap Approximation ($z=z_0$) }
 
 For a vertical(x-centered) gap of width $2b$ in the half-plane PD, the integrals in Sn. 7.1 become:
 
@@ -1329,7 +2657,7 @@ U_{nm} e^{ikx \alpha} = .
 
 \sectionend
 
-\section{Tilting a Misaligned Gaussian Measurement Beam}
+\section{Tilting a Shifted Gaussian Measurement Beam at Waist}
 
 Building on the two previous sections, a tilt to an already shifted beam is
 
@@ -1415,7 +2743,7 @@ Therefore, Eq. \ref{eq:13} for a shifted then tilted beam of fundamental mode at
 	\end{equation}
 \sectionend
 
-\subsection{Tilting a Misaligned Beam : Halfplane PD}
+\subsection{Tilting a Misaligned Beam : Halfplane PD }
 
 By Eq. \ref{eq:17}, a shifted then tilted beam of fundamental mode at the waist is
 
@@ -3237,6 +4565,8 @@ Evaluating at $\alpha = 0$
     \frac{x (z - z_0)}{z_R^2 (1+ \frac{z  - z_0}{z_R^2})^{3/2}}
 \end{equation}
 
+\clearpage
+
 \subsection{Analytical Shifted then Tilted Gaussian Beam (tilt approximation)}
 
 If we instead make the immediate, first-order small angle expansion on the coordinate transformation in Sn. 8.6:
@@ -4595,6 +5925,9 @@ The signal phases are largely unchanged for higher-order approximation in shift,
 
 
 \section{Modulating TTL over LISA's Long Arm}
+
+(This section not necessarily accurate/useful...)
+
 Jitter of a tilted beam, as outlined in the previous section, can be used to model TTL coupling in LISA's long arm.
 
 Sinusoidal modulation of the terms in Eq. \ref{eq:17} which came as an effect of jitter, scaled in $m$, yields:
@@ -4643,9 +5976,13 @@ The MA in Fig. \ref{fig:4} is designed to reduce TTL coupling via adjustable com
 
 \sectionend
 
-\section{Tophat-Gaussian Interference}
+\section{Tophat-Gaussian Interference: FIRST ITERATION}
+
+This chapter is largely deprecated as it makes less stringent approximations than the chapter that follows. However, it makes use of a more formal Taylor (Maclaurin) series expansion which can serve as a check for the following chapter.
 
 \subsection{Tophat Representation as Superposition of HG modes}
+
+Tophat mode coefficients in a given basis can be constructed by...
 
 \clearpage
 
@@ -4695,7 +6032,7 @@ where the second term arises from tilting exponential terms in HG modes. The new
 		.
 \end{align*}
 
-Derivative of Hermite polynomials:
+Where the last term is $u_{nm}$ as a function of $H_n'$. Derivative of Hermite polynomials:
 
 
 \begin{equation*}
@@ -4777,7 +6114,7 @@ where $u_{nm} (H_{n-1})$ can be rewritten
 
 The new tophat modes after applying first-order shift ($x+a$) and tilt are 
 
-\begin{equation}
+\begin{equation}\label{eq:prev}
 	u_{n,m} \rightarrow
      u_{n,m}
         \left[
@@ -4792,46 +6129,191 @@ The new tophat modes after applying first-order shift ($x+a$) and tilt are
     \right]	 \; .
 \end{equation}
 
-Rewriting this explicitly
-
+Rewriting this result using the general scattering equations (Eq. \ref{scatter_x} and Eq. \ref{scatter_x2}):
 
 \begin{align*}
-u_{n,m} \rightarrow &
-     		(2^{n+m-1}n!m!\pi)^{-1/2}
-		\frac{1}{w(z)}
-		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
-		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
-		\frac{x^{2}+y^{2}}{w(z)^{2}} 
-		+i(n+m+1)(\Psi(z))		
-		\Big)
-		\\& \times
+\sum_{n,m} u_{n,m} \rightarrow 
+	\sum_{n,m} 
+	\lbrace &
+		u_{n+2,m} [\frac{w^2}{4}(1-i \frac{z}{z_R})^2 \sqrt{(n+1)(n+2)} ][-i\frac{2ka\alpha}{w^2}]
+		\\+&
+		u_{n+1,m} [\frac{w}{2}(1-i\frac{z}{z_R})\sqrt{n+1}][ik\alpha - \frac{2a}{w^2}]
+		\\+&
+		u_{n,m} [1+\frac{w}{2}(1-i\frac{z}{z_R})\sqrt{n+1})[ik\alpha \frac{2a\sqrt{n}}{w} exp(i \Psi(z))]]
+		\\+&
+		u_{n-1,m} [\frac{2a\sqrt{n}}{w} + \frac{w}{2}(\sqrt{n}(1+i\frac{z}{z_R}))[ik\alpha - \frac{2a}{w^2}]]
+		\\+&
+		u_{n-2,m} [ikan\alpha(1+i\frac{z}{z_R}) - i\frac{ka\alpha}{2}
+(1-i\frac{z}{z_R})^2 \sqrt{n(n-1)}		
+		] 	
+	\rbrace
+\end{align*}
+
+Rewriting for scattering factors:
+
+\begin{align*}
+\sum_{n,m} u_{n,m} \rightarrow 
+	\sum_{n,m} 
+	\lbrace &
+		u_{n+2,m}[ X_+^2(-i\frac{2ka\alpha}{w^2})]
+		\\+&
+		u_{n+1,m}[ X_+^1(ik\alpha - \frac{2a}{w^2})]
+		\\+&
+		u_{n,m} [1+X_+^1(ik\alpha \frac{2a\sqrt{n}}{w} e^{i\Psi})- X_0^2 (i\frac{2ka\alpha}{w^2})]
+		\\+&
+		u_{n-1,m} [\frac{2a\sqrt{n}}{w} e^{i\Psi} + X_-^1(ik\alpha - \frac{2a}{w^2})]
+		\\+&
+		u_{n-2,m} [ X_-^1(ik\alpha a\frac{2\sqrt{n}}{w}e^{i\Psi}) - X_-^2 (i\frac{2ka\alpha}{w^2})] 	
+	\rbrace
+\end{align*}
+
+\clearpage
+
+\subsection{Second-order Shift, First-order Tilt Tophat}
+
+To second order in shift, gain an additional
+
+\begin{align*}
+	\frac{a^2}{2} (\frac{\partial^2 u_{nm}}{\partial x^2}) [1+ik\alpha x] =&
+	\frac{a^2}{2} [1+ik\alpha x] [-\frac{2}{w^2}u_{nm} + (\frac{2x}{w^2})^2 u_{nm} - \frac{4x}{w^2}u_{nm}' + u_{nm}'']
+\end{align*}
+
+Where $u_{nm}'=	\frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi(z))
+	u_{n-1,m}$ represents $u_{nm}$ as a function of $H_n'$. Similarly, for $u_{nm}''$
+
+\begin{equation}
+	H_n^c= 2^c\frac{n!}{(n-c)!}H_{n-c}
+\end{equation}
+
+\begin{align*}
+	H_n''(\frac{\sqrt{2}x}{w}) = 
+	\frac{8}{w^2} \frac{n!}{(n-2)!}H_{n-2}
+	\\=&
+	\frac{8}{w^2} (n(n-1)) H_{n-2}
+\end{align*}
+
+And rewrite
+
+\begin{equation*}
+	u_{nm} (H_{n-2}) = \sqrt{\frac{1}{4 n(n-1)}}
+		\exp(2i \Psi)
+		u_{n-2,m}
+\end{equation*}
+
+Then
+
+\begin{align*}
+\frac{a^2}{2} [1+ik\alpha x] [-\frac{2}{w^2}u_{nm} + (\frac{2x}{w^2})^2 u_{nm} - \frac{4x}{w^2}u_{nm}' + u_{nm}'']
+=&
+\frac{a^2}{2} [1+ik\alpha x]
+\\ \times&
+[(\frac{4x^2-2w^2}{w^4}) u_{nm} 
+\\-& \frac{8x \sqrt{n}}{w^3}
+	\exp(i \Psi)
+	u_{n-1,m}
+\\+& 
+	\frac{4}{w^2}
+	\sqrt{n(n-1)}
+		\exp(2i \Psi)
+		u_{n-2,m}]
+		\\=&
+		C
+\end{align*}
+
+distributing,
+
+\begin{align*}
+C =&
+\frac{a^2}{2} 
+\\ \times&\{
+[( \frac{4x^2}{w^2} -\frac{2}{w^2} )u_{nm} 
+- \frac{8x \sqrt{n}}{w^3}
+	\exp(i \Psi)
+	u_{n-1,m}
++
+	\frac{4}{w^2}
+	\sqrt{n(n-1)}
+		\exp(2i \Psi)
+		u_{n-2,m}]
+	\\+&
+	ik \alpha
+	[( \frac{4x^3}{w^2} -\frac{2x}{w^2} )u_{nm} 
+- \frac{8x^2 \sqrt{n}}{w^3}
+	\exp(i \Psi)
+	u_{n-1,m}
++ 
+	\frac{4x}{w^2}
+	\sqrt{n(n-1)}
+		\exp(2i \Psi)
+		u_{n-2,m}]
+		\}
+\end{align*}
+
+In terms of the higher-order HG mode coupling coefficients, this adds to the first-order solution:
+
+
+
+\clearpage
+
+\subsection{First-order Shift, Second-order Tilt Tophat}
+
+Using results of the previous section, a second-order tilt would yield
+
+\begin{align*}
+	\sum u_{nm} \rightarrow_{shift,tilt}&
+    \left[
+    u_{nm} 
+    [
+		1
+		-
+		\frac{2ax}{w(z)^2}]	
+	+ 
+	a \frac{2 \sqrt{2} n}{w(z)} 
+	u_{nm}(H_{n-1}) \right]
+	\left[
+        1+ i k \alpha x - \frac{1}{2}(\alpha k x)^2
+    \right]
+    \\=&
+     u_{nm}
         \left[
         1 - \frac{2 a }{w(z)^2} x + i k \alpha x - i \frac{2 k \alpha a}{w(z)^2} x^2 
+        -\frac{1}{2}(\alpha k)^2 x^2 + 
+        \frac{a(\alpha k)^2}{w(z)^2}x^3
     \right]
-    \\& + 
+    \\+& 
+	a \frac{2 \sqrt{2} n}{w(z)} 
+	u_{nm}(H_{n-1})
+	\left[
+        1+ i k \alpha x - \frac{1}{2}(\alpha k)^2 x^2
+    \right].
+\end{align*}
+
+Solving the $u_{nm}(H_{n-1})$ terms,
+
+\begin{align*}
+	u_{n,m} \rightarrow &
+	     u_{nm}
+        \left[
+        1 - \frac{2 a }{w(z)^2} x + i k \alpha x - i \frac{2 k \alpha a}{w(z)^2} x^2 
+        -\frac{1}{2}(\alpha k)^2 x^2 + 
+        \frac{a(\alpha k)^2}{w(z)^2}x^3
+    \right]
+    \\+& 
 	a \frac{2 \sqrt{n}}{w(z)} 
 	\exp(i \Psi(z))
-	(\frac{1}{2 n}) ^{1/2}
-		\exp(i \Psi(z))
-			(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
-		\frac{1}{w(z)}
-		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
-		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
-			\\& \times	
-		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
-		\frac{x^{2}+y^{2}}{w(z)^{2}} 
-		+i( (n-1)+m+1)\Psi(z)			
-		\Big)
+	u_{n-1,m}
 	\left[
-        1+ i k \alpha x
+        1+ i k \alpha x - \frac{1}{2}(\alpha k)^2 x^2
     \right]	 \; .
 \end{align*}
 
-
+\clearpage
 
 \subsection{Tophat Change of Basis (AW) }
 
-To account for different basis in
+No we seek a solution applied to the previous subsection for interference with the shift-tilted tophat with a Gaussian beam. 
+Where $\gamma \in \{0,1,2\}$, representing scattered modes in the previous subsection, $(a,b) = (n\pm \gamma,m)$
 
 \begin{equation*}
 	\int_{-Y}^{Y}dy \int_{x_1}^{x_2}
@@ -4914,7 +6396,7 @@ which is equivalent to
 		\sum_{B=0}^{\lfloor{\frac{b}{2}} \rfloor}
 		\frac
 		{
-			-\frac{\sigma}{8}^{A+B}
+			(-\frac{\sigma}{8})^{A+B}
 			W_2^{2(A+B)}	
 		}
 		{
@@ -4942,7 +6424,7 @@ The $G$ functions have symmetry in the $y$ case
 for even $T$ and 
 
 \begin{equation*}
-	G(-x;T) = -G(x;T)
+	G(-x;T) = G(x;T)
 \end{equation*}
 
 for odd $T$. So $ 		[
@@ -4979,7 +6461,7 @@ for even $b$:
 			\sum_{B=0}^{\lfloor{\frac{b}{2}} \rfloor}
 			\frac
 			{
-				-(\frac{\sigma}{8})^{A+B}
+				(-\frac{\sigma}{8})^{A+B}
 				W_2^{2(A+B)}
 				\Gamma(\frac{b+1}{2}-B)		
 			}
@@ -5048,6 +6530,1884 @@ and $\sigma$ is defined as
 
 \sectionend
 
+\subsection{COR Aperture: First-order Shifting and Tilting Tophat}
+
+ To first order, the new modes resulting from a shift ($x+a$) follow
+
+\begin{align*}
+	u_{nm}' =& u_{nm}(x)|_{a=0} + a (\frac{\partial u_{nm}(x)}{\partial x})_{a=0}
+	\\=&
+		u_{nm} 
+		-
+		\frac{2ax}{w(z)^2} 
+		u_{nm}
+		\\&+
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)(\Psi(z))		
+		\Big)\;
+		\times
+		a 		
+		\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+			\\=&
+		u_{nm}
+		[
+		1
+		-
+		\frac{2ax}{w(z)^2}]		
+		+
+		a 	
+		u_{nm}(	
+		\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+		)
+		.
+\end{align*}
+
+Where the last term is $u_{nm}$ as a function of $H_n'$. Derivative of Hermite polynomials:
+
+
+\begin{equation*}
+	H_n'(x) = 2n H_{n-1} (x)
+\end{equation*}
+
+Therefore
+
+\begin{align*}
+	\frac{\partial H_n(\frac{\sqrt{2}x }{w(z)})}{\partial x}
+	=&
+	\frac{2 \sqrt{2} n}{w(z)} H_{n-1}\Big(\frac{\sqrt{2}x}{w(z)}\Big)
+\end{align*}
+
+so that the tophat is now expressed as
+
+\begin{align*}
+	\sum u_{nm} \rightarrow_{shift}&    
+     u_{nm}
+        \left[
+        1 - \frac{2 a }{w(z)^2} x 
+    \right]
+    + 
+	a \frac{2 \sqrt{2} n}{w(z)} 
+	u_{nm}(H_{n-1})
+\end{align*}
+
+where $u_{nm} (H_{n-1})$ can be rewritten
+
+\begin{align*}
+	u_{nm} (H_{n-1}) =&
+	(\frac{2 n }{2 n})^{1/2}
+			\exp(-i \Psi(z))\exp(i \Psi(z))
+			\\& \times
+	[
+	(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\Psi(z)		
+		\Big)
+				]
+		\\=&
+		(\frac{1}{2 n}) ^{1/2}
+		\exp(i \Psi(z))
+			(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-1)+m+1)\Psi(z)			
+		\Big)
+		\\=&
+		\sqrt{\frac{1}{2 n}}
+		\exp(i \Psi(z))
+		u_{n-1,m}
+\end{align*}
+
+The new tophat mode coefficients after applying the  first-order shift ($x+a$) are 
+
+\begin{equation}
+	u_{n,m} \rightarrow
+     u_{n,m}
+        \left[
+        1 - \frac{2 a }{w(z)^2} x 
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi(z))
+	u_{n-1,m} \; .
+\end{equation}
+
+For rotation about the aperture (neglecting the shift), apply a rotation matrix to the coordinates of interest:
+
+\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+=&
+\begin{pmatrix}
+x \\
+z
+\end{pmatrix} 
+\begin{pmatrix}
+\cos\alpha & \sin\alpha \\
+-\sin\alpha & \cos\alpha
+\end{pmatrix}
+\\ \approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\end{align*}
+
+For rotation with respect to the shifted beam (at the aperture along the optical axis, $z=0$, at a point $a$-shifted in $x$):
+ \begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+=&
+	\begin{pmatrix}
+(x+a)+z\alpha \\
+z - (x+a)\alpha
+\end{pmatrix}
+ \end{align*}
+
+The new modes after rotation  about the shifted beam are approximately, where $u_{nm}$ is a function of $H_{n}^{'}=H_n(\sqrt{2}x/w(z))$, $e^{-x'^2/w^2}$ and $e^{-ikz'}$:
+
+\begin{align*}
+	u_{nm} \rightarrow&
+	u_{nm} (H_{n}^{'}, e^{-ikz'},e^{-x'^2/w^2})
+	\\=&
+		(H_{n} \Big(\frac{\sqrt{2}[x+z\alpha]}{w} \Big) e^{-ik[z-x\alpha]} e^{-[x^2 + (z\alpha)^2+ 2xz\alpha}])
+		\\ \times&
+		[
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w}
+		H_{m} \Big(\frac{\sqrt{2}y}{w} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}}-
+		\frac{x^{2}+y^{2}}{w^{2}} 
+		+i(n+m+1)(\Psi)		
+		\Big)
+		]\;
+			\\=&
+	u_{nm}(H_{n}^{'}, \exp[ikx\alpha -z^2\alpha^2 - 2xz\alpha])
+	\\ \approx &
+	u_{nm} + \alpha u_{nm}[ \frac{\partial  H_{n}^{'} }{\partial\alpha}   + \frac{\partial e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha}}{\partial \alpha} ]_{\alpha=0}
+\end{align*}
+
+Also, accounting for the $u_{n-1,m}$ term from the shift
+
+\begin{align*}
+	u_{nm} \rightarrow&
+	u_{n-1,m} (H_{n-1}^{'}, e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha})
+	\\ \approx &
+	u_{n-1,m} + \alpha u_{n-1,m}[ \frac{\partial  H_{n-1}^{'} }{\partial\alpha}   + \frac{\partial e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha}}{\partial \alpha} ]_{\alpha=0}
+\end{align*}
+
+The last term gives the usual $ik\alpha x$ with additional terms
+
+\begin{align*}
+	\alpha u_{nm}[\frac{\partial e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha}}{\partial \alpha}]_{\alpha=0}
+	=&
+	\alpha u_{nm}[ikx e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha}]_{\alpha=0}
+	\\=& \alpha u_{nm} [e^{ikx\alpha-z^2\alpha^2 - 2xz\alpha}(ikx-(2 z^2\alpha + 2xz)/w^2)]_{\alpha=0}
+	\\=&
+	\alpha u_{nm} [ikx- \frac{2xz}{w^2}]
+\end{align*}
+
+The Hermite polynomial differentiation goes as
+
+\begin{align*}
+	[\frac{\partial H_n(\frac{\sqrt{2}(x+\alpha) }{w(z)})}{\partial x}]_{\alpha=0}
+	=&
+	\frac{2 \sqrt{2} n}{w(z)} H_{n-1}\Big(\frac{\sqrt{2}x}{w(z)}\Big)
+\end{align*}
+
+or (for the $u_{n-1,m}$ term from the shift)
+
+\begin{align*}
+	[\frac{\partial H_{n-1}(\frac{\sqrt{2}(x+\alpha) }{w(z)})}{\partial x}]_{\alpha=0}
+	=&
+	\frac{2 \sqrt{2} (n-1)}{w(z)} H_{n-1}\Big(\frac{\sqrt{2}x}{w(z)}\Big)
+\end{align*}
+
+\section{Approximations to Tophat-Gaussian Interference}
+
+\subsection{First-order Shifting Tophat}
+
+ To first order, the new modes resulting from a shift ($x' = x+a$), making the coordinate change in three primed terms of interest, follow ($w=w(z)$ and $R_c=R_c(z)$):
+
+\begin{align*}
+	u_{nm} \rightarrow
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w}
+		H_{n} \Big(\frac{\sqrt{2}x'}{w} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w} \Big)
+		\exp \Big(\frac{-ik(x'^{2}+y^{2})}{2R_{c}}-
+		\frac{x'^{2}+y^{2}}{w^{2}} 
+		+i(n+m+1)\Psi - ikz
+		\Big)\;
+		.
+\end{align*}
+
+For small shift in the exponential term
+
+\begin{align*}
+\exp( -\frac{(x+a)^2}{w^2})
+=&
+	\exp( -\frac{x^2+2ax+a^2}{w^2})
+	\\=&
+	\exp( -\frac{x^2}{w^2})\exp( -\frac{2ax+a^2}{w^2})
+	\\ \approx &
+	\exp( -\frac{x^2}{w^2})\exp( -\frac{2ax}{w^2})	\;,(1st-order)
+	\\ \approx &
+	\exp( -\frac{x^2}{w^2})( 1-\frac{2ax}{w^2})
+\end{align*}
+
+Likewise, for the curvature term
+
+\begin{align*}
+\exp \Big(\frac{-ik( (x+a)^{2}+y^{2}}{2R_{c}} \Big)
+ \approx &
+	\exp( -ik\frac{x^2+y^2}{2 R_c})
+	( 1-\frac{2ikax}{2R_c}
+	-\frac{ika^2}{2R_c})
+	\\ \approx &
+	\exp( -ik\frac{x^2+y^2}{2 R_c})
+	( 1-\frac{ikax}{R_c})\;,(1st-order)
+\end{align*}
+
+These two results leave the new mode, save for the shifted $H_n$ term,
+
+\begin{align*}
+	u_{nm} \rightarrow u_{nm}( 1-\frac{2ax}{w^2})
+	( 1-\frac{ikax}{R_c})
+\end{align*}
+
+To first order then,
+
+\begin{align*}
+	u_{nm} \rightarrow u_{nm}( 1-\frac{2ax}{w^2}-\frac{ikax}{R_c})
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+For $H_n(\frac{\sqrt{2} (x+a) }{w})$, use the identity
+
+\begin{align*}
+	H_n(X+Y) = (H(X)+2Y)^n,
+\end{align*}
+
+where $H^n = H_n$ in this case. For the shifted polynomial, let $X \equiv \frac{\sqrt{2}x}{w}$ and $Y \equiv \frac{\sqrt{2}a}{w}$. 
+
+Examples using the identity (note, $H_0$ is always $1$):\\
+
+\[
+  H_{n}(X+Y)=\begin{cases}
+               1 \tab\tab\tab\tab\tab\;\;(n=0)\\
+               H_1(X) + 2Y \tab\tab\tab\tab\;\;\;(n=1)\\
+               H_2(X) + 2(2Y)H_1(X) + (2Y)^2 \tab\tab\;\;(n=2)\\
+               H_3(X) + 3(2Y)H_2(X) +3(2Y)^2H_1(X)+(2Y)^3\tab\;\;(n=3)
+            \end{cases}
+\]
+
+As a simple check let $X = Y = 1$ for the $n=3$ case, the result using the identity and solving the corresponding polynomials is
+
+\begin{align*}
+	H_3 (X+Y) =&
+	(8-12)
+	+ 3(2)(4-2)
+	+ 3(2)^2(2)
+	+ (2)^3
+	\\=&
+	-4 + 12 + 24 + 8
+	\\=&
+	40
+\end{align*}
+
+Without the identity, the solution matches:
+
+\begin{align*}
+	H_3 (1+1) = H_3(2) =&
+	8(2)^3 - 12(2)
+	\\=& 40
+\end{align*}
+
+Now to generalize by inspection. The $Y$ term is linear in shift, and it is always the second term in the identity, with a factor of binomial coefficient and $H_{n-1}$. The first-order expansion then only needs account for the binomial coefficient for $n-1$, given by ${n\choose 1} = \frac{n!}{(n-1)!}=n$. Therefore, the first-order term from the shifted hermite polynomial is 
+
+\begin{align*}
+	H_n(\frac{\sqrt{2}(x+a)}{w}) \approx&
+	 H_n(\frac{\sqrt{2}x}{w})+ 
+	 	 \frac{2\sqrt{2}n a}{w}
+	 	 H_{n-1}(\frac{\sqrt{2}x}{w}).
+\end{align*}
+
+In summary, this term yielded
+
+\begin{align*}
+u_{nm} \rightarrow u_{nm} + \frac{2\sqrt{2}n a}{w}
+	 	 H_{n-1}(\frac{\sqrt{2}x}{w}) u_{nm}' 
+\end{align*}
+
+where $u_{nm}'$ includes no $H_n$. The $u_{nm}'$ term with the $H_{n-1}$ factor can be viewed as $u_{nm}$ as a function of $H_{n-1}$. This is cumbersome, since the goal is to solve for on-axis mode coefficients. However, the combination can be rewritten as a single $u_{n-1,m}$ mode with an additional factor by shifting in $n$:
+
+\begin{align*}
+	u_{nm} (H_{n-1}) =&
+	(\frac{2 n }{2 n})^{1/2}
+			\exp(-i \Psi(z))\exp(i \Psi(z))
+			\\& \times
+	[
+	(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\Psi(z)		
+		\Big)
+				]
+		\\=&
+		(\frac{1}{2 n}) ^{1/2}
+		\exp(i \Psi(z))
+			(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-1} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-1)+m+1)\Psi(z)			
+		\Big)
+		\\=&
+		\sqrt{\frac{1}{2 n}}
+		\exp(i \Psi(z))
+		u_{n-1,m}
+\end{align*}
+
+This leaves
+
+\begin{align*}
+u_{nm} \rightarrow
+u_{nm} + 
+	a \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-1,m} \; .
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+The new tophat mode coefficients after applying the  first-order shift ($x+a$) are 
+
+\begin{align*}
+	u_{n,m} \rightarrow
+	\left[
+     u_{n,m}
+    + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi(z))
+	u_{n-1,m}
+	\right]
+	 \left[
+        1 - \frac{2 a }{w^2} x 
+    \right] 
+	\left[ 1-\frac{2ax}{2R_c}
+	\right]    
+    \; .
+\end{align*}
+
+To first order in $a$, neglect factoring the second terms in all braces. This leaves
+
+\begin{align*}
+	u_{n,m} \rightarrow
+     u_{n,m}
+     	 \left[
+        1 - a\frac{2 x}{w^2}  
+        - a \frac{ikx}{R_c}
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi)
+	u_{n-1,m} \; .
+\end{align*}
+
+\subsection{First-order tilting tophat (without propagation)}
+
+For rotation about the aperture (neglecting the shift), apply a rotation matrix to the coordinates of interest:
+
+\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+=&
+\begin{pmatrix}
+x \\
+z
+\end{pmatrix} 
+\begin{pmatrix}
+\cos\alpha & \sin\alpha \\
+-\sin\alpha & \cos\alpha
+\end{pmatrix}
+\\ \approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\end{align*}
+
+
+The new modes $u_{nm}$ after rotation  about the aperture, again priming three transformed coordinates of interest, follow
+
+\begin{align*}
+	u_{nm} \rightarrow
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w}
+		H_{n} \Big(\frac{\sqrt{2}x'}{w} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}}-
+		\frac{x'^{2}+y^{2}}{w^{2}} 
+		+i(n+m+1)\Psi(z') - ikz'		
+		\Big)\;
+		.
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+Approximation to first order of the tilted exponential term in $z'$ for the wave term
+
+\begin{align*}
+	\exp(-ik(z-x\alpha )) =&
+	\exp(-ikz)\exp(ikx\alpha )
+	\\ \approx &
+	\exp(-ikz)(1+ikx\alpha)
+\end{align*}
+
+This approximation results in
+
+\begin{align*}
+	u_{nm} \rightarrow
+	u_{nm}[1+ikx\alpha ]
+\end{align*}
+
+For $H_n$ tilted, results of the shift approximation go as $x \rightarrow z \alpha$:
+
+\begin{align*}
+u_{nm} \rightarrow
+u_{nm} + 
+	z \alpha \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-1,m} \; .
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+For the Gouy phase term,
+
+\begin{align*}
+	\exp(i(N+1)\Psi(z' )) =&
+	\exp[i(N+1)\arctan(\frac{z-x\alpha}{z_R})]
+	\\ \approx &
+	\exp[i(N+1) (
+	\arctan(\frac{z}{z_R})
+	-\frac{z_R x\alpha}{z^2 + z_R^2}
+	)
+	]
+		\\ \approx &
+	\exp[i(N+1)(
+	\Psi(z) 
+	-\frac{z_R x\alpha}{z^2 + z_R^2}
+	)
+	]
+			\\ \approx &
+	\exp[i(N+1)\Psi(z)] 
+	\times i(N+1)
+	(1 - \frac{z_R x\alpha}{z^2 + z_R^2})
+\end{align*}
+
+the result is then
+
+\begin{align*}
+	u_{nm} \rightarrow
+	u_{nm}[1 - i(N+1)
+	\frac{z_R x\alpha}{z^2 + z_R^2}]
+\end{align*}
+
+where $N=n+m$.
+
+\rule{\textwidth}{0.4pt}
+
+Altogether, the rotation yields (to first order in $\alpha$)
+
+\begin{align*}
+	u_{nm} \rightarrow
+	u_{nm}[1 + ikx\alpha 
+	- i(N+1)
+	\frac{z_R x\alpha}{z^2 + z_R^2}]
+\end{align*}
+
+\subsection{First-order shifted,tilted tophat (without propagation)}
+
+Tilting the shifted beam then yields (where $w=w(z)$, and $\phi \equiv \exp(i\Psi)$, $\eta = (N+1)
+	\frac{z_R}{z^2 + z_R^2})$
+
+\begin{align*}
+	     u_{n,m}
+     	 \left[
+        1 - a\frac{2 x}{w^2}  
+        - a \frac{ikx}{R_c}
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w} 
+	\phi
+	u_{n-1,m} \rightarrow&
+	     u_{n,m}
+	     [1
+	     +ikx\alpha
+	     - i\alpha x \eta
+	     ]
+     	 \left[
+        1 - a\frac{2 x}{w^2}  
+        - a \frac{ikx}{R_c}
+    \right]
+    \\ & + 
+	a \frac{2 \sqrt{n}}{w} 
+	\phi
+	u_{n-1,m}
+	[1+ikx\alpha - i\alpha x \eta]
+	\\ = &
+		     u_{n,m}
+	     	\Big[
+        1 - a\frac{2 x}{w^2}  
+        - a \frac{ikx}{R_c} 
+        + i k \alpha x 
+        - i\alpha x \eta 
+        \\ &       
+        - i \frac{2 k \alpha a}{w^2} x^2
+        + i \frac{\alpha a \eta }{w^2} x^2
+        + a \alpha \frac{k^2x^2}{R_c}
+        - a \alpha \frac{k \eta x^2}{R_c}
+    \Big]
+    \\& + 
+	a \frac{2 \sqrt{n}}{w} 
+	\phi
+	u_{n-1,m}
+	[1+ikx\alpha - i\alpha x \eta]
+ \; .
+\end{align*}
+
+Therefore, the first-order approximations to shift and tilt provide a solution of up to second-order in small terms ($\alpha a$) and matches the explicit taylor series expansion(c.f. \ref{eq:prev}). With that, the shifted-tilted beam after first-order approximations in both is 
+
+\begin{align*}
+\sum_{n,m} u_{n,m} \rightarrow &
+\sum_{n,m} \lbrace		    		     u_{n,m}
+	     	\Big[
+        1 - a\frac{2 x}{w^2}  
+        - a \frac{ikx}{R_c} 
+        + i k \alpha x 
+        - i\alpha x \eta 
+        \\ &       
+        - i \frac{2 k \alpha a}{w^2} x^2
+        + i \frac{\alpha a \eta }{w^2} x^2
+        + a \alpha \frac{k^2x^2}{R_c}
+        - a \alpha \frac{k \eta x^2}{R_c}
+    \Big]
+    \\& + 
+	u_{n-1,m}
+	[a \frac{2 \sqrt{n}}{w} 
+	\phi
+	+ a\alpha \frac{2ik \phi  \sqrt{n}}{w} x	
+	- a\alpha \frac{i \eta 2 \sqrt{n} \phi}{w}
+	x]
+	\rbrace
+ \; .
+\end{align*}
+
+This solution is \textbf{without propagation}, i.e.:
+
+\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+ \approx &
+	\begin{pmatrix}
+x+z\alpha \\
+z - x\alpha
+\end{pmatrix}
+\rightarrow_{(z=0)}
+	\begin{pmatrix}
+x \\
+-x\alpha
+\end{pmatrix}
+\end{align*}
+
+Account for this geometrically on propagation as an added shift to first-order in tilt, $a\rightarrow a + z\alpha$. Otherwise the exponentials with $\rho^2/R_c$ and $\rho^2/w(z)$ must be expanded.
+
+\subsection{First-order Shifted,Tilted Tophat scattering coefficients (without propagation)}
+
+Note each $x$-dependence applies a respective lowering and raising of $u_{nm}$ into other modes.
+The off-axis tophat approximated result of the previous section can be rewritten as an on-axis beam with scattering into modes relative to these coefficients:
+
+\begin{align*}
+\sum_{n,m} u_{n,m} \rightarrow 
+	\sum_{n,m} 
+	\lbrace &
+		u_{n+2,m}[ X_+^2
+		(-i\frac{2ka\alpha}{w^2} 
+			+  i \frac{\alpha a \eta }{w^2}
+			+ \frac{a\alpha 2k^2}{R_c} 
+			- a \alpha \frac{k \eta }{R_c}
+			)]
+		\\+&
+		u_{n+1,m}
+			[ X_+^1(ik\alpha 
+			- i\alpha \eta 
+			- \frac{2a}{w^2} 
+			- a \frac{ik}{R_c})
+			]
+		\\+&
+		u_{n,m} 
+			[1
+			+X_+^1
+			(ik\alpha \frac{2a\sqrt{n}}{w} e^{i\Psi}
+			- a\alpha \frac{i \eta 2 \sqrt{n} \phi}{w})
+			+ X_0^2 ( 
+			\frac{a\alpha 2k^2}{R_c} 
+			+  i \frac{\alpha a \eta }{w^2}  
+			- i\frac{2ka\alpha}{w^2}
+			- a \alpha \frac{k \eta }{R_c}
+			)
+			]
+		\\+&
+		u_{n-1,m} 
+			[
+		\frac{2a\sqrt{n}}{w} e^{i\Psi} 
+			+ 	X_-^1(
+				ik\alpha 
+				- i\alpha \eta 
+				- \frac{2a}{w^2}
+		 		- a \frac{ik}{R_c}
+		 		)
+		 	]
+		\\+&
+		u_{n-2,m} 
+		[ X_-^1(
+		ik\alpha a\frac{2\sqrt{n}}{w}e^{i\Psi}
+		- a\alpha \frac{i \eta 2 \sqrt{n} \phi}{w}
+		) 
+		+ X_-^2 (
+			 \frac{a\alpha 2k^2}{R_c} 
+			 - a \alpha \frac{k \eta }{R_c}
+			+  i \frac{\alpha a \eta }{w^2}
+			-i\frac{2ka\alpha}{w^2}
+		)
+		] 	
+	\rbrace
+\end{align*}
+
+where (for $x$):
+
+\begin{equation*}
+X_+^1 = \frac{w}{2}
+\Big[
+	(1 - i \frac{z}{z_R})
+	\sqrt{n+1} 
+\Big]
+\end{equation*}
+
+\begin{equation*}
+X_-^1 = \frac{w_0}{2}
+\Big[
+	\sqrt{n}
+	(1+i \frac{z}{z_R})
+\Big]
+\end{equation*}
+
+for $x^2$:
+
+\begin{equation*}
+X_-^2 = \frac{w_0^2}{4}
+\Big[
+	\sqrt{n(n-1)}
+	(1+i \frac{z}{z_R} )^2
+\Big]
+\end{equation*}
+
+\begin{equation*}
+X_0^2 = \frac{w_0^2}{4}
+\Big[
+	(2n+1)
+	(1+ (\frac{z}{z_R})^2)
+\Big]
+\end{equation*}
+
+\begin{equation*}
+X_+^2 = \frac{w_0^2}{4}
+\Big[
+	(1 - i \frac{z}{z_R})^2
+	\sqrt{(n+1)(n+2)}
+\Big]
+\end{equation*}
+
+\clearpage
+
+\subsection{First-order Tophat-Gaussian Signals}
+
+\begin{table}[ht]
+\begin{tabular}{ll}
+\multicolumn{2}{l}{Default Parameters}        \\
+Parameter                  & Value            \\
+PD size                    & 2x2 {[}mm{]}     \\
+PD-ref/meas. beam distance & 10 {[}mm{]}      \\
+PD gap                     & 0.02 {[}mm{]}    \\
+Meas. Beam Waist           & 0.23067 {[}mm{]} \\
+Ref. Beam Waist            & 1 {[}mm{]}       \\
+Shift                      & 0               
+\end{tabular}
+\end{table}
+
+	\begin{figure}[ht]
+	\centering
+		\includegraphics[scale=.45]{5-7_TH_dws}
+		\caption{DWS signal phase, varying only distance to PD (for both, measurement and reference beams).}
+		\label{fig:TH_DWS}
+	\end{figure}
+
+
+	\begin{figure}[hb]
+	\centering
+		\includegraphics[scale=.45]{5-7_TH_lps}
+		\caption{LPS phase, varying only distance to PD (for both, measurement and reference beams).}
+		\label{fig:TH_DWS}
+	\end{figure}
+	
+\clearpage
+
+\subsection{Generalized Higher-order Approximations to Shift }
+
+Higher-order approximations to the tophat with a lateral offset $a$ can be generalized as a combination of series expansions up to any order $K$.
+
+\rule{\textwidth}{0.4pt}
+
+Recall that the unidirectionally shifted tophat results in the coordinate transformation $x\rightarrow x' = x+a$, the HG modes are then s.t.
+
+\begin{align*}
+	u_{nm}(x',y,z) =
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w}
+		H_{n} \Big(\frac{\sqrt{2}x'}{w} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w} \Big)
+		\exp \Big(\frac{-ik(x'^{2}+y^{2})}{2R_{c}}-
+		\frac{x'^{2}+y^{2}}{w^{2}} 
+		+i(n+m+1)\Psi
+		\Big)\;
+		.
+\end{align*}
+
+For the shifted hermite polynomial $H_n(X+Y)$, where $X \equiv \frac{\sqrt{2}x}{w}$ and $Y \equiv \frac{\sqrt{2}a}{w}$, higher order approximations depend on (proven Section 12.1)
+
+\begin{equation}\label{prev1}
+H_n(X+Y)
+= 
+\sum_{E=0}^K
+\left[
+{n \choose E}
+(2Y)^E
+H_{n-E}(X)
+\right]
+\end{equation}
+
+However, the $u_{n,m}(H_n)$ mode, an HG mode with a Hermite polynomial of order $n$, is now transformed to $u_{n,m}(H_{n-E})$, where the Hermite polynomial order $n-E$ doesn't match the HG mode order $n$(as outlined in Section 3.2). With the plan of transforming mode coefficients $C_{n,m}$ via coupling from the shift, the HG mode is best written as a "pure" $u_{n-E,m}(H_{n-E})$ mode, meaning an additional coupling factor will result since all $n$ in the HG mode must be transformed to $n-E$. This factor is determined by 
+
+\begin{align*}
+	u_{nm} (H_{n-E}) = &
+	H_{n-E}(\frac{\sqrt{2}x}{w(z)})
+	\times
+	[
+	(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\Psi(z)		
+		\Big)
+				]
+	\\ \rightarrow &
+	(\frac{2^M n! (n-E)! }{2^E n!(n-E)!})^{1/2}
+			\exp(-iE \Psi(z))\exp(iE \Psi(z))
+			\\& \times
+	[
+	(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i(n+m+1)\Psi(z)		
+		\Big)
+				]
+		\\=&
+		(\frac{(n-E)!}{2^E n!}) ^{1/2}
+		\exp(i E\Psi(z))
+		\\ \times&
+			(2^{(n-E)+m-1}(n-E)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-E} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-E)+m+1)\Psi(z)			
+		\Big)
+		\\=&
+		\left[
+		\sqrt{\frac{(n-E)!}{2^E n!}}
+		e^{i E \Psi(z)}
+		\right]
+		u_{n-E,m}(H_{n-E})
+\end{align*}
+
+The additional factor is then the term in the brackets of the last line. To account for the overall mode coupling, combine this factor with the previous factor resulting from the shifted polynomial (Eq. \ref{prev1}), where $u_{nm}\Big(H_{n-E}(X) \Big) $ again implies that the HG mode is a function of $H_{n-E}$ rather than $H_{n}$,
+
+\begin{align*}
+\sum_{E=0}^K
+\left[
+{n \choose E}
+(2Y)^E
+ u_{nm}\Big(H_{n-E}(X) \Big) 
+\right]
+	\rightarrow & 
+	\sum_{E=0}^K
+		[
+		\sqrt{\frac{(n-E)!}{2^E n!}}
+		e^{iE\Psi}
+		]
+		[
+		{n \choose M}
+		(2Y)^E
+				]
+		u_{n-E,m}\Big(H_{n-E}(X) \Big)
+		\\=&
+			\sum_{E=0}^K
+		[
+		\sqrt{\frac{(n-E)!}{n!}}
+		\frac{n!}{E!(n-E)!}
+		( \sqrt{2} e^{i\Psi} Y)^E
+				]
+		u_{n-E,m}\Big(H_{n-E}(X) \Big)
+		\\ = &
+			\sum_{E=0}^K
+		[
+		\frac{1}{E!}
+		\sqrt{\frac{n!}{(n-E)!}}
+		( \sqrt{2} e^{i\Psi} \sqrt{2}a/w)^E
+				]
+		u_{n-E,m}\Big(H_{n-E}(X) \Big)
+		\\ = &
+			\sum_{E=0}^K
+		[
+		\frac{1}{E!}
+		\sqrt{\frac{n!}{(n-E)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)^E
+				]
+		u_{n-E,m}\Big(H_{n-E}(X) \Big)		
+\end{align*}
+
+So the shifted Hermite polynomial expanded to order $E'$ results in
+
+\begin{equation}\label{TH:herm}
+ u_{n,m} \Big( H_n(\frac{\sqrt{2}(x+a)}{w(z)})
+ \Big) =
+			\sum_{E=0}^{E'}
+		[
+		\frac{1}{E!}
+		\sqrt{\frac{n!}{(n-E)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)^E
+		u_{n-E,m}
+		]	
+\end{equation}
+
+The bound $E'$ is yet to be defined, as it will have dependence on the remaining series expansions in the exponential terms in the HG mode expression. As a check, see that the first-order shift  matches the previous result ($E'$ in this case will be shown to be 1 later),
+
+\begin{align*}
+			\sum_{E=0}^1
+		[
+		\frac{1}{E!}
+		\sqrt{\frac{n!}{(n-E)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)^E
+		u_{n-E,m}
+		]	
+		=&
+		u_{n,m}
+		+
+		[
+		\sqrt{\frac{n!}{(n-1)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)	
+		u_{n-1,m}
+		]
+		\\	=&
+		u_{n,m}
+		+
+		(
+		 \frac{2 a \sqrt{n} e^{i\Psi}}{w}
+		)	
+		u_{n-1,m}
+\end{align*}
+
+\rule{\textwidth}{0.4pt}
+
+Approximations to terms in the exponential functions are simple because these series are known. However, they must be split to account for cross terms leading to undesired higher-order small terms $a$. Note that, e.g.,
+
+\begin{align*}
+\exp(-\frac{2ax}{w^2}-\frac{a^2}{w^2})
+=&
+\sum_{K=0}
+	\Big(\frac{1}{K!} \Big)^2
+\left[
+	(-\frac{2ax}{w^2})^K
+	(-\frac{a^2}{w^2})^K		
+\right]
+\\=&
+[
+1 -
+a\frac{2x}{w^2}
++
+a^2 \frac{4x^2}{2w^4}
+-
+a^3 \frac{8x^3}{6w^6}
++...
+]
+[
+1
+-
+a^2\frac{1}{w^2}
++
+a^4 \frac{1}{2w^4}
++ ...
+]
+\\=&
+1
+-
+a\frac{2x}{w^2}
++
+a^2
+\frac{2x^2-w^2}{w^4}
+-
+...
+\end{align*}
+
+where an approximation to order $K=1$ would already have $a^2$ terms by this series definition. Instead, define all the exponential term expansions by their individual series expansions:
+
+\begin{equation}\label{TH:shift1}
+\exp(-\frac{a^2}{w^2})
+=
+\sum_{A=0}^{A'}
+	\frac{1}{A!}
+\left[
+	(-\frac{a^2}{w^2})^A	
+\right]
+\end{equation}
+
+\begin{equation}\label{TH:shift2}
+\exp(-\frac{ika^2}{2 R_c})
+=
+\sum_{B=0}^{B'}
+	\frac{1}{B!}
+\left[
+	(-\frac{ika^2}{2R_c})^B	
+\right]
+\end{equation}
+
+\begin{equation}\label{TH:shift3}
+\exp(-\frac{2ax}{w^2})
+=
+\sum_{C=0}^{C'}
+	\frac{1}{C!}
+\left[
+	(-\frac{2ax}{w^2})^C
+\right]
+\end{equation}
+
+\begin{equation}\label{TH:shift4}
+\exp(-\frac{a^2}{w^2})
+=
+\sum_{D=0}^{D'}
+	\frac{1}{D!}
+\left[
+	(-\frac{ikax}{R_c})^D	
+\right]
+\end{equation}
+	
+where summation bounds are now to be defined.
+
+
+\rule{\textwidth}{0.4pt}
+
+\clearpage
+
+Accounting for cross terms in the expansions, there is a condition on approximation to order $K$ s.t.
+
+\begin{equation}\label{Keq}
+	K >= 2(A+B)+(C+D+E)
+\end{equation} 
+
+where the factor of $2$ accounts for quadratic-order shift terms. By creating an index $F$ which sums to $K$ (i.e., $F'=K$), all other index bounds can be defined, each one constrained by the "current index" of the previous summation to give progressively truncated summations:
+
+\begin{equation}
+	A' \equiv \lfloor F/2 \rfloor
+\end{equation}
+\begin{equation}
+	B' \equiv \lfloor (F-2A)/2 \rfloor
+\end{equation}
+\begin{equation}
+	C' \equiv F-2(A+B)
+\end{equation}
+\begin{equation}
+	D' \equiv F-\left[2(A+B)+C\right]
+\end{equation}
+\begin{align*}
+	E' \equiv F-\left[ 2(A+B)+C+D \right]
+\end{align*}
+
+Meaning that no shift terms, $a$, raised beyond order $K$ exist in the solution. Higher order shift approximations can be generalized up to shift in order $K$ by combining expansions (Eq. \ref{TH:herm},\ref{TH:shift1},\ref{TH:shift2},\ref{TH:shift3},\ref{TH:shift4}), where $z$-dependence is implied for $R_c,w,$ and $\Psi$,\\
+
+
+\begin{align}\label{TH:shift}
+\sum_{n,m} C_{n,m} u_{n,m} \rightarrow&
+	\sum_{n,m}
+	C_{n,m}
+	\sum_{F=0}^K
+	\sum_{A=0}^{A'}
+	\sum_{B=0}^{B'}
+	\sum_{C=0}^{C'}
+	\sum_{D=0}^{D'}
+	\sum_{E=0}^{E'}
+	\\& \nonumber
+\lbrace
+	[
+		\frac{1}{A!}
+		(-\frac{a^2}{w^2})^A
+	]
+	[
+		\frac{1}{B!}
+		(-\frac{ika^2}{2R_c})^B
+	]
+	[
+		\frac{1}{C!}
+		(-\frac{2ax}{w^2})^C
+	]
+		[
+		\frac{1}{D!}
+		(-\frac{ikax}{R_c})^D
+	]
+\left[
+		\frac{1}{E!}
+		\sqrt{\frac{n!}{(n-E)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)^E
+\right]
+u_{n-E,m}		
+\rbrace
+\end{align}
+
+
+
+In Eq. \ref{TH:shift}, when $K=0$, all factors on the right side are unity. As expected, there is no shift, and all mode coefficients remain unchanged. To first order, $K=1$, so the loop over $F=0$ assigns all the initial amplitude factors $C_{n,m}$. Then, these are transformed starting at $F=1$, where all possible index combinations are given in the table.
+
+\begin{table}[hb]
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{(F=1)}                                                                                                                                   \\ \hline
+A & B & C                                             & D                                                 & E                                                 \\ \hline
+0 & 0 & \begin{tabular}[c]{@{}c@{}}0\\ 1\end{tabular} & \begin{tabular}[c]{@{}c@{}}(1,0)\\ 0\end{tabular} & \begin{tabular}[c]{@{}c@{}}(0,1)\\ 0\end{tabular} \\ \hline
+\end{tabular}
+\end{table}
+
+By this notation, parentheses used in, e.g., column $D$, mean $D$ has the "option" of being $1$ or $0$ if $A=B=C=0$; $D$ sums to $1$. Index $E$ is then constrained to $0$ or $1$, respectively. Note that the sum across all rows must equal $F$, the index which sums to $K$. Also note that the $a^2$ terms, bound to $A$ and $B$, are suppressed to unity, as is desired, unless $K>1$, i.e. second-order expansion or greater. So, for $F=2$, 
+
+\begin{table}[hb]
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{(F=2)}                                                                                                                                                                   \\ \hline
+A     & B     & C                                                 & D                                                           & E                                                           \\ \hline
+0     & 0     & \begin{tabular}[c]{@{}c@{}}0\\ 1\\ 2\end{tabular} & \begin{tabular}[c]{@{}c@{}}(2,1,0)\\ (0,1)\\ 0\end{tabular} & \begin{tabular}[c]{@{}c@{}}(0,1,2)\\ (1,0)\\ 0\end{tabular} \\ \hline
+(0,1) & (1,0) & 0                                                 & 0                                                           & 0                                                           \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\rule{\textwidth}{0.4pt}
+
+The complete shifted beam series expansion up to first order is, matching previous calculation,
+
+\begin{align*}
+\sum_{n,m} C_{n,m} u_{n,m}
+\rightarrow &
+\sum_{n,m} 
+C_{n,m}
+\lbrace
+\left[
+1
+-a \frac{2x}{w^2}
+-a \frac{ikx}{R_c}
+\right]
+u_{n,m}
++
+\left[		
+a
+		 \frac{2\sqrt{n}  e^{i\Psi}}{w}		
+\right]
+u_{n-1,m}
+\rbrace
+\end{align*}
+
+Note the zeroth order result appears as the unity term in the first brackets. However, $x$-dependent coupling factors act to split the HG mode into higher and lower order modes, as described extensively in Section 3.2.
+
+\rule{\textwidth}{0.4pt}
+
+The result for approximation to second-order, $K=2$, is much more interesting, since it hasn't been calculated in this document until now, save for the Gaussian. Using the generalized expansion expedites the work. It is simply the addition of results at $F=2$ to the $K=1$ result. For $F=2$, the $F=2$ index table can be read row-by-row (although nonzero $E$ means lowering the $n$ mode by $E$). The underset text lists the nonzero index value(s) which begot the term and implies that all other indices were zero:
+
+\begin{align*}
+\sum_{n,m} C_{n,m} u_{n,m}
+\rightarrow &
+\sum_{n,m} 
+C_{n,m}
+\lbrace
+\left[
+\underset{ (D=2)}
+{
+	\frac{1}{2}
+	(-\frac{ikax}{R_c})^2
+	}	
++
+\underset{ (C=D=1)}
+{
+[
+	(-\frac{2ax}{w^2})
+	(-\frac{ikax}{R_c})
+]
+}
++
+\underset{ (C=2)}
+{
+[
+	\frac{1}{2}(-\frac{2ax}{w^2})^2
+]
+}
++
+\underset{ (A=1)}
+{
+	(-\frac{a^2}{w^2})
+	}
++
+\underset{ (B=1)}
+{
+	(-\frac{ika^2}{2R_c})
+	}
+\right]
+u_{n,m}
+\\&
++
+\left[
+\underset{ (E=D=1)}
+{
+\left[
+		(-\frac{ikax}{R_c})
+		\sqrt{\frac{n!}{(n-1)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)
+\right]
+}
++
+\underset{ (E=C=1)}
+{
+\left[
+		(-\frac{2ax}{w^2})
+		\sqrt{\frac{n!}{(n-1)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)
+\right]
+}
+\right]
+u_{n-1,m}
+\\&+
+\underset{ (E=2)}
+{
+\left[	
+		\frac{1}{2}
+		\sqrt{\frac{n!}{(n-2)!}}
+		(
+		 \frac{2 a e^{i\Psi}}{w}
+		)^2
+\right]
+}
+u_{n-2,m}
+\rbrace
+\end{align*}
+
+Simplifying some, $F=2$ alone yields
+
+\begin{align*}
+\sum_{n,m} C_{n,m} u_{n,m}
+\rightarrow
+a^2
+\sum_{n,m} 
+C_{n,m}
+\lbrace &
+\left[
+	\frac{1}{2}
+	(\frac{ikx}{R_c})^2
++
+	\frac{2ikx^2}{ R_c w^2}
++
+	2(\frac{x}{w^2})^2
+-
+	\frac{1}{w^2}
+-
+	\frac{ik}{2R_c}
+\right]
+u_{n,m}
+\\&
+-
+\left[
+		 \frac{2 \sqrt{n} e^{i\Psi}}{w}
+(		
+		\frac{ikx}{R_c}
++
+		\frac{2x}{w^2}
+		)
+\right]
+u_{n-1,m}
+\\&+
+\left[	
+		2
+		\sqrt{n(n-1)}
+		(
+		 \frac{e^{i\Psi}}{w}
+		)^2
+\right]
+u_{n-2,m}
+\rbrace
+\end{align*}
+
+Again, the dependence of coupling coefficients on transverse coordinate $x$ means coupling into modes between $n-2$ and $n+2$, as well as additional self-coupling at $n$. The total second-order approximation to shift is the sum of the $F=0,1,2$ results above, where bold-face emphasizes coordinate transformation:
+
+\begin{align}
+\sum_{n,m} C_{n,m} u_{n,m}(\mathbf{x+a},y,z)
+\rightarrow 
+\sum_{n,m} 
+C_{n,m}
+\lbrace &
+\left[
+1
+-a 
+\left[
+	\frac{2x}{w^2}
++ \frac{ikx}{R_c}
+\right]
++
+a^2
+\left[
+	\frac{1}{2}
+	(\frac{ikx}{R_c})^2
++
+	\frac{2ikx^2}{ R_c w^2}
++
+	2(\frac{x}{w^2})^2
+-
+	\frac{1}{w^2}
+-
+	\frac{ik}{2R_c}
+\right]
+\right]
+u_{n,m}(\mathbf{x},y,z)
+\\& \nonumber
++
+\left[		
+a
+\left[
+		 \frac{2\sqrt{n}  e^{i\Psi}}{w}	
+		 \right]
+		 -
+		 a^2
+		 \left[	
+		 \frac{2 \sqrt{n} e^{i\Psi}}{w}
+(		
+		\frac{ikx}{R_c}
++
+		\frac{2x}{w^2}
+		)
+\right]	
+\right]
+u_{n-1,m}(\mathbf{x},y,z)
+\\&+ \nonumber
+a^2
+\left[	
+		2
+		\sqrt{n(n-1)}
+		(
+		 \frac{e^{i\Psi}}{w}
+		)^2
+\right]
+u_{n-2,m}(\mathbf{x},y,z)
+\rbrace
+\end{align}
+
+\clearpage
+
+Simple check for this, the Gaussian, $u_{0,0}$,
+
+\begin{align*}
+C_{0,0} u_{0,0}(\mathbf{x+a},y,z)
+\rightarrow 
+C_{0,0}
+\lbrace &
+\left[
+1
+-a 
+\left[
+	\frac{2x}{w^2}
++ \frac{ikx}{R_c}
+\right]
++
+a^2
+\left[
+	\frac{1}{2}
+	(\frac{ikx}{R_c})^2
++
+	\frac{2ikx^2}{ R_c w^2}
++
+	2(\frac{x}{w^2})^2
+-
+	\frac{1}{w^2}
+-
+	\frac{ik}{2R_c}
+\right]
+\right]
+u_{0,0}(\mathbf{x},y,z)
+\rbrace
+\end{align*}
+
+Coupling occurs into $n+1$ and $n+2$ modes because of $x$-dependent coefficients.
+
+\clearpage
+
+\begin{table}[]
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{(K=2)} \\ \hline
+A   & B   & C   & D   & E   \\ \hline
+0   & 0   & 0   & 0   & 0   \\ \hline
+1   & 0   & 0   & 0   & 0   \\ \hline
+0   & 1   & 0   & 0   & 0   \\ \hline
+0   & 0   & 1   & 0   & 0   \\ \hline
+0   & 0   & 0   & 1   & 0   \\ \hline
+0   & 0   & 0   & 0   & 1   \\ \hline
+0   & 0   & 2   & 0   & 0   \\ \hline
+0   & 0   & 0   & 2   & 0   \\ \hline
+0   & 0   & 0   & 0   & 2   \\ \hline
+0   & 0   & 1   & 1   & 0   \\ \hline
+0   & 0   & 1   & 0   & 1   \\ \hline
+0   & 0   & 0   & 1   & 1   \\ \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[hb]
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\multicolumn{5}{|c|}{\begin{tabular}[c]{@{}c@{}}(k=3)\end{tabular}} \\ \hline
+B                & D                & A                & C               & M               \\ \hline
+0                & 0                & 3                & 0               & 0               \\ \hline
+0                & 0                & 2                & 1               & 0               \\ \hline
+0                & 0                & 1                & 2               & 0               \\ \hline
+0                & 0                & 0                & 3               & 0               \\ \hline
+0                & 0                & 2                & 0               & 1               \\ \hline
+0                & 0                & 1                & 0               & 2               \\ \hline
+0                & 0                & 0                & 3               & 0               \\ \hline
+0                & 0                & 0                & 2               & 1               \\ \hline
+0                & 0                & 0                & 1               & 2               \\ \hline
+0                & 1                & 0                & 0               & 3               \\ \hline
+0                & 1                & 0                & 2               & 1               \\ \hline
+0                & 1                & 1                & 1               & 2               \\ \hline
+1                & 0                & 1                & 0               & 0               \\ \hline
+1                & 0                & 0                & 1               & 0               \\ \hline
+1                & 0                & 0                & 0               & 1               \\ \hline
+0                & 1                & 1                & 0               & 0               \\ \hline
+0                & 1                & 0                & 1               & 0               \\ \hline
+0                & 1                & 0                & 0               & 1               \\ \hline
+0                & 0                & 0                & 0               & 0               \\ \hline
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\rule{\textwidth}{0.4pt}
+Approximations in tilt to order $j$ are easily generalized by:
+
+\begin{align*}
+\begin{pmatrix}
+x' \\
+z'
+\end{pmatrix} 
+=&
+\begin{pmatrix}
+x \\
+z
+\end{pmatrix} 
+\begin{pmatrix}
+\cos\alpha & \sin\alpha \\
+-\sin\alpha & \cos\alpha
+\end{pmatrix}
+\\ = &
+	\begin{pmatrix}
+x\cos \alpha+z \sin \alpha \\
+z\cos \alpha - x \sin \alpha
+\end{pmatrix}
+\end{align*}
+
+where the trigonometric approximations go as
+
+\begin{align*}
+	\cos x = \sum_{k=0}^{\infty} \frac{(-1)^kx^{2k} }{(2k)!}
+\end{align*}
+
+and
+
+\begin{align*}
+	\sin x = \sum_{k=0}^{\infty} \frac{(-1)^kx^{2k} }{(2k)!}
+\end{align*}
+
+The field is 
+
+\begin{align*}
+	u_{nm} \rightarrow
+		(2^{n+m-1}n!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n} \Big(\frac{\sqrt{2}x'}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x'^{2}+y^{2}}{w^{2}} 
+		+i(n+m+1)\Psi(z') - ikz'		
+		\Big)\;
+		.
+\end{align*}
+
+Note that coordinate transformations are neglected for 
+
+\begin{align*}
+	w(z') \rightarrow 
+	w_0^2
+	\sqrt{1-(
+	\frac{z \cos \alpha - x \sin \alpha}
+	{z_R} )^2}
+\end{align*}
+
+and
+
+\begin{align*}
+	R_c(z')
+ =&
+  z \cos \alpha- x\sin \alpha + \frac{z_R^2}{z \cos \alpha - x \sin \alpha}
+\end{align*}
+
+assuming the Rayleigh range 
+
+\begin{align*}
+	z_R = \frac{\pi w_0^2}{\lambda} \approx 3 \; \mathrm{meters}
+\end{align*}
+
+dominates in the propagation range of interest ($\sim$ 1 mm).
+
+The wave propagation portion, without account for cross terms
+
+\begin{align*}
+Q \equiv &
+	\exp(-ikz')
+	\exp(-ikz \cos \alpha +ik x \sin \alpha ) 
+	\\=&
+	\sum_{L=0}^j
+	\frac{(-ik z \cos \alpha )^L}{L!}
+	\sum_{M=0}^j
+	\frac{(-ik x \sin \alpha )^M}{M!}
+\end{align*}
+
+
+From the Gouy phase term,
+
+\begin{align*}
+	\exp[ (i+n+m+1)\Psi(z')] =&
+		\exp[(i+n+m+1)
+		\arctan(\frac{z+x\sin\alpha-z_0}{z_R})]
+		\\ = &
+		\sum_{A=0}^\infty
+		[\frac{ (i+n+m+1)
+		\phi }{A!}]^A
+\end{align*}
+
+where $\phi$ represents the expansion in the $\arctan$ term
+
+\begin{align*}
+\phi = 
+	\arctan( \frac{1}{z_R} [ 
+	z \cos \alpha
+	-z_0 
+	+x 
+	\sin \alpha
+	] )
+\end{align*}
+
+where
+
+\begin{align*}
+	\cos \alpha = \sum_{G = 0} \frac{(-1)^G \alpha^{2G}}{(2G)!}
+\end{align*}
+
+
+and
+
+\begin{align*}
+	\sin \alpha = \sum_{H = 0} \frac{(-1)^H \alpha^{1+2H}}{(1+2H)!}
+\end{align*}
+
+Also have from the tilted $H_n(X+Y)$, similar to the shift except for $a \rightarrow z \sin \alpha$
+
+\begin{align*}
+\sum_{M=0}^k
+\left[
+{n \choose M}
+(2Y)^M
+H_{n-M}( \frac{\sqrt{2}(x\cos\alpha)}{w(z)}) u_{nm}' 
+\right]
+	\rightarrow & 
+			\sum_{M=0}^k
+		[
+		\frac{1}{M!}
+		\sqrt{\frac{n!}{(n-M)!}}
+		(
+		 \frac{2 z\sin (\alpha) e^{i\phi}}{w}
+		)^M
+		u_{n-M,m}
+		]
+		\\=&
+					\sum_{M=0}^k
+		[
+		\frac{1}{M!}
+		\sqrt{\frac{n!}{(n-M)!}}
+		(
+		 \frac{2 z\sin (\alpha) e^{i\phi}}{w}
+		)^M
+		u_{n-M,m}
+		]		
+\end{align*}
+
+to first order in $\alpha$, since $x cos\alpha \rightarrow x$ and the Hermite polynomial matches .
+
+
+From 
+
+\begin{align*}
+\exp( \frac{-ik(x'^2+y^2)}{2 R_c(z)}  -
+\frac{(x'^2+y^2)}{w^2(z)} )
+\end{align*}
+
+come the last two expansions
+
+
+
+\clearpage
+
+\subsection{Generalized Higher-order Approximations to Shifted,Tilted Tophat }
+
+ALL THIS SECTION AND BELOW NEED CORRECTION
+
+The results of the previous section can then be used to Taylor expand the shifted,tilted tophat to any order $k$. Collecting results of the approximations:
+
+\begin{align*}
+	\exp(-ikz) 
+	u_{nm}(H_n(X+Y)) 
+	\underbrace{\exp(-\frac{2ax+a^2}{w^2})}
+	\rightarrow&
+	\exp(-ikz) 
+	\underbrace{u_{nm}(H_n(X+Y))}
+	  S_{E/O}
+	\\ \rightarrow &
+	\underbrace{\exp(-ikz)}
+	R S_{E/O}
+	\\ \rightarrow &
+	Q R S_{E/O}
+\end{align*}
+
+So, the full expression for $u_{nm}$ approximated in \emph{tilt to order $j$} and \emph{shift to order $k$} is (for \textbf{even} $k$):
+
+\begin{align*}
+	u_{n,m} \rightarrow	&
+	\sum_{L=0}^j
+	\frac{(-ik\alpha x)^L}{L!}
+	\\ \times &
+	\sum_0^k
+a^M
+\left[
+{n \choose M}
+(\frac{2e^{i\Psi}}{w\sqrt{n}})^M
+\right]
+u_{n-M,m}
+\\ \times &
+\sum_{A=0}^{\floor{k/2}}
+[
+	\frac{1}{(2A)!}(\frac{-2ax}{w^2})^{(2A)}
+]
+[
+	\frac{1}{B!}(\frac{-a^2}{w^2})^B
+]
+\end{align*}
+
+or (for \textbf{odd} $k$):
+
+\begin{align*}
+	u_{n,m} \rightarrow	 &
+	\sum_{L=0}^j
+	\frac{(-ik\alpha x)^L}{L!}
+	\\ \times &
+	\sum_0^k
+a^M
+\left[
+{n \choose M}
+(\frac{2e^{i\Psi}}{w\sqrt{n}})^M
+\right]u_{n-M,m}
+\\ \times &
+\sum_{A=1}^{\ceil{k/2}}
+[
+	\frac{1}{(2A-1)!}(\frac{-2ax}{w^2})^{(2A-1)}
+]
+[
+	\frac{1}{B!}(\frac{-a^2}{w^2})^B
+]
+\end{align*}
+
+The next step is writing the $x$ factors as coupling coefficients to higher and lower modes, $X_\pm^{c}$.
+
+\clearpage 
+
+\subsection{Addendum 1: Further Approximations}
+
+The exponential term in $x'$ follows the same as the shifted $x'$, but with $a\rightarrow z\alpha$, leaving
+
+\begin{align*}
+	\exp(-\frac{x^2+2xz\alpha + z^2\alpha^2}{w^2})
+	\approx&
+	\exp(-\frac{x^2}{w^2})[1-2xz\alpha]
+\end{align*}
+
+Another possible approximation is on the Gouy phase (but $x\alpha$ suppressed here)
+
+\begin{align*}
+	\exp(i\Psi(z')) =&
+	\exp(i\arctan\frac{z-x\alpha}{z_R} )
+	\\ \approx &
+	\exp[
+	i\arctan\frac{z}{z_R} 
+	-
+	i
+	\frac{(x \alpha) z_R}{(x \alpha)^2 + z_R^2}
+	]
+	\\ \approx&
+	\exp(i \Psi)
+	[
+	1 
+	-
+	i
+	\frac{(x \alpha) z_R}{(x \alpha)^2 + z_R^2}
+	]
+\end{align*}
+
+The $\exp(\frac{-x'^2}{w^2})$ follows the same approximation as the shift,
+
+\begin{align*}
+	u_{nm} \rightarrow &
+	u_{nm}[1 - \frac{2z\alpha x}{w^2}]
+\end{align*} 
+
+Likewise for the $H_n(\frac{\sqrt{2}x'}{w})$ term,
+
+\begin{align*}
+u_{nm} \rightarrow & u_{nm} + \frac{2\sqrt{2}n \alpha z}{w}
+	 	 H_{n-1}(\frac{\sqrt{2}x}{w}) u_{nm}'
+	 	 	\\ \rightarrow &
+	u_{nm}+
+	u_{n-1,m} [
+		\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)	] 
+\end{align*}
+
+However, there is also a $u_{n-1,m}$ term,
+
+\begin{align*}
+u_{n-1,m} \rightarrow u_{n-1,m} + \frac{2\sqrt{2}(n-1) \alpha z}{w}
+	 	 H_{n-2}(\frac{\sqrt{2}x}{w}) u_{n-1,m}'	 	
+\end{align*}
+
+where $u_{n-1,m}'$ includes no $H_{n-1}$. However,$u_{n-1,m}$ as a function of $H_{n-2}$ can be rewritten as a $u_{n-2,m}$ mode:
+
+\begin{align*}
+	u_{n-1,m} (H_{n-2}) =&
+	(\frac{2 (n-1) }{2 (n-1)})^{1/2}
+			\exp(-i \Psi(z))\exp(i \Psi(z))
+			\\& \times
+	[
+	(2^{(n-1)+m-1}(n-1)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-2} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+	\\& \times		
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i[(n-1)+m+1]\Psi(z)		
+		\Big)
+				]
+		\\=&
+		(\frac{1}{2 (n-1)}) ^{1/2}
+		\exp(i \Psi(z))
+			(2^{(n-2)+m-1}(n-2)!m!\pi)^{-1/2}
+		\frac{1}{w(z)}
+		H_{n-2} \Big(\frac{\sqrt{2}x}{w(z)} \Big)
+		H_{m} \Big(\frac{\sqrt{2}y}{w(z)} \Big)
+			\\& \times	
+		\exp \Big(\frac{-ik(x^{2}+y^{2})}{2R_{c}(z)}-
+		\frac{x^{2}+y^{2}}{w(z)^{2}} 
+		+i( (n-2)+m+1)\Psi(z)			
+		\Big)
+		\\=&
+		\sqrt{\frac{1}{2 (n-1)}}
+		\exp(i \Psi)
+		u_{n-2,m}
+\end{align*}
+
+giving
+
+\begin{align*}
+u_{n-1,m} \rightarrow
+u_{n-1,m} + 
+	\alpha z \frac{2 \sqrt{n-1}}{w} 
+	\exp(i \Psi)
+	u_{n-2,m} \; .
+\end{align*}
+
+Overall, the rotation yields (for $u_{nm}$)
+
+\begin{align*}
+	u_{nm} \rightarrow
+		\{ u_{nm}+
+	u_{n-1,m} [
+		\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)	]\} [1 - \frac{2z\alpha x}{w^2}][1+ikx\alpha ]	
+\end{align*}
+
+\clearpage
+
+\subsection{Addendum 2: First-order shifted,tilted tophat (with prop.)}
+
+With propagation, $H_n{x'}$ term from tilt would yield
+
+\begin{align*}
+u_{nm} \rightarrow
+u_{nm} + 
+	\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-1,m} \; 
+\end{align*}
+
+and
+
+\begin{align*}
+u_{n-1,m} \rightarrow
+u_{n-1,m} + 
+	\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-2,m} \; .
+\end{align*}
+
+The $x'$ term in the exponential also gives (1st-order)
+
+\begin{align*}
+	u_{nm} \rightarrow 
+	u_{nm} [ 1 - \frac{2 z\alpha}{w^2}
+	]
+\end{align*}
+
+
+Overall then, tilting the shifted beam \textbf{with propagation} gives modes
+
+\begin{align*}
+	     u_{n,m}
+     	 \left[
+        1 - \frac{2 a }{w^2} x 
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w(z)} 
+	\exp(i \Psi)
+	u_{n-1,m} \rightarrow&\\
+	    ( u_{n,m}
+     	 \left[
+        1 - \frac{2 a }{w^2} x'
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-1,m}
+	)
+		     [1+ikx\alpha]
+	         [
+    1- \frac{2 \alpha z}{w^2}
+    ] 
+    \rightarrow
+    \\  
+    	    \{ (u_{nm} + 
+	\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-1,m} )
+     	 \left[
+        1 - \frac{2 a }{w^2} x'
+    \right]
+    + 
+	a \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	(u_{n-1,m} + 
+	\alpha z \frac{2 \sqrt{n}}{w} 
+	\exp(i \Psi)
+	u_{n-2,m})
+	\}
+		     [1+ikx\alpha]
+	         [
+    1- \frac{2 \alpha z}{w^2}
+    ] 
+\end{align*}
+
+
+\clearpage
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % BIBLIOGRAPHY
 \clearpage
@@ -5085,12 +8445,12 @@ and $\sigma$ is defined as
 \textbf{ACRONYMS}&\\
 \textbf{CoM}\tab& center\; of\; mass\\
 \textbf{HG}\tab &Hermite-Gauss\\
-\textbf{OB}\tab &optical bench\\
+\textbf{OB}\tab &optical\;bench\\
 \textbf{PD}\tab &photodetector\\
 \textbf{PDD}\tab &Payload\; Definition\; Document\\
 \textbf{S/C}\tab &spacecraft\\
 \textbf{TM}\tab &test\; mass\\
-\textbf{TTL}\tab &tilt\; to\; length\\
+\textbf{TTL}\tab &Tilt\;-to\;-Length\\
 \end{align*}
 
 \newpage
@@ -5117,6 +8477,13 @@ and $\sigma$ is defined as
 \text{q-param}
 = q(z)
  = i z_r + z - z_0 = q_0 + z - z_0 , q_0 = i z_R
+\end{equation}
+
+\begin{equation}
+\text{Gouy Phase}
+= \Psi(z)
+ = \arctan\Big( \frac{z-z_0}{z_R} \Big)
+ = \arctan\Big( \frac{D}{z_R} \Big)
 \end{equation}
 
 \begin{equation}
