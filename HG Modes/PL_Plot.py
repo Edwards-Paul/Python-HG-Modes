@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from PauLisa import *
 
 # --------------------------------------------------------------------------------------------------------
 ## 2D INTENSITY PLOT:
@@ -120,17 +121,17 @@ def intslicex(y, *argv, **kwargs):
     if ('ylim' in kwargs):
         plt.ylim(kwargs['ylim'])
 
-    ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
+#     ax.xaxis.set_major_formatter(OOMFormatter(0, "%1.3f"))
     ax.ticklabel_format(axis='x', style='sci', scilimits=(0, 0), useMathText=True)
-    # format x axis to mm or microns depending on order of x limits
-    for i in plt.xlim():
-        if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
-        if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
-            ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
-            break
+#     # format x axis to mm or microns depending on order of x limits
+#     for i in plt.xlim():
+#         if 1e-5 < abs(i) < 1e-2:
+#             ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
+#             ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
+#         if abs(i) <= 1e-5:
+#             ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
+#             ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
+#             break
     plt.title('Intensity along X ')
     plt.xlabel('X [m]')
     plt.ylabel('Intensity [a.u.]')
