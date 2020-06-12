@@ -451,6 +451,154 @@ def scatter_case2_first_order(z,params,a,alpha,modes):
     return(new_modes)
 
 # Apply general mode scatter formulas for x-dependence (uni-directional offset coord.), RETURN modes
+def scatter_with_prop_first_order(z,params,a,alpha,modes):
+    
+    
+    k = params.getK()
+    w0 = params.getW0()
+    zr = params.getZr()
+    w_z = w(z,params)
+    gouy = gouy_phase(z,params) 
+    r_c = radius_curvature(z, params)
+    phi = e**((1j)*gouy)
+    
+    #iterate through modes
+    rows = len(modes)
+    cols = len(modes[0])
+    
+    number_modes = rows*cols
+    
+    #build new modes (up to 2 orders larger for quad. dep.)
+    new_modes = [[0 for m in range(cols+2)] for n in range(rows+2)]
+    
+    B_n_1 = (
+        -a*2/w_z**2
+        -a*1j*k/r_c
+        +1j*k*alpha
+        -alpha*2*z/w_z**2
+        -alpha*1j*k*z/r_c
+    )
+    
+    B_n_2 = (
+        -alpha*a*1j*2*k/w_z**2
+        +a*alpha*k**2/r_c
+        +a*alpha*4*z/w_z**4
+        +(a*alpha*4*1j*k*z)/(w_z**2 *r_c)
+        -a*alpha*k**2 *z/(r_c**2)
+    )
+    
+    # Add u(n+2,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm = modes[n][m]              
+                #Add at n+2
+                new_modes[n+2][m] += (
+                    c_nm*(x_plus_2(w0,z,zr,n)*B_n_2)
+                )
+                
+    # Add u(n+1,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm= modes[n][m]
+                #Add at n+1
+                new_modes[n+1][m] += (
+                    c_nm*(x_plus_1(w0,z,zr,n) * B_n_1)
+                )
+                
+    # Add u(n,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0):
+                c_nm = modes[n][m]
+                
+                B_nminus1_1 = (
+                    (a*2*sqrt(n)/w_z)*phi
+                    *
+                    (
+                       1
+                     + 1j*k*alpha
+                     - 2*z*alpha/w_z**2
+                     - 1j*k*z*alpha/r_c
+                    )
+                    +
+                    (alpha*z*2*sqrt(n)/w_z)*phi
+                    *
+                    (
+                        1
+                     - 2*a/w_z**2
+                     - 1j*k*a/r_c
+                    )
+                )
+                
+                #Add at n
+                new_modes[n][m] += (
+                    c_nm*(1 + x_plus_1(w0,z,zr,n)*B_nminus1_1 + x_zero_2(w0,z,zr,n)*B_n_2 )
+                )
+                
+    # Add u(n-1,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0 and (n>0) ): #neglect n-1
+                c_nm = modes[n][m]
+                
+                B_nminus1_0 = (
+                    (a*2*sqrt(n)/w_z)*phi
+                    +
+                    (alpha*z*2*sqrt(n)/w_z)*phi
+                )
+        
+                #Add at n
+                new_modes[n-1][m] += (
+                    c_nm*(B_nminus1_0 + x_minus_1(w0,z,zr,n)*B_n_1 ) 
+                )
+           
+                
+    # Add u(n-2,m)
+    for n in range(rows):
+        for m in range(cols):            
+            #ignore zero coeff.
+            if (modes[n][m]!=0 and (n>1) ): #neglect n=0,1
+                c_nm = modes[n][m]
+                
+                B_nminus1_1 = (
+                (a*2*sqrt(n)/w_z)*phi
+                *
+                (
+                    1j*k*alpha
+                 - 2*z*alpha/w_z**2
+                 - 1j*k*z*alpha/r_c
+                )
+                                        +
+                (alpha*z*2*sqrt(n)/w_z)*phi
+                *
+                (
+                 - 2*a/w_z**2
+                 - 1j*k*a/r_c
+                )
+                )
+                
+                B_nminus2_0 = (
+                    (z*alpha*2*sqrt(n-1)*phi/w_z) * (a*2*sqrt(n)*phi/w_z) 
+                )
+       
+                #Add at n
+                new_modes[n-2][m] += (
+                    c_nm*(B_nminus2_0 + x_minus_1(w0,z,zr,n-1)*B_nminus1_1 + x_minus_2(w0,z,zr,n)*B_n_2 ) 
+                )
+    
+    #account for symmetry, 0,m_final = m_final,0
+    if (rows%2==0 and cols%2==0 and rows==cols):
+        new_modes[0][rows+2]=new_modes[rows+2][0]
+    
+    return(new_modes)
+
+# Apply general mode scatter formulas for x-dependence (uni-directional offset coord.), RETURN modes
 def scatter_first_order(z,params,a,alpha,modes):
     
     #on rotation
@@ -463,7 +611,8 @@ def scatter_first_order(z,params,a,alpha,modes):
     w0 = params.getW0()
     zr = params.getZr()
     w_z = w(z,params)
-    gouy = gouy_phase(z,params) 
+    gouy = gouy_phase(z,params)
+    r_c = radius_curvature(z, params)
     
     #iterate through modes
     rows = len(modes)
@@ -495,7 +644,7 @@ def scatter_first_order(z,params,a,alpha,modes):
             if (modes[n][m]!=0):
                 c_nm = modes[n][m]
                 sc_plus_1 = x_plus_1(w0,z,zr,n)       #scattering factor from x terms        
-                off_plus_1 = ( (1j)*k*alpha - (2*a)/w_z**2 )  #factor from shift/tilt offset terms
+                off_plus_1 = ( (1j)*k*alpha - (2*a)/w_z**2 - a*1j*k/r_c )  #factor from shift/tilt offset terms
                 
                 #Add at n+1
                 new_modes[n+1][m] += ( c_nm*(sc_plus_1*off_plus_1) )
@@ -506,17 +655,16 @@ def scatter_first_order(z,params,a,alpha,modes):
             #ignore zero coeff.
             if (modes[n][m]!=0):
                 c_nm = modes[n][m]
-                
-                sc_plus_1 = x_plus_1(w0,z,zr,n)       #scattering factor from x terms        
+                     
                 off_plus_1 = ( (1j)*k*alpha*(2*a*sqrt(n))/w_z * e**((1j)*gouy) )  #factor from shift/tilt offset terms
                 
                 sc_zero_2 = x_zero_2(w0,z,zr,n)
-                off_zero_2 = -( (1j)*2*k*a*alpha/w_z**2 )
+                off_zero_2 = ( alpha*a*2*k**2/r_c - (1j)*2*k*a*alpha/w_z**2 ) ## 1st term
                 
-                new_terms = -(2*a*alpha*z/w_z**2 - (1j)*k*z*alpha**2*a/w_z**2)
+                #new_terms = -(2*a*alpha*z/w_z**2 - (1j)*k*z*alpha**2*a/w_z**2)
                 
                 #Add at n
-                new_modes[n][m] += ( c_nm*(1 + new_terms + (sc_plus_1*off_plus_1) + (sc_zero_2*off_zero_2) ) )
+                new_modes[n][m] += ( c_nm*(1 + (x_plus_1(w0,z,zr,n)*off_plus_1) + (sc_zero_2*off_zero_2) ) )
                 
     # Add u(n-1,m)
     for n in range(rows):
@@ -526,7 +674,7 @@ def scatter_first_order(z,params,a,alpha,modes):
                 c_nm = modes[n][m]
                 
                 sc_minus_1 = x_minus_1(w0,z,zr,n)       #scattering factor from x terms        
-                off_minus_1 = ( (1j)*k*alpha - 2*a/w_z**2)  #factor from shift/tilt offset terms
+                off_minus_1 = ( (1j)*k*alpha - 2*a/w_z**2 - a*(1j)*k/r_c)  #factor from shift/tilt offset terms ## last
 
                 sc = ( 2*a*sqrt(n)*e**( (1j)*gouy)/w_z )
                 
@@ -545,7 +693,7 @@ def scatter_first_order(z,params,a,alpha,modes):
                 off_minus_1 = ( (1j)*k*alpha*a*2*sqrt(n)*e**((1j)*gouy)/w_z )  #factor from shift/tilt offset terms
 
                 sc_minus_2 = x_minus_2(w0,z,zr,n)       #scattering factor from x terms        
-                off_minus_2 = -( (1j)*2*k*a*alpha/w_z**2 )  #factor from shift/tilt offset terms
+                off_minus_2 = ( a*alpha*2*k**2/r_c - (1j)*2*k*a*alpha/w_z**2 )  #factor from shift/tilt offset terms
                 
                 #Add at n
                 new_modes[n-2][m] += ( c_nm*( (sc_minus_1*off_minus_1) + (sc_minus_2*off_minus_2) ) )
@@ -725,22 +873,7 @@ def calculate_x2(params, plane, modes, z):
 
     return (f)
 
-# Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
-def calculate_case2(params, plane, modes, z,a,alpha):
-    X, Y = np.meshgrid(plane.getX(), plane.getY())
-    amp = amplitude_case2(params, X, Y, z, modes,a,alpha)
 
-    result_row = len(amp)
-    result_col = len(amp[0])
-    phase = np.zeros((result_row,result_col), dtype=float)
-    for r in range(result_row):
-        for c in range(result_col):
-            phase[r,c] = (np.angle(amp[r][c]))
-    #phase = Phase(params, X, Y, z, modes)
-
-    f = Result(params, plane, modes, z, amp, phase)
-
-    return (f)
 
 # Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
 def calculate_case2_no_scatter(params, plane, modes, z,a,alpha):
@@ -1073,8 +1206,42 @@ def herm_poly_case2(mode, coord,a, coeff_array, z, w_z):
 
 #     return (Unm_Sum)
 
+#############################################
+# Calculate Amplitude and Phase from user x,y range and z. Parse for plots.
+def calculate_case2(params, plane, modes, z,a,alpha):
+    x = plane.getX()
+    
+    x_sub = [0]*len(x)
+    z_sub = [0]*len(x)
+    r_c = [0]*len(x)
+    w_z = [0]*len(x)
+    gouy = [0]*len(x)
+    
+    for i in range(len(x)):
+        x_sub[i] = (x[i]+a)*np.cos(alpha) + z*np.sin(alpha)
+        z_sub[i] = z*np.cos(alpha)-(x[i]+a)*np.sin(alpha)
+        r_c[i] = radius_curvature(z_sub[i], params)
+        w_z[i] = w(z_sub[i],params)
+        gouy[i] = gouy_phase(z_sub[i],params)
+        
+    X, Y,Z,R,W,G = np.meshgrid(x_sub, plane.getY(), z_sub,r_c,w_z,gouy)
+    amp = amplitude_case2(params, X, Y,Z,R,W,G, modes,a,alpha)
+
+    result_row = len(amp)
+    result_col = len(amp[0])
+    phase = np.zeros((result_row,result_col), dtype=float)
+    for r in range(result_row):
+        for c in range(result_col):
+            phase[r,c] = (np.angle(amp[r][c]))
+    #phase = Phase(params, X, Y, z, modes)
+
+    f = Result(params, plane, modes, z, amp, phase)
+
+    return (f)
+#############################################
+
 # Amplitutude calculation from w0,Zr. (LR eq. 9.26)
-def amplitude_case2(params, x, y, z, modes,a,alpha):
+def amplitude_case2(params, x, y, z, r_c, w_z,gouy, modes,a,alpha):
     # Unm, U spatial sum over HG modes n,m
     
 
@@ -1084,25 +1251,13 @@ def amplitude_case2(params, x, y, z, modes,a,alpha):
     
     z_r = params.getZr()
     k = params.getK()
-    r_c = radius_curvature(z, params)
-    #r_c = z+z_r**2/z
-    w_z = w(z,params)
-    #w_z = params.w0**2*sqrt(1-(z/params.Zr)**2)
-    gouy = gouy_phase(z,params)
-    
-        #shift and tilt transformation on coord's
-    x_sub = x
-    z_sub = z
-#     x = (x+a)*np.cos(alpha) + z*np.sin(alpha)
-#     z = z*np.cos(alpha)-(x_sub+a)*alpha
-    x = (x_sub+a + z*alpha)
-    z = (z-x_sub*alpha)  
 
+    
     
     # Iterate through modes
     for n in range(rows):
         for m in range(cols):
-
+            print(n,m)
             #coefficient for mode (n,m) from modes array
             coeff = modes[n][m]
 
@@ -1137,16 +1292,16 @@ def amplitude_case2(params, x, y, z, modes,a,alpha):
                     * e**
                     ( 
                         (
-                            -(1j)*(k * ( x_sub**2 + y**2) ) 
+                            -(1j)*(k * ( x**2 + y**2) ) 
                             / 
                             (2 * r_c)
                         ) 
                         - 
                         (
-                            ( x_sub**2 + y**2) / w_z**2
+                            ( x**2 + y**2) / w_z**2
                         )
                     ) 
-                    * herm_poly(n, x_sub,carrN, w_z) 
+                    * herm_poly(n, x,carrN, w_z) 
                     * herm_poly(m, y, carrM, w_z) 
                     * e**(-(1j)*k*(z)) 
                 )

@@ -334,24 +334,24 @@ def PhaseContour(f, **kwargs):
     # scale x
     for i in plt.xlim():
         if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-3, -3), useMathText=True)
         if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
             ax.ticklabel_format(axis='x', style='sci', scilimits=(-6, -6), useMathText=True)
             break
     # scale y
     for i in plt.ylim():
         if 1e-5 < abs(i) < 1e-2:
-            ax.xaxis.set_major_formatter(OOMFormatter(-3, "%1.2f"))
+            ax.yaxis.set_major_formatter(OOMFormatter(-3, "%1.3f"))
             ax.ticklabel_format(axis='y', style='sci', scilimits=(-3, -3), useMathText=True)
         if abs(i) <= 1e-5:
-            ax.xaxis.set_major_formatter(OOMFormatter(-6, "%1.2f"))
+            ax.yaxis.set_major_formatter(OOMFormatter(-6, "%1.3f"))
             ax.ticklabel_format(axis='y', style='sci', scilimits=(-6, -6), useMathText=True)
             break
 
-    plt.xlabel('x (m)')
-    plt.ylabel('y (m)')
+    plt.xlabel('x [m]')
+    plt.ylabel('y [m]')
     cbar = fig.colorbar(cs)
     plt.title('Phase')
 
