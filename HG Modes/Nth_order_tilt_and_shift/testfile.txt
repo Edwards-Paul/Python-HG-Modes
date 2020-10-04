@@ -1,0 +1,13 @@
+1 - (8*a*b**3*p**4*z**3*Sqrt(Factorial(-4 + n)))/(3.*w**4) + 
+  (4*a*b**3*p**3*x*z*Sqrt(Factorial(-3 + n)))/w**3 - 
+  (4*a*b**2*p**3*z**2*Sqrt(Factorial(-3 + n)))/w**3 + 
+  (4*b**3*p**3*z**3*Sqrt(Factorial(-3 + n)))/(3.*w**3) + 
+  (2*a*b**2*p**2*x*Sqrt(Factorial(-2 + n)))/w**2 - 
+  (4*a*b*p**2*z*Sqrt(Factorial(-2 + n)))/w**2 + 
+  (8*a*b**3*p**2*z*Sqrt(Factorial(-2 + n)))/(3.*w**2) - 
+  (2*b**3*p**2*x*z*Sqrt(Factorial(-2 + n)))/w**2 + 
+  (2*b**2*p**2*z**2*Sqrt(Factorial(-2 + n)))/w**2 - 
+  (2*a*p*Sqrt(Factorial(-1 + n)))/w + (a*b**2*p*Sqrt(Factorial(-1 + n)))/w - 
+  (b**2*p*x*Sqrt(Factorial(-1 + n)))/w + 
+  (2*b*p*z*Sqrt(Factorial(-1 + n)))/w - 
+  (b**3*p*z*Sqrt(Factorial(-1 + n)))/(3.*w)

@@ -1,0 +1,10 @@
+1 - a*b*j*K + b*j*K*x + (a*j*K*x)/R + (2*a*x)/w**2 + (a*b*j**2*K**2*x**2)/R + 
+  (2*a*b*j*K*x**2)/w**2 + (a*b*j*K*z)/R + (2*a*b*z)/w**2 - (b*j*K*x*z)/R - 
+  (2*b*x*z)/w**2 - (a*b*j**2*K**2*x**2*z)/R**2 - (4*a*b*x**2*z)/w**4 - 
+  (4*a*b*j*K*x**2*z)/(R*w**2) - 
+  (4*a*b*p**2*z*Sqrt(Factorial(n)/Factorial(-2 + n)))/w**2 - 
+  (2*a*p*Sqrt(Factorial(n)/Factorial(-1 + n)))/w - 
+  (2*a*b*j*K*p*x*Sqrt(Factorial(n)/Factorial(-1 + n)))/w + 
+  (2*b*p*z*Sqrt(Factorial(n)/Factorial(-1 + n)))/w + 
+  (8*a*b*p*x*z*Sqrt(Factorial(n)/Factorial(-1 + n)))/w**3 + 
+  (4*a*b*j*K*p*x*z*Sqrt(Factorial(n)/Factorial(-1 + n)))/(R*w)
