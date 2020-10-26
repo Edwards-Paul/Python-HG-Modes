@@ -1,0 +1,1 @@
+1 + b*j*K*x - (b*j*K*x*z)/R - (2*b*x*z)/w**2 + (2*b*p*z*Sqrt(Factorial(n)/Factorial(-1 + n)))/w

@@ -81,3 +81,36 @@ def coeff_from_mat(filename,waist,plotOrNot):
         plt.grid()
         
     return(top_modes)
+
+def truncated_tophat(filename,waist,max_mode):
+    mat = scipy.io.loadmat(filename)
+    coef=mat['coeftopUnitInt'].ravel()
+
+    def N_f(A):
+        res = np.floor((np.sqrt(8*A+1)-1)/2)
+        return(res)
+
+    def m(N,A):
+        res = (N+1)*(N+2)/2 - (A+1)
+        return(res)
+
+    def n(N,A):
+        res = A - (N*(N+1)/2)
+        return(res)
+
+    numberModes = int(len(coef))
+    listModesN = [None] * numberModes
+    listModesM = [None] * numberModes
+    listModesC = [None] * numberModes
+
+    for i in range(numberModes):
+        A=i
+        N= N_f(A)
+        listModesN[i] = int(m(N,A))
+        listModesM[i] = int(n(N,A))
+        listModesC[i] = coef[i]
+        
+    modes = pl.create_modes_orderN(listModesM,listModesN,listModesC,numberModes,max_mode)
+    
+    return(modes)
+ 

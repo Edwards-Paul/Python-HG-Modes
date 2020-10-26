@@ -1,0 +1,1 @@
+{'1_shift_1_tilt': [['+1+-a*b+a*b+a*b', '+-(a*p*Sqrt(Factorial(n)/Factorial(n-1)))+(b*p*Sqrt(Factorial(n)/Factorial(n-1)))', '+-(a*b*Sqrt(Factorial(n)/Factorial(n-2)))'], ['+b+-b+-b', '+-(b*Sqrt(Factorial(n)/Factorial(n-1)))+(a*b*Sqrt(Factorial(n)/Factorial(n-1)))+(a*b*Sqrt(Factorial(n)/Factorial(n-1)))', ''], ['+(a*b)+(a*b)+-(a*b)+-(4*a*b)+-(4*a*b)', '', '']]}

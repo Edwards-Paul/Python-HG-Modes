@@ -1,6 +1,7 @@
 # This module to evaluate coupling coefficients and return HG mode matrix of (n x m)
 
 from hg_scripts import paulisa as pl
+from hg_scripts.transverse_coord_transform import *
 from math import pi, log, exp, sin, cos, atan, e, radians, degrees,factorial as Factorial
 import cmath
 from cmath import sqrt as Sqrt
@@ -45,8 +46,8 @@ def update_modes (z,params,a,b,modes,sols_matrix):
 
                             #do x transformation 
                             #start at n - [order of p], which x transformation depends on
-                            x_order=0
-                            p_order=0
+#                             x_order=0
+#                             p_order=0
                             if(x_order>0):
                                 q = transform_x(p_order,x_order,a,w,gouy,n,w0,z,zr)
                                 #print(n_start,x_order)
