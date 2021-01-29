@@ -9,6 +9,7 @@ from cmath import sqrt as Sqrt
 #represents the sums
 def update_modes (z,params,a,b,modes,sols_matrix):
     #get params
+    
     K = params.getK()
     w0 = params.getW0()
     zr = params.getZr()
@@ -59,7 +60,7 @@ def update_modes (z,params,a,b,modes,sols_matrix):
                                     #print("N,x_order,p_order,n,m",N,x_order,p_order,n,m)
                                     if(N>=0):
                                         new_modes[N][m]+= c_nm*coupling*X
-
+                                        
                             #N is either n or n-p_order, no x-dependence
                             else:
                                 N= n-p_order

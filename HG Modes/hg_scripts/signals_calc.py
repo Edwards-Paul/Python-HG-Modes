@@ -2,8 +2,9 @@
 # coding: utf-8
 
 
-import PauLisa as pl, PL_Plot as plplt,plback as plb, Tophat_integration_AW as th, numpy as np, matplotlib.pyplot as plt, cmath as cm
+from hg_scripts import paulisa as pl, pl_plot as plplt,plback as plb, tophat_integration_AW as th
 #from Signals_Rc_2 import *
+from hg_scripts import build_modes
 
 from numpy import pi as pi
 from numpy import angle
@@ -28,6 +29,11 @@ inf=np.inf
 import pandas as pd
 from pprint import pprint
 
+from progressbar import AnimatedMarker, Bar, BouncingBar, Counter, ETA, \
+    AdaptiveETA, FileTransferSpeed, FormatLabel, Percentage, \
+    ProgressBar, ReverseBar, RotatingMarker, \
+    SimpleProgress, Timer, UnknownLength
+
 
 # ## Integration for signals
 
@@ -35,10 +41,10 @@ from pprint import pprint
 
 #loop through and sum over modes overlap where a,b -> n,m
 def iterate_modes_overlap(w_1,w_2,zR_1,zR_2,k_1,k_2,d_1,W_2,x_1,x_2,Z,Y,modes):   
-
+    
     N = len(modes)
     M = len(modes[0])
-    res_arr = [[0 for i in range(10)] for j in range(10)]
+    #res_arr = [[0 for i in range(N)] for j in range(M)]
     res = 0
 
     for a in range(N):
@@ -46,14 +52,14 @@ def iterate_modes_overlap(w_1,w_2,zR_1,zR_2,k_1,k_2,d_1,W_2,x_1,x_2,Z,Y,modes):
             #ignore zero coeff.
             if (modes[a][b]!=0):
                 c_nm = modes[a][b]
-                #result is the sum of all overlap coefficients each with a factor of mode coefficient
+                #result is the sum of all overlap coefficients each with a factor of mode coefficient c_nm
                 res += ( c_nm * th.overlap(a,b,w_1,w_2,zR_1,zR_2,k_1,k_2,d_1,W_2,x_1,x_2,Z,Y) )
                 
     return(res)
 
 
 
-def signals(v,updated_modes):
+def signals(v,modes,sols_matrix):
     #points determine size of arrays (equivalent to # data points plotted)
     points = v.points
     time_start = process_time()
@@ -68,15 +74,15 @@ def signals(v,updated_modes):
     dws = [0]*points
     lps = [0]*points
     total_lps = [0]*points
-
-
-    #alpha_arr = np.linspace(-500e-6,500e-6,points)
-
+    
+    pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=points).start() #Start a progress bar for times
+    
     for p in range (points):
         time_ave_start = process_time()
         #shift x+zsina
-        new_modes = updated_modes
-        
+#         new_modes = updated_modes
+        new_modes= build_modes.update_modes(v.z,v.params,v.a,v.alpha_arr[p],modes,sols_matrix)
+
         #create arrays of overlap coefficients left and right
         cl[p] = iterate_modes_overlap(v.w_1,v.w_2,v.zR_1,v.zR_2,v.k_1,v.k_2,v.d_1,v.W_2,v.x_1L,v.x_2L,v.Z,v.Y,new_modes) # left overlap (-2e-3,0)
 
@@ -89,20 +95,20 @@ def signals(v,updated_modes):
         
         #create arrays of dws &lps for phases in phase arrays
         dws[p] = (phi_r[p]-phi_l[p])
-        lps[p] = 0.5*(phi_r[p]+phi_l[p])/v.k_1*1e3
+        lps[p] = 0.5*(phi_r[p]+phi_l[p])/v.k_1 *1e9 # Regular LPS in nm.
 #         total_lps[p] = (phi_r[p]+phi_l[p])/v.k_1*1e3
-        total_lps[p] = angle(cr[p]+cl[p])/v.k_1*1e3
+        total_lps[p] = angle(cr[p]+cl[p])/v.k_1 *1e9 # Total LPS in nm.
+        pbar.update(p+1)
+        
+    pbar.finish()
+    
     #total time for all DWS & LPS points (not including scattering)
-#     time_elapsed = (process_time() - time_start)
-#     print(time_elapsed,'s')
-#     print(time_ave/p,'s')
+    time_elapsed = (process_time() - time_start)
+    print(time_elapsed,'s')
+    
     
     return(dws,lps,total_lps)
 
-
-
-num=101
-waist=1e-3
 
 class Vars:
 #modes,alpha with points
@@ -114,13 +120,13 @@ class Vars:
                  Y=20e-3,
                  x_1R=10e-6,x_2R=20e-3,
                  x_1L=-20e-3,x_2L=-10e-6,
-                 w_1=1e-3, w_2=waist,
-                 zR_1=pi*1e-3**2/1064e-9,zR_2=pi*waist**2/1064e-9,
+                 w_1=1e-3, w_2=1e-3,#change this? was waist
+                 zR_1=pi*1e-3**2/1064e-9,zR_2=pi*1e-3**2/1064e-9, #zr_2 was pi*waist
                  k_1=5905249.348852994,k_2=5905249.348852994,
-                 params=pl.Params(1064e-9,waist,0),
+                 params=pl.Params(1064e-9,1e-3,0),#1e-3 was waist
                  W_2=1,
-                 points=num,
-                 a=0e-6,alpha_arr=np.linspace(-500e-6,500e-6,num),modes_arr=[0]*num):
+                 points=101,
+                 a=0e-6,alpha_arr=np.linspace(-500e-6,500e-6,101),modes_arr=[0]*101):
         self.lam = lam
 
 
@@ -154,7 +160,7 @@ class Vars:
 
         self.params = params #for building tophat coefficients
 
-        self.W_2 = pl.w(z,pl.Params(1064e-9,waist,0)) #tophat beam rad , w(z) or 1e-3?
+        self.W_2 = pl.w(z,pl.Params(1064e-9,1e-3,0)) #tophat beam rad , w(z) or 1e-3?; 1e-3 was waist
 
 
 
@@ -166,7 +172,47 @@ class Vars:
 
         self.modes_arr = modes_arr
 
+class Gen_Vars:
+#modes,alpha with points
+    def __init__(self,file_no,lo_size,rx_size,long_off,lat_off,gaps):
+        #constants
+        self.k_1 = 5905249.348852994 #wavenum LO
+        self.k_2 = 5905249.348852994 #wavenum RX
+        self.lam = 1064e-9
+        self.z_m = 0 #meas beam 
+        self.z_LO = 0 #Local ref. beam
+        self.points = 61 #number of data points in tilt
+
+   
+        #longitudinal offset terms (RX and LO beam waists assumed at z=0)
+        self.z_PD = long_off #PD location
+        self.z = long_off #propagation distance assumed PD     
+        self.Z = long_off #distance PD-m
+        self.d_1 = long_off #distance PD-LO
+        
+        #PD dimensions
+        self.Y = lo_size #Y int bound
+        self.x_1R = gaps #start at right gap (pos.)
+        self.x_2R = lo_size #end at right PD half (pos.)
+        self.x_1L = -lo_size #start at left gap (neg.)
+        self.x_2L = -gaps #end at left PD half (neg.)
+
+        self.w_1 = lo_size #waist LO 
+        self.w_2 = rx_size #waist RX
+
+        self.zR_1 = pi*lo_size**2/1064e-9 #rayleigh LO
+        self.zR_2 = pi*rx_size**2/1064e-9 #rayleigh RX
 
 
+        self.params = pl.Params(1064e-9,rx_size,long_off) #for building tophat coefficients, z=0 or dist?
+
+        self.W_2 = pl.w(long_off,pl.Params(1064e-9,rx_size,long_off)) #tophat beam rad , w(z) or 1e-3?
+
+        self.file_no = file_no
+
+        #integration and misalignment
+        self.a = lat_off
+        self.alpha_arr = np.linspace(-150e-6,150e-6,61) #rotation angles
+        self.modes_arr = [0]*61
 
 

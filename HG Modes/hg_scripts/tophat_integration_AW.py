@@ -1,3 +1,7 @@
+# Formula from AW for overlap of any mode with the Gaussian.
+# Integration over the PD is assumed symmetric, with gaps in vertical but none in horizontal.
+# Allows for mode mismatch.
+
 # ========================================================================================================
 
 # IMPORTS:

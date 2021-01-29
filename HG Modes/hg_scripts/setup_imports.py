@@ -36,10 +36,11 @@ from numpy import pi as pi
 from math import e
 
 # INTERNAL IMPORTS
-from hg_scripts import paulisa as pl, pl_plot as plplt,plback as plb, tophat_integration_AW_2 as th
+from hg_scripts import paulisa as pl, pl_plot as plplt,plback as plb, tophat_integration_AW as th
 #import signals_calc as sig
-from hg_scripts.transverse_coord_transform import *
-from hg_scripts.build_modes import update_modes
+from hg_scripts.transverse_coord_transform import * #class: item; method: transform_x
+from hg_scripts.build_modes import update_modes #method: update_modes
 from hg_scripts.beam_from_mat_file import coeff_from_mat, truncated_tophat
-from hg_scripts.plot_signals import *
-from hg_scripts.mathematica_to_matrix import *
+from hg_scripts.plot_signals import * #method: plot_dws,plot_lpsT,plot_lpsR
+from hg_scripts.mathematica_to_matrix import * #method: parse_math_for_python
+from hg_scripts.signals_calc import *

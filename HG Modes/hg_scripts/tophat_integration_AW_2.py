@@ -1,3 +1,6 @@
+# This replaces sigma function with 's' variable for very slightly faster calculation in overlap function.
+
+
 # ========================================================================================================
 
 # IMPORTS:
